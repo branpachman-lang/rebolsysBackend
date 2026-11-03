@@ -1,20 +1,15 @@
 package pe.com.rebolsysBackend.service.service;
 
-import pe.com.rebolsysBackend.dto.CancelacionReservaRequestDTO;
-import pe.com.rebolsysBackend.dto.ComprobanteInternoResponseDTO;
-import pe.com.rebolsysBackend.dto.PaginaResponseDTO;
-import pe.com.rebolsysBackend.dto.PagoEfectivoRequestDTO;
-import pe.com.rebolsysBackend.dto.ReservaRegistroRequestDTO;
-import pe.com.rebolsysBackend.dto.ReservaResumenResponseDTO;
-import pe.com.rebolsysBackend.service.generic.CrudService;
+import pe.com.rebolsysBackend.dto.*;
 
-public interface ReservaService extends CrudService<ReservaRegistroRequestDTO, ReservaResumenResponseDTO, String> {
-    PaginaResponseDTO<ReservaResumenResponseDTO> listar(int pagina, int tamanio, String buscar, String estado);
+public interface ReservaService {
+  ReservaRespuestaDTO registrar(ReservaRegistroRequestDTO r);
 
-    ReservaResumenResponseDTO pagar(String referencia, PagoEfectivoRequestDTO request);
+  ReservaRespuestaDTO obtener(Long id);
 
-    ReservaResumenResponseDTO cancelar(String referencia, CancelacionReservaRequestDTO request);
+  PaginaResponseDTO<ReservaRespuestaDTO> listar(int pagina, int tamanio);
 
-    ComprobanteInternoResponseDTO comprobante(String referencia);
-    ComprobanteInternoResponseDTO comprobante(String referencia, Long idComprobante);
+  ReservaDetalleRespuestaDTO cambiarEstado(Long id, String accion, OperacionUsuarioDTO r);
+
+  ReservaDetalleRespuestaDTO guardarOcupantes(Long id, ReservaOcupantesGuardarDTO r);
 }

@@ -1,20 +1,15 @@
 package pe.com.rebolsysBackend.dto;
 
-import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.validation.constraints.*;
+import java.time.*;
+import java.util.*;
+import pe.com.rebolsysBackend.enums.*;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
-public class CatalogosResponseDTO {
-
-    private List<CatalogoItemResponseDTO> documentos;
-
-    private List<CatalogoItemResponseDTO> ocupantes;
-
-    private List<CatalogoItemResponseDTO> pagos;
-}
+public record CatalogosResponseDTO(
+    List<CatalogoItemResponseDTO> tiposDocumento,
+    List<CatalogoItemResponseDTO> formasPago,
+    List<CatalogoItemResponseDTO> tiposHabitacion,
+    List<CatalogoItemResponseDTO> tiposItem,
+    List<CatalogoItemResponseDTO> tiposGasto,
+    List<CatalogoItemResponseDTO> usuarios,
+    List<TurnoDisponibleDTO> turnosAbiertos) {}

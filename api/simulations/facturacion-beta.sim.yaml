@@ -1,0 +1,8 @@
+simulation: facturacion-beta
+routing: path
+mocks:
+  - name: apisperu-facturacion
+    routeKey: facturacion
+    origin:
+      - facturacion.apisperu.com
+    path: api/mocks/apisperu-facturacion/config.yaml

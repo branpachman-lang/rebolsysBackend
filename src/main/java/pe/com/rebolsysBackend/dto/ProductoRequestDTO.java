@@ -39,6 +39,7 @@ public class ProductoRequestDTO {
     private Integer stockMinimo = 0;
 
     @NotNull(message = "idCategoria es obligatorio")
+    @jakarta.validation.constraints.Positive
     private Long idCategoria;
 
     @NotNull(message = "estadoProducto es obligatorio")

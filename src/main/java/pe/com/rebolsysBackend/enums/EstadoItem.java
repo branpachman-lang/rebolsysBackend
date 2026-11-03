@@ -22,7 +22,7 @@ public enum EstadoItem {
     @JsonCreator
     public static EstadoItem desdeValor(String valor) {
         for (EstadoItem estado : values()) {
-            if (estado.valor.equals(valor)) return estado;
+            if (estado.valor.equalsIgnoreCase(valor) || estado.name().equalsIgnoreCase(valor)) return estado;
         }
         throw new IllegalArgumentException("Estado de ítem no admitido: " + valor);
     }

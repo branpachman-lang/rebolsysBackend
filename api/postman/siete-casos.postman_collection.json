@@ -1,0 +1,750 @@
+{
+  "info": {
+    "name": "REBOLSYS propuesta - siete casos completos",
+    "description": "Inserta datos de demostración. Ejecutar SOLO voluntariamente en desarrollo después de DATOS_INICIALES_PROPUESTA.sql y COMMIT. Conserva los registros creados; no se ejecuta como smoke test.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "1 - Obtener catálogos de preparación",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/recepcion/catalogos"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+              "const c=pm.response.json();\npm.test('Operador, turno y tipo de gasto preparados',()=>{\n pm.expect(c.turnosAbiertos.length).to.be.above(0);\n pm.expect(c.tiposGasto.length).to.be.above(0);\n pm.expect(c.tiposDocumento.some(d=>d.codigoSunat==='1')).to.eql(true);\n});\nif(c.turnosAbiertos.length){\n const turno=c.turnosAbiertos[0];\n pm.collectionVariables.set('idUsuario',turno.idUsuario);\n pm.collectionVariables.set('idTurno',turno.idTurno);\n}\nconst dni=c.tiposDocumento.find(d=>d.codigoSunat==='1');\nif(dni)pm.collectionVariables.set('idTipoDocumento',dni.id);\nif(c.tiposGasto.length)pm.collectionVariables.set('idTipoMovimiento',c.tiposGasto[0].id);\nconst n=Date.now().toString();\npm.collectionVariables.set('numeroCuarto','P'+n.slice(-8));\npm.collectionVariables.set('documentoAdulto',n.slice(-8));\npm.collectionVariables.set('documentoMenor',(Number(n.slice(-8))+1).toString().padStart(8,'0').slice(-8));\npm.collectionVariables.set('clave',n);\nconst hoy=new Date().toLocaleDateString('en-CA',{timeZone:'America/Lima'});\nconst f=new Date(hoy+'T12:00:00Z');f.setUTCDate(f.getUTCDate()+1);\npm.collectionVariables.set('fechaDesde',f.toISOString().slice(0,10));\npm.collectionVariables.set('fechaIngreso',f.toISOString().slice(0,10)+'T14:00:00');\nf.setUTCDate(f.getUTCDate()+1);\npm.collectionVariables.set('fechaHasta',f.toISOString().slice(0,10));\npm.collectionVariables.set('fechaSalida',f.toISOString().slice(0,10)+'T12:00:00');\npm.collectionVariables.set('nacimientoMenor',(Number(hoy.slice(0,4))-4)+'-01-01');"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2 - Consultar categorías",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/categorias"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2a - Crear tipo de habitación",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/tipos-habitacion",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreTipo\": \"Demo {{clave}}\",\n  \"capacidadMax\": 4,\n  \"precioBase\": 80\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('idTipoHabitacion',pm.response.json().idTipoHabitacion);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2b - Consultar tipo de habitación",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/tipos-habitacion/{{idTipoHabitacion}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Capacidad del tipo',()=>pm.expect(pm.response.json().capacidadMax).to.eql(4));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2c - Editar tipo de habitación",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/tipos-habitacion/{{idTipoHabitacion}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreTipo\": \"Demo {{clave}}\",\n  \"capacidadMax\": 4,\n  \"precioBase\": 90\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2d - Crear tipo de mobiliario",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/tipos-item",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreItem\": \"Mueble {{clave}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('idTipoItem',pm.response.json().idTipoItem);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2e - Crear categoría de productos",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/categorias",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreCategoria\": \"Productos {{clave}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('idCategoria',pm.response.json().idCategoria);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3 - Registrar cliente Adulto",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/clientes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"persona\": {\n    \"idTipoDocumento\": \"{{idTipoDocumento}}\",\n    \"numeroDocumento\": \"{{documentoAdulto}}\",\n    \"empresa\": false,\n    \"nombres\": \"Adulto\",\n    \"apellidos\": \"Prueba Postman\",\n    \"fechaNacimiento\": \"1990-01-01\"\n  },\n  \"restriccionesMedicas\": null\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+              "pm.collectionVariables.set('idCliente',pm.response.json().idCliente);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3 - Registrar cliente Menor",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/clientes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"persona\": {\n    \"idTipoDocumento\": \"{{idTipoDocumento}}\",\n    \"numeroDocumento\": \"{{documentoMenor}}\",\n    \"empresa\": false,\n    \"nombres\": \"Menor\",\n    \"apellidos\": \"Prueba Postman\",\n    \"fechaNacimiento\": \"{{nacimientoMenor}}\"\n  },\n  \"restriccionesMedicas\": null\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+              "pm.collectionVariables.set('idMenor',pm.response.json().idCliente);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4 - Configuración de habitaciones - crear",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/habitaciones",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"numeroCuarto\": \"{{numeroCuarto}}\",\n  \"idTipoHabitacion\": \"{{idTipoHabitacion}}\",\n  \"estadoHabitacion\": \"DISPONIBLE\",\n  \"capacidadPersonas\": 2,\n  \"plazasCama\": 1,\n  \"maxMenoresSinCama\": 1\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+              "pm.collectionVariables.set('idHabitacion',pm.response.json().idHabitacion);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "5 - Configuración de habitaciones - editar",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/habitaciones/{{idHabitacion}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"numeroCuarto\": \"{{numeroCuarto}}\",\n  \"idTipoHabitacion\": \"{{idTipoHabitacion}}\",\n  \"estadoHabitacion\": \"DISPONIBLE\",\n  \"capacidadPersonas\": 2,\n  \"plazasCama\": 1,\n  \"maxMenoresSinCama\": 1\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "6 - Registrar reserva",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/reservas",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveRegistro\": \"reserva-{{clave}}\",\n  \"idCliente\": \"{{idCliente}}\",\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"detalles\": [\n    {\n      \"idHabitacion\": \"{{idHabitacion}}\",\n      \"fechaIngreso\": \"{{fechaIngreso}}\",\n      \"fechaSalida\": \"{{fechaSalida}}\",\n      \"costoEstadia\": 80,\n      \"ocupantes\": [\n        {\n          \"idCliente\": \"{{idCliente}}\",\n          \"ocupaPlazaCama\": true\n        },\n        {\n          \"idCliente\": \"{{idMenor}}\",\n          \"idClienteResponsable\": \"{{idCliente}}\",\n          \"parentescoResponsable\": \"PADRE\",\n          \"ocupaPlazaCama\": false\n        }\n      ]\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+              "pm.collectionVariables.set('idReserva',pm.response.json().idReserva);",
+              "pm.test('Menor con responsable',()=>pm.expect(pm.response.json().detalles[0].ocupantes[1].idOcupanteResponsable).to.be.a('number'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "7 - Mostrar estado de habitaciones",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/habitaciones?desde={{fechaDesde}}&hasta={{fechaHasta}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+              "pm.test('Lista de registros',()=>pm.expect(pm.response.json()).to.be.an('array'));",
+              "pm.test('Habitación reservada no disponible',()=>{const h=pm.response.json().find(h=>String(h.idHabitacion)===String(pm.collectionVariables.get('idHabitacion')));pm.expect(h.disponible).to.eql(false);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "8 - Registrar gastos",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/gastos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idTurno\": \"{{idTurno}}\",\n  \"idTipoMovimiento\": \"{{idTipoMovimiento}}\",\n  \"concepto\": \"Material de limpieza - prueba Postman\",\n  \"monto\": 12.5,\n  \"documentoRespaldo\": \"PRUEBA-{{clave}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "9 - Configuración de productos - crear",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/productos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreProducto\": \"Agua prueba {{clave}}\",\n  \"precioActual\": 3.5,\n  \"stock\": 0,\n  \"stockMinimo\": 2,\n  \"idCategoria\": \"{{idCategoria}}\",\n  \"estadoProducto\": \"ACTIVO\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+              "pm.collectionVariables.set('idProducto',pm.response.json().idProducto);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 - Registrar existencias iniciales",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/productos/{{idProducto}}/ajustes-stock",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"stock-{{clave}}\",\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"stockAnterior\": 0,\n  \"stockNuevo\": 10,\n  \"observacion\": \"Existencias iniciales de prueba\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+              "pm.test('Saldo inicial',()=>pm.expect(pm.response.json().stock).to.eql(10));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 - Registrar venta de producto - borrador",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveRegistro\": \"venta-{{clave}}\",\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"compradorNombreLibre\": \"Comprador Postman\",\n  \"modalidadCobro\": \"SEPARADA\",\n  \"detalles\": [\n    {\n      \"idProducto\": \"{{idProducto}}\",\n      \"cantidad\": 2\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+              "pm.collectionVariables.set('idVenta',pm.response.json().idVenta);",
+              "pm.test('Borrador sin cobro',()=>pm.expect(pm.response.json().estadoVenta).to.eql('BORRADOR'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 - Confirmar venta",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/{{idVenta}}/confirmacion",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{idUsuario}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+              "pm.test('Venta confirmada',()=>pm.expect(pm.response.json().estadoVenta).to.eql('CONFIRMADA'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 - Consultar saldo después de venta",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/productos/{{idProducto}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+              "pm.test('Stock descontado',()=>pm.expect(pm.response.json().stock).to.eql(8));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "14 - Configuración de mobiliario - crear",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/items",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreItem\": \"Televisor prueba {{clave}}\",\n  \"idTipoItem\": \"{{idTipoItem}}\",\n  \"estadoItem\": \"Activo\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+              "pm.collectionVariables.set('idItem',pm.response.json().idItem);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "15 - Asignar mobiliario a habitación",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/items/{{idItem}}/asignacion",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"item-{{clave}}\",\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idHabitacion\": \"{{idHabitacion}}\",\n  \"estadoActualItem\": \"BUENO\",\n  \"observacion\": \"Instalación de prueba\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+              "pm.test('Ítem en habitación',()=>pm.expect(pm.response.json().estadoItem).to.eql('En habitacion'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "16 - Editar mobiliario",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/items/{{idItem}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreItem\": \"Televisor actualizado {{clave}}\",\n  \"idTipoItem\": \"{{idTipoItem}}\",\n  \"estadoItem\": \"En habitacion\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "17 - Consultar mobiliario de la habitación",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/habitaciones/{{idHabitacion}}/items"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Mobiliario asignado',()=>pm.expect(pm.response.json().some(i=>String(i.idItem)===String(pm.collectionVariables.get('idItem')))).to.eql(true));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "18 - Rechazar baja de mobiliario asignado",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/items/{{idItem}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 409', () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "19 - Rechazar borrado de habitación con historial",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/habitaciones/{{idHabitacion}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 409', () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "20 - Consultar historial de mobiliario",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/items/{{idItem}}/movimientos"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Existe movimiento de asignación',()=>pm.expect(pm.response.json().length).to.be.above(0));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "21 - Anular venta y reponer existencias",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/{{idVenta}}/anulacion",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{idUsuario}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Venta anulada',()=>pm.expect(pm.response.json().estadoVenta).to.eql('ANULADA'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "22 - Verificar reposición de stock",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/productos/{{idProducto}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Stock repuesto',()=>pm.expect(pm.response.json().stock).to.eql(10));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

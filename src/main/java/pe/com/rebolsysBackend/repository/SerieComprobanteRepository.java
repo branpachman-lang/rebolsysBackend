@@ -9,8 +9,9 @@ import org.springframework.data.repository.query.Param;
 import pe.com.rebolsysBackend.entity.SerieComprobante;
 import pe.com.rebolsysBackend.entity.id.SerieComprobanteId;
 
-public interface SerieComprobanteRepository extends JpaRepository<SerieComprobante, SerieComprobanteId> {
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select s from SerieComprobante s where s.id = :id")
-    Optional<SerieComprobante> bloquear(@Param("id") SerieComprobanteId id);
+public interface SerieComprobanteRepository
+    extends JpaRepository<SerieComprobante, SerieComprobanteId> {
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("select s from SerieComprobante s where s.id = :id")
+  Optional<SerieComprobante> bloquear(@Param("id") SerieComprobanteId id);
 }

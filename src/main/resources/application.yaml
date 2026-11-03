@@ -23,3 +23,20 @@ apis-peru:
   url: ${APISPERU_BASE_URL:https://dniruc.apisperu.com/api/v1}
   token: ${APISPERU_TOKEN:}
   timeout-millis: ${APISPERU_TIMEOUT_MILLIS:8000}
+
+facturacion:
+  apisperu:
+    habilitada: ${FACTURACION_HABILITADA:false}
+    url: ${FACTURACION_APISPERU_URL:https://facturacion.apisperu.com/api/v1}
+    token: ${FACTURACION_APISPERU_TOKEN:}
+    usuario: ${FACTURACION_APISPERU_USUARIO:}
+    password: ${FACTURACION_APISPERU_PASSWORD:}
+    id-empresa: ${FACTURACION_APISPERU_ID_EMPRESA:}
+    ruc: ${FACTURACION_EMISOR_RUC:}
+    razon-social: ${FACTURACION_EMISOR_RAZON_SOCIAL:}
+    direccion: ${FACTURACION_EMISOR_DIRECCION:}
+    ubigeo: ${FACTURACION_EMISOR_UBIGEO:}
+    departamento: ${FACTURACION_EMISOR_DEPARTAMENTO:}
+    provincia: ${FACTURACION_EMISOR_PROVINCIA:}
+    distrito: ${FACTURACION_EMISOR_DISTRITO:}
+    timeout-millis: ${FACTURACION_TIMEOUT_MILLIS:8000}

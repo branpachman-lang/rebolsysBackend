@@ -29,4 +29,8 @@ public class ProductoResponseDTO {
 
     private String imagenRuta;
     private String categoriaNombre;
+
+    public boolean isStockBajo() {
+        return stock != null && stockMinimo != null && stock <= stockMinimo;
+    }
 }

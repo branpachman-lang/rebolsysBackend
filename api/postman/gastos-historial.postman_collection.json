@@ -1,0 +1,456 @@
+{
+  "info": {
+    "name": "REBOLSYS - gastos del turno e historial",
+    "description": "Crea dos gastos de demostración (taxi 12.50 y repuesto 35.90) y los conserva. Requiere operador y turno abiertos, V9 y DATOS_GASTOS.sql. Verifica filtros, paginación, resumen, referencias y reintentos sin duplicados. Sin conexión a Yape.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Obtener operador y turno abierto",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/recepcion/catalogos"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const c=pm.response.json();pm.test('Hay turno abierto',()=>pm.expect(c.turnosAbiertos.length).to.be.above(0));const turno=c.turnosAbiertos[0];pm.collectionVariables.set('idTurno',turno.idTurno);pm.collectionVariables.set('idUsuario',turno.idUsuario);",
+              "const clave=Date.now()+'-'+Math.random().toString(36).slice(2,9);pm.collectionVariables.set('clave',clave);pm.collectionVariables.set('marcador','DEMO-GASTOS-'+clave);const fecha=new Intl.DateTimeFormat('sv-SE',{timeZone:'America/Lima',year:'numeric',month:'2-digit',day:'2-digit'});pm.collectionVariables.set('hoy',fecha.format(new Date()));pm.collectionVariables.set('futuro',fecha.format(new Date(Date.now()+7*86400000)));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Obtener categorías de gasto",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/gastos/tipos"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const lista=pm.response.json();const taxi=lista.find(t=>t.nombre==='TAXIS Y MOVILIDAD');const repuesto=lista.find(t=>t.nombre==='REPUESTOS Y MANTENIMIENTO');pm.test('Categorías preparadas',()=>{pm.expect(taxi).to.be.an('object');pm.expect(repuesto).to.be.an('object');});if(taxi)pm.collectionVariables.set('idTaxi',taxi.id);if(repuesto)pm.collectionVariables.set('idRepuesto',repuesto.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Consultar historial inicial de esta demostración",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/gastos/historial?idTurno={{idTurno}}&buscar={{marcador}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Inicialmente sin gastos',()=>{const h=pm.response.json();pm.expect(h.resumen.cantidadGastos).to.eql(0);pm.expect(h.resumen.totalGastado).to.eql(0);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Registrar taxi del turno",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/gastos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idTurno\": \"{{idTurno}}\",\n  \"idTipoMovimiento\": \"{{idTaxi}}\",\n  \"concepto\": \"{{marcador}} Taxi para recoger repuesto\",\n  \"monto\": 12.5,\n  \"documentoRespaldo\": \"DOC-{{clave}}\",\n  \"claveRegistro\": \"taxi-{{clave}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "const g=pm.response.json();pm.collectionVariables.set('idGastoTaxi',g.idFlujo);pm.test('Responsable y categoría',()=>{pm.expect(String(g.idUsuario)).to.eql(String(pm.collectionVariables.get('idUsuario')));pm.expect(g.usuario).to.be.a('string');pm.expect(g.tipoGasto).to.eql('TAXIS Y MOVILIDAD');pm.expect(g.turnoAbierto).to.eql(true);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Registrar compra de repuesto",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/gastos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idTurno\": \"{{idTurno}}\",\n  \"idTipoMovimiento\": \"{{idRepuesto}}\",\n  \"concepto\": \"{{marcador}} Compra de pieza de mantenimiento\",\n  \"monto\": 35.9,\n  \"documentoRespaldo\": \"DOC-{{clave}}\",\n  \"claveRegistro\": \"repuesto-{{clave}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('idGastoRepuesto',pm.response.json().idFlujo);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Reintentar taxi sin duplicar gasto",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/gastos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idTurno\": \"{{idTurno}}\",\n  \"idTipoMovimiento\": \"{{idTaxi}}\",\n  \"concepto\": \"{{marcador}} Taxi para recoger repuesto\",\n  \"monto\": 12.5,\n  \"documentoRespaldo\": \"DOC-{{clave}}\",\n  \"claveRegistro\": \"taxi-{{clave}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.test('Mismo gasto',()=>pm.expect(String(pm.response.json().idFlujo)).to.eql(String(pm.collectionVariables.get('idGastoTaxi'))));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 - Historial reciente con resumen de todas las páginas",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/gastos/historial?idTurno={{idTurno}}&buscar={{marcador}}&tamanio=1"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Paginación, orden y total',()=>{const h=pm.response.json();pm.expect(h.gastos.contenido).to.have.lengthOf(1);pm.expect(String(h.gastos.contenido[0].idFlujo)).to.eql(String(pm.collectionVariables.get('idGastoRepuesto')));pm.expect(h.gastos.totalElementos).to.eql(2);pm.expect(h.gastos.totalPaginas).to.eql(2);pm.expect(h.resumen.cantidadGastos).to.eql(2);pm.expect(h.resumen.totalGastado).to.eql(48.4);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 - Segunda página del historial",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/gastos/historial?idTurno={{idTurno}}&buscar={{marcador}}&tamanio=1&pagina=1"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Taxi en segunda página',()=>{const h=pm.response.json();pm.expect(String(h.gastos.contenido[0].idFlujo)).to.eql(String(pm.collectionVariables.get('idGastoTaxi')));pm.expect(h.resumen.totalGastado).to.eql(48.4);pm.expect(h.gastos.ultima).to.eql(true);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 - Combinar fecha, categoría e importe exacto",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/gastos/historial?idTurno={{idTurno}}&buscar={{marcador}}&idTipoMovimiento={{idTaxi}}&montoMinimo=12.50&montoMaximo=12.50&desde={{hoy}}&hasta={{hoy}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Un taxi por 12.50',()=>{const h=pm.response.json();pm.expect(h.resumen.cantidadGastos).to.eql(1);pm.expect(h.resumen.totalGastado).to.eql(12.5);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 - Filtrar por recepcionista",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/gastos/historial?idUsuario={{idUsuario}}&buscar={{marcador}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Gastos del responsable',()=>pm.expect(pm.response.json().resumen.cantidadGastos).to.eql(2));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 - Abrir detalle del gasto",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/gastos/{{idGastoTaxi}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Detalle conservado',()=>{const g=pm.response.json();pm.expect(g.monto).to.eql(12.5);pm.expect(g.claveRegistro).to.eql('taxi-'+pm.collectionVariables.get('clave'));pm.expect(g.documentoRespaldo).to.eql('DOC-'+pm.collectionVariables.get('clave'));});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 - Compatibilidad con listado por turno",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/gastos?idTurno={{idTurno}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('El listado contiene el gasto',()=>pm.expect(pm.response.json().some(g=>String(g.idFlujo)===String(pm.collectionVariables.get('idGastoTaxi')))).to.eql(true));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 - Rechazar reutilización de clave con otro importe",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/gastos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idTurno\": \"{{idTurno}}\",\n  \"idTipoMovimiento\": \"{{idTaxi}}\",\n  \"concepto\": \"{{marcador}} Taxi para recoger repuesto\",\n  \"monto\": 99,\n  \"documentoRespaldo\": \"DOC-{{clave}}\",\n  \"claveRegistro\": \"taxi-{{clave}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409',()=>pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "14 - Filtrar fechas sin resultados",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/gastos/historial?idTurno={{idTurno}}&buscar={{marcador}}&desde={{futuro}}&hasta={{futuro}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Historial vacío y total cero',()=>{const h=pm.response.json();pm.expect(h.gastos.contenido).to.have.lengthOf(0);pm.expect(h.resumen.cantidadGastos).to.eql(0);pm.expect(h.resumen.totalGastado).to.eql(0);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "15 - Rechazar intervalo de fechas invertido",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/gastos/historial?desde={{futuro}}&hasta={{hoy}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400',()=>pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "16 - Rechazar intervalo de importes invertido",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/gastos/historial?montoMinimo=100&montoMaximo=1"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400',()=>pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "17 - Rechazar tamaño de página inválido",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/gastos/historial?tamanio=0"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400',()=>pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "18 - Rechazar gasto de importe cero",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/gastos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idTurno\": \"{{idTurno}}\",\n  \"idTipoMovimiento\": \"{{idTaxi}}\",\n  \"concepto\": \"{{marcador}} Taxi para recoger repuesto\",\n  \"monto\": 0,\n  \"documentoRespaldo\": \"DOC-{{clave}}\",\n  \"claveRegistro\": \"cero-{{clave}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400',()=>pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "19 - Comprobar que los rechazos no agregaron gastos",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/gastos/historial?idTurno={{idTurno}}&buscar={{marcador}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Solo dos gastos por 48.40',()=>{const h=pm.response.json();pm.expect(h.resumen.cantidadGastos).to.eql(2);pm.expect(h.resumen.totalGastado).to.eql(48.4);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "20 - Consultar historial sin filtros con tamaño predeterminado",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/gastos/historial"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Historial general paginado',()=>{const h=pm.response.json();pm.expect(h.gastos.tamanio).to.eql(20);pm.expect(h.resumen.cantidadGastos).to.be.at.least(2);});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

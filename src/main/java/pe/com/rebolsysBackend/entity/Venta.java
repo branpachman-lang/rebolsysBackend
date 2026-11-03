@@ -1,86 +1,67 @@
 package pe.com.rebolsysBackend.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.ForeignKey;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
-import java.time.LocalDateTime;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import pe.com.rebolsysBackend.enums.ModoVenta;
+import jakarta.persistence.*;
+import java.time.*;
+import java.util.*;
+import lombok.*;
+import pe.com.rebolsysBackend.enums.*;
 
 @Entity
-@Table(name = "venta", uniqueConstraints = @UniqueConstraint(name = "venta_clave_uq", columnNames = "claveRegistro"))
+@Table(name = "venta")
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class Venta {
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "idVenta", columnDefinition = "NUMBER")
+  private Long idVenta;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idVenta", nullable = false, columnDefinition = "NUMBER")
-    private Long idVenta;
+  @ManyToOne(fetch = FetchType.LAZY, optional = true)
+  @JoinColumn(name = "idClienteComprador", nullable = true, columnDefinition = "NUMBER")
+  private Cliente clienteComprador;
 
-    @Column(name = "claveRegistro", nullable = false, length = 64, columnDefinition = "VARCHAR2(64)")
-    private String claveRegistro;
+  @Column(name = "compradorNombreLibre", columnDefinition = "VARCHAR2(250)", nullable = true)
+  private String compradorNombreLibre;
 
-    @Column(name = "firmaSolicitud", nullable = false, length = 64, columnDefinition = "VARCHAR2(64)")
-    private String firmaSolicitud;
+  @ManyToOne(fetch = FetchType.LAZY, optional = true)
+  @JoinColumn(name = "idDetalleReserva", nullable = true, columnDefinition = "NUMBER")
+  private DetalleReserva detalleReserva;
 
-    @Column(name = "fechaVenta", nullable = false, columnDefinition = "TIMESTAMP", updatable = false)
-    private LocalDateTime fechaVenta;
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "idUsuario", nullable = false, columnDefinition = "NUMBER")
+  private Usuario usuario;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "modoVenta", nullable = false, length = 20, columnDefinition = "VARCHAR2(20)")
-    private ModoVenta modoVenta;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "modalidadCobro", columnDefinition = "VARCHAR2(10)", nullable = false)
+  private ModalidadCobro modalidadCobro;
 
-    @Column(name = "compradorNombre", length = 200, columnDefinition = "VARCHAR2(200)")
-    private String compradorNombre;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "estadoVenta", columnDefinition = "VARCHAR2(15)", nullable = false)
+  private EstadoVenta estadoVenta;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idCliente", columnDefinition = "NUMBER", foreignKey = @ForeignKey(name = "venta_cliente_fk"))
-    private Cliente cliente;
+  @Column(name = "fechaRegistro", columnDefinition = "TIMESTAMP", nullable = false)
+  private LocalDateTime fechaRegistro;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-        name = "idDetalleReserva",
-        columnDefinition = "NUMBER",
-        foreignKey = @ForeignKey(name = "venta_detalle_reserva_fk")
-    )
-    private DetalleReserva detalleReserva;
+  @Column(name = "fechaConfirmacion", columnDefinition = "TIMESTAMP", nullable = true)
+  private LocalDateTime fechaConfirmacion;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(
-        name = "idUsuario",
-        nullable = false,
-        columnDefinition = "NUMBER",
-        foreignKey = @ForeignKey(name = "venta_usuario_fk")
-    )
-    private Usuario usuario;
+  @Column(name = "claveRegistro", columnDefinition = "VARCHAR2(64)", nullable = false)
+  private String claveRegistro;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-        name = "idComprobante",
-        columnDefinition = "NUMBER",
-        foreignKey = @ForeignKey(name = "venta_comprobante_fk")
-    )
-    private Comprobante comprobante;
+  @Column(name = "firmaSolicitud", columnDefinition = "VARCHAR2(64)", nullable = false)
+  private String firmaSolicitud;
 
-    @PrePersist
-    protected void completarFecha() {
-        if (fechaVenta == null) fechaVenta = LocalDateTime.now();
-    }
+  @OneToMany(
+      mappedBy = "venta",
+      orphanRemoval = true,
+      cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+  @OrderBy("idDetalleVenta ASC")
+  private List<DetalleVenta> detalles = new ArrayList<>();
+
+  @PrePersist
+  void fecha() {
+    if (fechaRegistro == null)
+      fechaRegistro = LocalDateTime.now(java.time.ZoneId.of("America/Lima"));
+  }
 }

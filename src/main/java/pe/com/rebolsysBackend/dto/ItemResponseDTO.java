@@ -1,22 +1,17 @@
 package pe.com.rebolsysBackend.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import pe.com.rebolsysBackend.enums.EstadoItem;
+import jakarta.validation.constraints.*;
+import java.time.*;
+import java.util.*;
+import pe.com.rebolsysBackend.enums.*;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class ItemResponseDTO {
-
-    private Long idItem;
-
-    private String nombreItem;
-
-    private EstadoItem estadoItem;
-
-    private Long idTipoItem;
-}
+public record ItemResponseDTO(
+    Long idItem,
+    String nombreItem,
+    Long idTipoItem,
+    EstadoItem estadoItem,
+    Long idDetalleHabitacion,
+    Long idHabitacion,
+    EstadoConservacion estadoActualItem,
+    String nombreTipo,
+    String numeroCuarto) {}

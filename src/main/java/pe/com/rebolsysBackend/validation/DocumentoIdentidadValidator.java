@@ -8,12 +8,8 @@ import pe.com.rebolsysBackend.entity.TipoDocumento;
 import pe.com.rebolsysBackend.repository.TipoDocumentoRepository;
 
 @RequiredArgsConstructor
-public class DocumentoIdentidadValidator
-    implements ConstraintValidator<DocumentoIdentidadValido, ClienteRegistroRequestDTO>
-{
-
+public class DocumentoIdentidadValidator implements ConstraintValidator<DocumentoIdentidadValido, ClienteRegistroRequestDTO> {
     private final TipoDocumentoRepository tipoDocumentoRepository;
-
     @Override
     public boolean isValid(ClienteRegistroRequestDTO datos, ConstraintValidatorContext context) {
         if (datos == null || datos.getIdTipoDocumento() == null || datos.getNumeroDocumento() == null) return true;

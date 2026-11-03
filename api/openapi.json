@@ -1,0 +1,5281 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "REBOLSYS API",
+    "description": "Siete casos de uso del hospedaje con cliente unificado: reservas, estados de habitaciones, gastos, ventas y configuración de habitaciones, mobiliario y productos. Reservas asistidas con anticipos, ocupantes al ingreso, consumos, pagos y comprobantes internos con emisión electrónica beta mediante APIsPerú. La integración verifica el ambiente beta; producción bloqueada.",
+    "version": "v1"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Generated server url"
+    }
+  ],
+  "paths": {
+    "/api/v1/ventas/{id}": {
+      "get": {
+        "tags": [
+          "Ventas de productos"
+        ],
+        "operationId": "obtener",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/VentaResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Ventas de productos"
+        ],
+        "summary": "Editar comprador y productos de una venta en borrador",
+        "operationId": "editar",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VentaEditarDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/VentaResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tipos-item/{id}": {
+      "get": {
+        "tags": [
+          "Configuración de mobiliario"
+        ],
+        "operationId": "obtener_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TipoItemResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Configuración de mobiliario"
+        ],
+        "operationId": "editar_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TipoItemRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TipoItemResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Configuración de mobiliario"
+        ],
+        "operationId": "eliminar",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/tipos-habitacion/{id}": {
+      "get": {
+        "tags": [
+          "Configuración de habitaciones"
+        ],
+        "operationId": "obtener_2",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TipoHabitacionResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Configuración de habitaciones"
+        ],
+        "operationId": "editar_2",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TipoHabitacionRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TipoHabitacionResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Configuración de habitaciones"
+        ],
+        "operationId": "eliminar_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/reservas/detalles/{id}/ocupantes": {
+      "put": {
+        "tags": [
+          "Reservas"
+        ],
+        "summary": "Completar o corregir ocupantes antes del check-in",
+        "operationId": "ocupantes",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReservaOcupantesGuardarDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservaDetalleRespuestaDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/productos/{id}": {
+      "get": {
+        "tags": [
+          "Configuración de productos"
+        ],
+        "operationId": "read",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductoResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Configuración de productos"
+        ],
+        "operationId": "update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductoRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductoResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Configuración de productos"
+        ],
+        "operationId": "delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/items/{id}": {
+      "get": {
+        "tags": [
+          "Configuración de mobiliario"
+        ],
+        "operationId": "obtener_3",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Configuración de mobiliario"
+        ],
+        "operationId": "editar_3",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ItemRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Configuración de mobiliario"
+        ],
+        "operationId": "eliminar_2",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/items/{id}/conservacion": {
+      "put": {
+        "tags": [
+          "Configuración de mobiliario"
+        ],
+        "summary": "Registrar la conservación del mobiliario asignado",
+        "operationId": "conservacion",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ItemConservacionDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/items/{id}/asignacion": {
+      "put": {
+        "tags": [
+          "Configuración de mobiliario"
+        ],
+        "operationId": "asignar",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ItemAsignacionDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/habitaciones/{id}": {
+      "get": {
+        "tags": [
+          "Configuración de habitaciones"
+        ],
+        "operationId": "obtener_4",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/HabitacionResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Configuración de habitaciones"
+        ],
+        "operationId": "editar_4",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HabitacionRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/HabitacionResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Configuración de habitaciones"
+        ],
+        "operationId": "eliminar_3",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/clientes/{id}": {
+      "get": {
+        "tags": [
+          "cliente-gestion-controller"
+        ],
+        "operationId": "obtener_5",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClienteDetalleDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "cliente-gestion-controller"
+        ],
+        "operationId": "editar_5",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClienteGuardarDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClienteDetalleDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/categorias/{id}": {
+      "get": {
+        "tags": [
+          "Configuración de productos"
+        ],
+        "operationId": "read_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoriaResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Configuración de productos"
+        ],
+        "operationId": "update_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoriaRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoriaResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Configuración de productos"
+        ],
+        "operationId": "delete_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/ventas": {
+      "get": {
+        "tags": [
+          "Ventas de productos"
+        ],
+        "operationId": "listar",
+        "parameters": [
+          {
+            "name": "pagina",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "tamanio",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginaResponseDTOVentaResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Ventas de productos"
+        ],
+        "summary": "Crear borrador de venta con varios productos",
+        "operationId": "registrar",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VentaRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/VentaResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ventas/{id}/confirmacion": {
+      "post": {
+        "tags": [
+          "Ventas de productos"
+        ],
+        "summary": "Confirmar el carrito y descontar stock de todos sus productos",
+        "operationId": "confirmar",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OperacionUsuarioDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/VentaResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ventas/{id}/anulacion": {
+      "post": {
+        "tags": [
+          "Ventas de productos"
+        ],
+        "summary": "Anular venta sin cuenta ni cobros y reponer stock",
+        "operationId": "anular",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OperacionUsuarioDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/VentaResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ventas/{idVenta}/pagos": {
+      "post": {
+        "tags": [
+          "Ventas de productos"
+        ],
+        "summary": "Registrar pago parcial o completo de una venta separada",
+        "operationId": "pagar",
+        "parameters": [
+          {
+            "name": "idVenta",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PagoCuentaDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CuentaDocumentoDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ventas/{idVenta}/comprobantes": {
+      "post": {
+        "tags": [
+          "Ventas de productos"
+        ],
+        "summary": "Emitir boleta o factura interna de una venta separada",
+        "operationId": "emitir",
+        "parameters": [
+          {
+            "name": "idVenta",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ComprobanteCuentaDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CuentaDocumentoDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ventas/confirmadas": {
+      "post": {
+        "tags": [
+          "Ventas de productos"
+        ],
+        "summary": "Registrar y confirmar venta completa en una sola operación",
+        "operationId": "registrarConfirmada",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VentaRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/VentaResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tipos-item": {
+      "get": {
+        "tags": [
+          "Configuración de mobiliario"
+        ],
+        "operationId": "listar_1",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Configuración de mobiliario"
+        ],
+        "operationId": "crear",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TipoItemRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TipoItemResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tipos-habitacion": {
+      "get": {
+        "tags": [
+          "Configuración de habitaciones"
+        ],
+        "operationId": "listar_2",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Configuración de habitaciones"
+        ],
+        "operationId": "crear_1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TipoHabitacionRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TipoHabitacionResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reservas": {
+      "get": {
+        "tags": [
+          "Reservas"
+        ],
+        "operationId": "listar_3",
+        "parameters": [
+          {
+            "name": "pagina",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "tamanio",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginaResponseDTOReservaRespuestaDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Reservas"
+        ],
+        "summary": "Registrar reserva asistida con ocupantes opcionales",
+        "operationId": "registrar_1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReservaRegistroRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservaRespuestaDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reservas/{idReserva}/pagos": {
+      "post": {
+        "tags": [
+          "Reservas"
+        ],
+        "summary": "Registrar un anticipo o pago de alojamiento o consumo separado",
+        "operationId": "pagar_1",
+        "parameters": [
+          {
+            "name": "idReserva",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReservaPagoRegistroDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CuentaReservaDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reservas/{idReserva}/consumos": {
+      "get": {
+        "tags": [
+          "Reservas"
+        ],
+        "summary": "Consultar consumos consolidados y separados de la reserva",
+        "operationId": "consumos",
+        "parameters": [
+          {
+            "name": "idReserva",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ConsumoReservaRespuestaDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Reservas"
+        ],
+        "summary": "Registrar y confirmar consumo de una habitación de la reserva",
+        "operationId": "consumir",
+        "parameters": [
+          {
+            "name": "idReserva",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VentaRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsumoReservaRespuestaDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reservas/{idReserva}/comprobantes": {
+      "post": {
+        "tags": [
+          "Reservas"
+        ],
+        "summary": "Emitir registro interno de boleta o factura de una cuenta",
+        "description": "Conserva pagos y número de reserva. Esta etapa no integra SUNAT.",
+        "operationId": "emitir_1",
+        "parameters": [
+          {
+            "name": "idReserva",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReservaComprobanteRegistroDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CuentaDocumentoDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reservas/detalles/{id}/{accion}": {
+      "post": {
+        "tags": [
+          "Reservas"
+        ],
+        "operationId": "estado",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "accion",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OperacionUsuarioDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservaDetalleRespuestaDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/productos": {
+      "get": {
+        "tags": [
+          "Configuración de productos"
+        ],
+        "operationId": "listar_4",
+        "parameters": [
+          {
+            "name": "pagina",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "tamanio",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          },
+          {
+            "name": "buscar",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": ""
+            }
+          },
+          {
+            "name": "idCategoria",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "estado",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ACTIVO",
+                "INACTIVO"
+              ]
+            }
+          },
+          {
+            "name": "stockBajo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginaResponseDTOProductoResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Configuración de productos"
+        ],
+        "operationId": "create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductoRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductoResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/productos/{id}/ajustes-stock": {
+      "post": {
+        "tags": [
+          "Configuración de productos"
+        ],
+        "operationId": "ajustar",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AjusteStockDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductoResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/items": {
+      "get": {
+        "tags": [
+          "Configuración de mobiliario"
+        ],
+        "operationId": "listar_5",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ItemResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Configuración de mobiliario"
+        ],
+        "operationId": "crear_2",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ItemRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/habitaciones": {
+      "get": {
+        "tags": [
+          "Configuración de habitaciones"
+        ],
+        "operationId": "estado_1",
+        "parameters": [
+          {
+            "name": "desde",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HabitacionEstadoResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Configuración de habitaciones"
+        ],
+        "operationId": "crear_3",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HabitacionRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/HabitacionResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/gastos": {
+      "get": {
+        "tags": [
+          "Gastos"
+        ],
+        "summary": "Consultar listado anterior de gastos de un turno",
+        "operationId": "listar_6",
+        "parameters": [
+          {
+            "name": "idTurno",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GastoResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Gastos"
+        ],
+        "summary": "Registrar gasto del turno abierto del recepcionista",
+        "operationId": "registrar_2",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GastoRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/GastoResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/comprobantes/{id}/emision-electronica": {
+      "get": {
+        "tags": [
+          "Facturación electrónica beta"
+        ],
+        "summary": "Consultar el estado persistido de la emisión beta",
+        "operationId": "obtener_6",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmisionElectronicaDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Facturación electrónica beta"
+        ],
+        "summary": "Preparar una boleta o factura beta desde un comprobante interno emitido",
+        "description": "Los precios incluyen impuesto. La tasa se indica como porcentaje; se pueden especificar tratamientos distintos por línea. No envía a APIsPerú todavía.",
+        "operationId": "preparar",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmisionElectronicaRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmisionElectronicaDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/comprobantes/{id}/emision-electronica/envio": {
+      "post": {
+        "tags": [
+          "Facturación electrónica beta"
+        ],
+        "summary": "Enviar a APIsPerú una copia fiscal preparada, con empresa verificada en beta",
+        "operationId": "enviar",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OperacionUsuarioDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmisionElectronicaDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/comprobantes/{id}/emision-electronica/consulta": {
+      "post": {
+        "tags": [
+          "Facturación electrónica beta"
+        ],
+        "summary": "Consultar el CDR de una emisión sin volver a emitir",
+        "operationId": "consultar",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OperacionUsuarioDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmisionElectronicaDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/clientes": {
+      "post": {
+        "tags": [
+          "cliente-gestion-controller"
+        ],
+        "operationId": "crear_4",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClienteGuardarDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClienteDetalleDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/categorias": {
+      "get": {
+        "tags": [
+          "Configuración de productos"
+        ],
+        "operationId": "readAll",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Configuración de productos"
+        ],
+        "operationId": "create_1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoriaRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoriaResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/habitaciones/{id}/estado": {
+      "patch": {
+        "tags": [
+          "Configuración de habitaciones"
+        ],
+        "summary": "Cambiar el estado físico de una habitación",
+        "operationId": "cambiarEstado",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HabitacionEstadoGuardarDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/HabitacionResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ventas/{idVenta}/cuenta": {
+      "get": {
+        "tags": [
+          "Ventas de productos"
+        ],
+        "summary": "Consultar total, pagos y saldo de una venta separada",
+        "operationId": "cuenta",
+        "parameters": [
+          {
+            "name": "idVenta",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CuentaDocumentoDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reservas/{id}": {
+      "get": {
+        "tags": [
+          "Reservas"
+        ],
+        "operationId": "obtener_7",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservaRespuestaDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reservas/{idReserva}/cuenta": {
+      "get": {
+        "tags": [
+          "Reservas"
+        ],
+        "summary": "Consultar alojamiento, consumos, pagos y saldo de la reserva",
+        "operationId": "cuenta_1",
+        "parameters": [
+          {
+            "name": "idReserva",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CuentaReservaDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/recepcion/clientes": {
+      "get": {
+        "tags": [
+          "cliente-controller"
+        ],
+        "operationId": "buscar",
+        "parameters": [
+          {
+            "name": "tipoDocumento",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "numeroDocumento",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClienteResumenResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/recepcion/catalogos": {
+      "get": {
+        "tags": [
+          "catalogo-controller"
+        ],
+        "operationId": "listar_7",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogosResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/productos/{id}/movimientos": {
+      "get": {
+        "tags": [
+          "Configuración de productos"
+        ],
+        "operationId": "movimientos",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MovimientoRespuestaDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/productos/catalogo": {
+      "get": {
+        "tags": [
+          "Configuración de productos"
+        ],
+        "operationId": "catalogo",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductoResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/items/{id}/movimientos": {
+      "get": {
+        "tags": [
+          "Configuración de mobiliario"
+        ],
+        "operationId": "movimientos_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MovimientoRespuestaDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/items/{id}/historial": {
+      "get": {
+        "tags": [
+          "Configuración de mobiliario"
+        ],
+        "summary": "Consultar asignaciones, traslados, retiros y conservación",
+        "operationId": "historial",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ItemHistorialDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/items/configuracion": {
+      "get": {
+        "tags": [
+          "Configuración de mobiliario"
+        ],
+        "summary": "Buscar mobiliario por tipo, ubicación y conservación",
+        "operationId": "configuracion",
+        "parameters": [
+          {
+            "name": "buscar",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "maxLength": 200,
+              "minLength": 0,
+              "type": "string"
+            }
+          },
+          {
+            "name": "idTipoItem",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "estado",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Activo",
+                "Inactivo",
+                "En habitacion"
+              ]
+            }
+          },
+          {
+            "name": "idHabitacion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "sinAsignar",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "estadoConservacion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "BUENO",
+                "DANADO",
+                "FALTANTE",
+                "EN_REPARACION"
+              ]
+            }
+          },
+          {
+            "name": "pagina",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "tamanio",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginaResponseDTOItemResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/habitaciones/{id}/items": {
+      "get": {
+        "tags": [
+          "Configuración de habitaciones"
+        ],
+        "operationId": "mobiliario",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ItemResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/habitaciones/configuracion": {
+      "get": {
+        "tags": [
+          "Configuración de habitaciones"
+        ],
+        "operationId": "listar_8",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HabitacionResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/habitaciones/configuracion/pagina": {
+      "get": {
+        "tags": [
+          "Configuración de habitaciones"
+        ],
+        "summary": "Buscar y filtrar la configuración de habitaciones",
+        "operationId": "configuracion_1",
+        "parameters": [
+          {
+            "name": "buscar",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "maxLength": 200,
+              "minLength": 0,
+              "type": "string"
+            }
+          },
+          {
+            "name": "idTipoHabitacion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "estado",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DISPONIBLE",
+                "OCUPADO",
+                "MANTENIMIENTO",
+                "LIMPIEZA"
+              ]
+            }
+          },
+          {
+            "name": "capacidadMinima",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "maximum": 99,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pagina",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "tamanio",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginaResponseDTOHabitacionResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/gastos/{id}": {
+      "get": {
+        "tags": [
+          "Gastos"
+        ],
+        "summary": "Consultar detalle de un gasto y su responsable",
+        "operationId": "obtener_8",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/GastoResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/gastos/tipos": {
+      "get": {
+        "tags": [
+          "Gastos"
+        ],
+        "summary": "Consultar categorías disponibles para registrar o filtrar gastos",
+        "operationId": "tipos",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CatalogoItemResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/gastos/historial": {
+      "get": {
+        "tags": [
+          "Gastos"
+        ],
+        "summary": "Consultar historial filtrable de gastos y total gastado",
+        "description": "Fechas inclusivas en America/Lima. Página desde cero y tamaño por defecto 20. El resumen usa todos los resultados filtrados, sin limitarse a la página.",
+        "operationId": "historial_1",
+        "parameters": [
+          {
+            "name": "idTurno",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "idUsuario",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "idTipoMovimiento",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "buscar",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "maxLength": 200,
+              "minLength": 0,
+              "type": "string"
+            }
+          },
+          {
+            "name": "montoMinimo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "montoMaximo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pagina",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "tamanio",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/GastoHistorialDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/facturacion/configuracion": {
+      "get": {
+        "tags": [
+          "Facturación electrónica beta"
+        ],
+        "summary": "Consultar la habilitación y los datos pendientes de facturación, sin credenciales",
+        "operationId": "configuracion_2",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/documentos/ruc/{numero}": {
+      "get": {
+        "tags": [
+          "documento-consulta-controller"
+        ],
+        "operationId": "consultarRuc",
+        "parameters": [
+          {
+            "name": "numero",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "[0-9]{11}",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentoConsultaResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/documentos/dni/{numero}": {
+      "get": {
+        "tags": [
+          "documento-consulta-controller"
+        ],
+        "operationId": "consultarDni",
+        "parameters": [
+          {
+            "name": "numero",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "[0-9]{8}",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentoConsultaResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/configuraciones/catalogos": {
+      "get": {
+        "tags": [
+          "Configuración"
+        ],
+        "summary": "Obtener tipos, categorías y estados para los formularios de configuración",
+        "operationId": "catalogos",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfiguracionCatalogosDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/comprobantes/{id}/emision-electronica/xml": {
+      "get": {
+        "tags": [
+          "Facturación electrónica beta"
+        ],
+        "summary": "Descargar el XML firmado recibido del proveedor beta",
+        "operationId": "xml",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string",
+                  "format": "byte"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/comprobantes/{id}/emision-electronica/pdf": {
+      "get": {
+        "tags": [
+          "Facturación electrónica beta"
+        ],
+        "summary": "Obtener una representación PDF de prueba desde APIsPerú",
+        "operationId": "pdf",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string",
+                  "format": "byte"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/comprobantes/{id}/emision-electronica/cdr": {
+      "get": {
+        "tags": [
+          "Facturación electrónica beta"
+        ],
+        "summary": "Descargar el ZIP del CDR recibido del proveedor beta",
+        "operationId": "cdr",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string",
+                  "format": "byte"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health": {
+      "get": {
+        "tags": [
+          "Estado del servidor"
+        ],
+        "summary": "Consultar el arranque del servidor",
+        "description": "Confirma que la API responde; no verifica la conexión con Oracle.",
+        "operationId": "health",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "VentaEditarDTO": {
+        "required": [
+          "detalles",
+          "idUsuario"
+        ],
+        "type": "object",
+        "properties": {
+          "idUsuario": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "idClienteComprador": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "compradorNombreLibre": {
+            "maxLength": 250,
+            "minLength": 0,
+            "type": "string"
+          },
+          "detalles": {
+            "maxItems": 100,
+            "minItems": 0,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VentaLineaRegistroDTO"
+            }
+          }
+        }
+      },
+      "VentaLineaRegistroDTO": {
+        "required": [
+          "cantidad",
+          "idProducto"
+        ],
+        "type": "object",
+        "properties": {
+          "idProducto": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "cantidad": {
+            "maximum": 999999999,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "VentaLineaRespuestaDTO": {
+        "type": "object",
+        "properties": {
+          "idDetalleVenta": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "idProducto": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "descripcion": {
+            "type": "string"
+          },
+          "cantidad": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "valorUnitario": {
+            "type": "number"
+          },
+          "igv": {
+            "type": "number"
+          },
+          "subtotal": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          },
+          "estadoLinea": {
+            "type": "string"
+          }
+        }
+      },
+      "VentaResponseDTO": {
+        "type": "object",
+        "properties": {
+          "idVenta": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "idClienteComprador": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "compradorNombreLibre": {
+            "type": "string"
+          },
+          "idDetalleReserva": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "idUsuario": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "modalidadCobro": {
+            "type": "string",
+            "enum": [
+              "SEPARADA",
+              "RESERVA"
+            ]
+          },
+          "estadoVenta": {
+            "type": "string",
+            "enum": [
+              "BORRADOR",
+              "CONFIRMADA",
+              "ANULADA"
+            ]
+          },
+          "fechaRegistro": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fechaConfirmacion": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "claveRegistro": {
+            "type": "string"
+          },
+          "total": {
+            "type": "number"
+          },
+          "detalles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VentaLineaRespuestaDTO"
+            }
+          }
+        }
+      },
+      "TipoItemRequestDTO": {
+        "required": [
+          "nombreItem"
+        ],
+        "type": "object",
+        "properties": {
+          "nombreItem": {
+            "maxLength": 30,
+            "minLength": 0,
+            "type": "string"
+          }
+        }
+      },
+      "TipoItemResponseDTO": {
+        "type": "object",
+        "properties": {
+          "idTipoItem": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "nombreItem": {
+            "type": "string"
+          }
+        }
+      },
+      "TipoHabitacionRequestDTO": {
+        "required": [
+          "capacidadMax",
+          "nombreTipo",
+          "precioBase"
+        ],
+        "type": "object",
+        "properties": {
+          "nombreTipo": {
+            "maxLength": 30,
+            "minLength": 0,
+            "type": "string"
+          },
+          "capacidadMax": {
+            "maximum": 99,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "precioBase": {
+            "minimum": 0.0,
+            "exclusiveMinimum": false,
+            "type": "number"
+          }
+        }
+      },
+      "TipoHabitacionResponseDTO": {
+        "type": "object",
+        "properties": {
+          "idTipoHabitacion": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "nombreTipo": {
+            "type": "string"
+          },
+          "capacidadMax": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "precioBase": {
+            "type": "number"
+          }
+        }
+      },
+      "ReservaOcupanteRegistroDTO": {
+        "required": [
+          "idCliente",
+          "ocupaPlazaCama"
+        ],
+        "type": "object",
+        "properties": {
+          "idCliente": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "idClienteResponsable": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "parentescoResponsable": {
+            "type": "string",
+            "enum": [
+              "PADRE",
+              "MADRE",
+              "TUTOR"
+            ]
+          },
+          "ocupaPlazaCama": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ReservaOcupantesGuardarDTO": {
+        "required": [
+          "idUsuario",
+          "ocupantes"
+        ],
+        "type": "object",
+        "properties": {
+          "idUsuario": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "ocupantes": {
+            "maxItems": 99,
+            "minItems": 0,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReservaOcupanteRegistroDTO"
+            }
+          }
+        }
+      },
+      "ReservaDetalleRespuestaDTO": {
+        "type": "object",
+        "properties": {
+          "idDetalleReserva": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "idHabitacion": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "numeroCuarto": {
+            "type": "string"
+          },
+          "fechaIngreso": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fechaSalida": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fechaIngresoReal": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fechaSalidaReal": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "costoEstadia": {
+            "type": "number"
+          },
+          "estadoDetalle": {
+            "type": "string",
+            "enum": [
+              "CONFIRMADA",
+              "EN_CURSO",
+              "FINALIZADA",
+              "CANCELADA"
+            ]
+          },
+          "ocupantes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReservaOcupanteRespuestaDTO"
+            }
+          }
+        }
+      },
+      "ReservaOcupanteRespuestaDTO": {
+        "type": "object",
+        "properties": {
+          "idReservaOcupante": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "idCliente": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "idOcupanteResponsable": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "parentescoResponsable": {
+            "type": "string",
+            "enum": [
+              "PADRE",
+              "MADRE",
+              "TUTOR"
+            ]
+          },
+          "ocupaPlazaCama": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ProductoRequestDTO": {
+        "required": [
+          "estadoProducto",
+          "idCategoria",
+          "nombreProducto",
+          "precioActual",
+          "stock",
+          "stockMinimo"
+        ],
+        "type": "object",
+        "properties": {
+          "nombreProducto": {
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          },
+          "precioActual": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "stock": {
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32"
+          },
+          "stockMinimo": {
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32"
+          },
+          "idCategoria": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "estadoProducto": {
+            "type": "string",
+            "enum": [
+              "ACTIVO",
+              "INACTIVO"
+            ]
+          },
+          "imagenRuta": {
+            "maxLength": 300,
+            "minLength": 0,
+            "pattern": "^$|^/(?!/)[^\\s\\\\<>]*\\.(?i:png|jpe?g|webp|avif|gif)$",
+            "type": "string"
+          },
+          "stockAnterior": {
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ProductoResponseDTO": {
+        "type": "object",
+        "properties": {
+          "idProducto": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "nombreProducto": {
+            "type": "string"
+          },
+          "precioActual": {
+            "type": "number"
+          },
+          "stock": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "stockMinimo": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "idCategoria": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "estadoProducto": {
+            "type": "string",
+            "enum": [
+              "ACTIVO",
+              "INACTIVO"
+            ]
+          },
+          "imagenRuta": {
+            "type": "string"
+          },
+          "categoriaNombre": {
+            "type": "string"
+          },
+          "stockBajo": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ItemRequestDTO": {
+        "required": [
+          "estadoItem",
+          "idTipoItem",
+          "nombreItem"
+        ],
+        "type": "object",
+        "properties": {
+          "nombreItem": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "idTipoItem": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "estadoItem": {
+            "type": "string",
+            "enum": [
+              "Activo",
+              "Inactivo",
+              "En habitacion"
+            ]
+          }
+        }
+      },
+      "ItemResponseDTO": {
+        "type": "object",
+        "properties": {
+          "idItem": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "nombreItem": {
+            "type": "string"
+          },
+          "idTipoItem": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "estadoItem": {
+            "type": "string",
+            "enum": [
+              "Activo",
+              "Inactivo",
+              "En habitacion"
+            ]
+          },
+          "idDetalleHabitacion": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "idHabitacion": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "estadoActualItem": {
+            "type": "string",
+            "enum": [
+              "BUENO",
+              "DANADO",
+              "FALTANTE",
+              "EN_REPARACION"
+            ]
+          },
+          "nombreTipo": {
+            "type": "string"
+          },
+          "numeroCuarto": {
+            "type": "string"
+          }
+        }
+      },
+      "ItemConservacionDTO": {
+        "required": [
+          "claveOperacion",
+          "estadoActualItem",
+          "idUsuario",
+          "observacion"
+        ],
+        "type": "object",
+        "properties": {
+          "claveOperacion": {
+            "maxLength": 64,
+            "minLength": 0,
+            "type": "string"
+          },
+          "idUsuario": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "estadoActualItem": {
+            "type": "string",
+            "enum": [
+              "BUENO",
+              "DANADO",
+              "FALTANTE",
+              "EN_REPARACION"
+            ]
+          },
+          "observacion": {
+            "maxLength": 180,
+            "minLength": 0,
+            "type": "string"
+          }
+        }
+      },
+      "ItemAsignacionDTO": {
+        "required": [
+          "claveOperacion",
+          "estadoActualItem",
+          "idUsuario",
+          "observacion"
+        ],
+        "type": "object",
+        "properties": {
+          "claveOperacion": {
+            "maxLength": 64,
+            "minLength": 0,
+            "type": "string"
+          },
+          "idUsuario": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "idHabitacion": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "estadoActualItem": {
+            "type": "string",
+            "enum": [
+              "BUENO",
+              "DANADO",
+              "FALTANTE",
+              "EN_REPARACION"
+            ]
+          },
+          "observacion": {
+            "maxLength": 180,
+            "minLength": 0,
+            "type": "string"
+          }
+        }
+      },
+      "HabitacionRequestDTO": {
+        "required": [
+          "capacidadPersonas",
+          "estadoHabitacion",
+          "idTipoHabitacion",
+          "maxMenoresSinCama",
+          "numeroCuarto",
+          "plazasCama"
+        ],
+        "type": "object",
+        "properties": {
+          "numeroCuarto": {
+            "maxLength": 10,
+            "minLength": 0,
+            "type": "string"
+          },
+          "idTipoHabitacion": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "estadoHabitacion": {
+            "type": "string",
+            "enum": [
+              "DISPONIBLE",
+              "OCUPADO",
+              "MANTENIMIENTO",
+              "LIMPIEZA"
+            ]
+          },
+          "capacidadPersonas": {
+            "maximum": 99,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "plazasCama": {
+            "maximum": 99,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "maxMenoresSinCama": {
+            "maximum": 98,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "HabitacionResponseDTO": {
+        "type": "object",
+        "properties": {
+          "idHabitacion": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "numeroCuarto": {
+            "type": "string"
+          },
+          "idTipoHabitacion": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "nombreTipo": {
+            "type": "string"
+          },
+          "estadoHabitacion": {
+            "type": "string",
+            "enum": [
+              "DISPONIBLE",
+              "OCUPADO",
+              "MANTENIMIENTO",
+              "LIMPIEZA"
+            ]
+          },
+          "capacidadPersonas": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "plazasCama": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "maxMenoresSinCama": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "precioBase": {
+            "type": "number"
+          }
+        }
+      },
+      "ClienteGuardarDTO": {
+        "required": [
+          "persona"
+        ],
+        "type": "object",
+        "properties": {
+          "persona": {
+            "$ref": "#/components/schemas/ClienteRegistroRequestDTO"
+          },
+          "restriccionesMedicas": {
+            "maxLength": 500,
+            "minLength": 0,
+            "type": "string"
+          }
+        }
+      },
+      "ClienteRegistroRequestDTO": {
+        "required": [
+          "empresa",
+          "idTipoDocumento",
+          "numeroDocumento"
+        ],
+        "type": "object",
+        "properties": {
+          "idTipoDocumento": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "numeroDocumento": {
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string"
+          },
+          "empresa": {
+            "type": "boolean"
+          },
+          "nombres": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "apellidos": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "fechaNacimiento": {
+            "type": "string",
+            "format": "date"
+          },
+          "razonSocial": {
+            "maxLength": 250,
+            "minLength": 0,
+            "type": "string"
+          },
+          "direccionFiscal": {
+            "maxLength": 200,
+            "minLength": 0,
+            "type": "string"
+          },
+          "correo": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string",
+            "format": "email"
+          },
+          "telefono": {
+            "maxLength": 15,
+            "minLength": 0,
+            "type": "string"
+          }
+        }
+      },
+      "ClienteDetalleDTO": {
+        "type": "object",
+        "properties": {
+          "idCliente": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "persona": {
+            "$ref": "#/components/schemas/ClienteRegistroRequestDTO"
+          },
+          "restriccionesMedicas": {
+            "type": "string"
+          }
+        }
+      },
+      "CategoriaRequestDTO": {
+        "required": [
+          "nombreCategoria"
+        ],
+        "type": "object",
+        "properties": {
+          "nombreCategoria": {
+            "maxLength": 30,
+            "minLength": 1,
+            "type": "string"
+          }
+        }
+      },
+      "CategoriaResponseDTO": {
+        "type": "object",
+        "properties": {
+          "idCategoria": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "nombreCategoria": {
+            "type": "string"
+          }
+        }
+      },
+      "VentaRequestDTO": {
+        "required": [
+          "claveRegistro",
+          "detalles",
+          "idUsuario",
+          "modalidadCobro"
+        ],
+        "type": "object",
+        "properties": {
+          "claveRegistro": {
+            "maxLength": 64,
+            "minLength": 0,
+            "type": "string"
+          },
+          "idUsuario": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "idClienteComprador": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "compradorNombreLibre": {
+            "maxLength": 250,
+            "minLength": 0,
+            "type": "string"
+          },
+          "modalidadCobro": {
+            "type": "string",
+            "enum": [
+              "SEPARADA",
+              "RESERVA"
+            ]
+          },
+          "idDetalleReserva": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "detalles": {
+            "maxItems": 100,
+            "minItems": 0,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VentaLineaRegistroDTO"
+            }
+          }
+        }
+      },
+      "OperacionUsuarioDTO": {
+        "required": [
+          "idUsuario"
+        ],
+        "type": "object",
+        "properties": {
+          "idUsuario": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "PagoCuentaDTO": {
+        "required": [
+          "claveOperacion",
+          "idFormaPago",
+          "idTurno",
+          "idUsuario",
+          "monto"
+        ],
+        "type": "object",
+        "properties": {
+          "claveOperacion": {
+            "maxLength": 64,
+            "minLength": 0,
+            "type": "string"
+          },
+          "idUsuario": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "idTurno": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "idFormaPago": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "monto": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "number"
+          },
+          "numeroOperacion": {
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string"
+          }
+        }
+      },
+      "CuentaDocumentoDTO": {
+        "type": "object",
+        "properties": {
+          "idCuenta": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "idReserva": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "numeroReserva": {
+            "type": "string"
+          },
+          "idVenta": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "BORRADOR",
+              "EMITIDO",
+              "ANULADO"
+            ]
+          },
+          "serie": {
+            "type": "string"
+          },
+          "numero": {
+            "type": "string"
+          },
+          "idClienteReceptor": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "receptorNombre": {
+            "type": "string"
+          },
+          "receptorNumeroDoc": {
+            "type": "string"
+          },
+          "fechaEmision": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "total": {
+            "type": "number"
+          },
+          "pagado": {
+            "type": "number"
+          },
+          "saldo": {
+            "type": "number"
+          },
+          "lineas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CuentaLineaDTO"
+            }
+          },
+          "pagos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReservaPagoRespuestaDTO"
+            }
+          }
+        }
+      },
+      "CuentaLineaDTO": {
+        "type": "object",
+        "properties": {
+          "idDetalleReserva": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "idDetalleVenta": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "descripcion": {
+            "type": "string"
+          },
+          "cantidad": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        }
+      },
+      "ReservaPagoRespuestaDTO": {
+        "type": "object",
+        "properties": {
+          "idPago": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "idFormaPago": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "idTurno": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "monto": {
+            "type": "number"
+          },
+          "numeroOperacion": {
+            "type": "string"
+          },
+          "fechaPago": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ComprobanteCuentaDTO": {
+        "required": [
+          "idClienteReceptor",
+          "idTurno",
+          "idUsuario",
+          "tipo"
+        ],
+        "type": "object",
+        "properties": {
+          "idUsuario": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "idTurno": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "tipo": {
+            "pattern": "BOLETA|FACTURA",
+            "type": "string"
+          },
+          "idClienteReceptor": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "ReservaDetalleRegistroDTO": {
+        "required": [
+          "costoEstadia",
+          "fechaIngreso",
+          "fechaSalida",
+          "idHabitacion"
+        ],
+        "type": "object",
+        "properties": {
+          "idHabitacion": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "fechaIngreso": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fechaSalida": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "costoEstadia": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "ocupantes": {
+            "maxItems": 99,
+            "minItems": 0,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReservaOcupanteRegistroDTO"
+            }
+          }
+        }
+      },
+      "ReservaRegistroRequestDTO": {
+        "required": [
+          "claveRegistro",
+          "detalles",
+          "idCliente",
+          "idUsuario"
+        ],
+        "type": "object",
+        "properties": {
+          "claveRegistro": {
+            "maxLength": 64,
+            "minLength": 0,
+            "type": "string"
+          },
+          "idCliente": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "idUsuario": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "detalles": {
+            "maxItems": 50,
+            "minItems": 0,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReservaDetalleRegistroDTO"
+            }
+          }
+        }
+      },
+      "ReservaRespuestaDTO": {
+        "type": "object",
+        "properties": {
+          "idReserva": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "idCliente": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "idUsuario": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "titular": {
+            "type": "string"
+          },
+          "fechaRegistro": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "claveRegistro": {
+            "type": "string"
+          },
+          "detalles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReservaDetalleRespuestaDTO"
+            }
+          }
+        }
+      },
+      "ReservaPagoRegistroDTO": {
+        "required": [
+          "claveOperacion",
+          "idFormaPago",
+          "idTurno",
+          "idUsuario",
+          "monto"
+        ],
+        "type": "object",
+        "properties": {
+          "claveOperacion": {
+            "maxLength": 64,
+            "minLength": 0,
+            "type": "string"
+          },
+          "idUsuario": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "idTurno": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "idFormaPago": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "monto": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "number"
+          },
+          "numeroOperacion": {
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string"
+          },
+          "idVenta": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "CuentaReservaDTO": {
+        "type": "object",
+        "properties": {
+          "idReserva": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "numeroReserva": {
+            "type": "string"
+          },
+          "totalAlojamiento": {
+            "type": "number"
+          },
+          "totalCargos": {
+            "type": "number"
+          },
+          "totalPagado": {
+            "type": "number"
+          },
+          "saldoPendiente": {
+            "type": "number"
+          },
+          "admiteConsumosConsolidados": {
+            "type": "boolean"
+          },
+          "cuentas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CuentaDocumentoDTO"
+            }
+          }
+        }
+      },
+      "ConsumoReservaRespuestaDTO": {
+        "type": "object",
+        "properties": {
+          "idReserva": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "numeroReserva": {
+            "type": "string"
+          },
+          "idCuenta": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "venta": {
+            "$ref": "#/components/schemas/VentaResponseDTO"
+          }
+        }
+      },
+      "ReservaComprobanteRegistroDTO": {
+        "required": [
+          "idClienteReceptor",
+          "idTurno",
+          "idUsuario",
+          "tipo"
+        ],
+        "type": "object",
+        "properties": {
+          "idUsuario": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "idTurno": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "tipo": {
+            "pattern": "BOLETA|FACTURA",
+            "type": "string"
+          },
+          "idClienteReceptor": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "idVenta": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "AjusteStockDTO": {
+        "required": [
+          "claveOperacion",
+          "idUsuario",
+          "observacion",
+          "stockAnterior",
+          "stockNuevo"
+        ],
+        "type": "object",
+        "properties": {
+          "claveOperacion": {
+            "maxLength": 64,
+            "minLength": 0,
+            "type": "string"
+          },
+          "idUsuario": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "stockAnterior": {
+            "maximum": 999999999,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32"
+          },
+          "stockNuevo": {
+            "maximum": 999999999,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32"
+          },
+          "observacion": {
+            "maxLength": 300,
+            "minLength": 0,
+            "type": "string"
+          }
+        }
+      },
+      "GastoRequestDTO": {
+        "required": [
+          "concepto",
+          "idTipoMovimiento",
+          "idTurno",
+          "idUsuario",
+          "monto"
+        ],
+        "type": "object",
+        "properties": {
+          "idUsuario": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "idTurno": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "idTipoMovimiento": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "concepto": {
+            "maxLength": 1000,
+            "minLength": 0,
+            "type": "string"
+          },
+          "monto": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "number"
+          },
+          "documentoRespaldo": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "evidenciaRuta": {
+            "maxLength": 300,
+            "minLength": 0,
+            "type": "string"
+          },
+          "evidenciaSha256": {
+            "pattern": "[a-fA-F0-9]{64}",
+            "type": "string"
+          },
+          "claveRegistro": {
+            "pattern": "[A-Za-z0-9._:-]{1,64}",
+            "type": "string"
+          }
+        }
+      },
+      "GastoResponseDTO": {
+        "type": "object",
+        "properties": {
+          "idFlujo": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "idTurno": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "idUsuario": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "idTipoMovimiento": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "concepto": {
+            "type": "string"
+          },
+          "monto": {
+            "type": "number"
+          },
+          "fechaHora": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "documentoRespaldo": {
+            "type": "string"
+          },
+          "evidenciaRuta": {
+            "type": "string"
+          },
+          "evidenciaSha256": {
+            "type": "string"
+          },
+          "usuario": {
+            "type": "string"
+          },
+          "tipoGasto": {
+            "type": "string"
+          },
+          "turnoAbierto": {
+            "type": "boolean"
+          },
+          "claveRegistro": {
+            "type": "string"
+          }
+        }
+      },
+      "Cuota": {
+        "required": [
+          "fechaPago",
+          "monto"
+        ],
+        "type": "object",
+        "properties": {
+          "fechaPago": {
+            "type": "string",
+            "format": "date"
+          },
+          "monto": {
+            "minimum": 0.01,
+            "exclusiveMinimum": false,
+            "type": "number"
+          }
+        }
+      },
+      "EmisionElectronicaRequestDTO": {
+        "required": [
+          "claveOperacion",
+          "cuotas",
+          "idUsuario",
+          "tasaIgv",
+          "tratamientos"
+        ],
+        "type": "object",
+        "properties": {
+          "claveOperacion": {
+            "maxLength": 64,
+            "minLength": 0,
+            "type": "string"
+          },
+          "idUsuario": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "tasaIgv": {
+            "maximum": 100,
+            "exclusiveMaximum": false,
+            "minimum": 0.01,
+            "exclusiveMinimum": false,
+            "type": "number"
+          },
+          "direccionReceptor": {
+            "maxLength": 200,
+            "minLength": 0,
+            "type": "string"
+          },
+          "tratamientos": {
+            "maxItems": 500,
+            "minItems": 0,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TratamientoLinea"
+            }
+          },
+          "cuotas": {
+            "maxItems": 120,
+            "minItems": 0,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cuota"
+            }
+          }
+        }
+      },
+      "TratamientoLinea": {
+        "required": [
+          "afectacion",
+          "numeroLinea",
+          "tasaIgv"
+        ],
+        "type": "object",
+        "properties": {
+          "numeroLinea": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          "afectacion": {
+            "pattern": "10|20|30",
+            "type": "string"
+          },
+          "tasaIgv": {
+            "maximum": 100,
+            "exclusiveMaximum": false,
+            "minimum": 0,
+            "exclusiveMinimum": false,
+            "type": "number"
+          }
+        }
+      },
+      "EmisionElectronicaDTO": {
+        "type": "object",
+        "properties": {
+          "idEmision": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "idComprobante": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "idUsuario": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "ambiente": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "PREPARADO",
+              "ENVIANDO",
+              "ACEPTADO",
+              "RECHAZADO",
+              "INCIERTO",
+              "ERROR_ENVIO"
+            ]
+          },
+          "rucEmisor": {
+            "type": "string"
+          },
+          "tipoDocumento": {
+            "type": "string"
+          },
+          "serie": {
+            "type": "string"
+          },
+          "correlativo": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "fechaEmision": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fechaActualizacion": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "intentos": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "subtotal": {
+            "type": "number"
+          },
+          "igv": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          },
+          "codigoRespuesta": {
+            "type": "string"
+          },
+          "mensajeRespuesta": {
+            "type": "string"
+          },
+          "xmlDisponible": {
+            "type": "boolean"
+          },
+          "cdrDisponible": {
+            "type": "boolean"
+          }
+        }
+      },
+      "HabitacionEstadoGuardarDTO": {
+        "required": [
+          "estadoHabitacion"
+        ],
+        "type": "object",
+        "properties": {
+          "estadoHabitacion": {
+            "type": "string",
+            "enum": [
+              "DISPONIBLE",
+              "OCUPADO",
+              "MANTENIMIENTO",
+              "LIMPIEZA"
+            ]
+          }
+        }
+      },
+      "PaginaResponseDTOVentaResponseDTO": {
+        "type": "object",
+        "properties": {
+          "contenido": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VentaResponseDTO"
+            }
+          },
+          "pagina": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tamanio": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElementos": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPaginas": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ultima": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PaginaResponseDTOReservaRespuestaDTO": {
+        "type": "object",
+        "properties": {
+          "contenido": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReservaRespuestaDTO"
+            }
+          },
+          "pagina": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tamanio": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElementos": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPaginas": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ultima": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ClienteResumenResponseDTO": {
+        "type": "object",
+        "properties": {
+          "idCliente": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "datos": {
+            "$ref": "#/components/schemas/ClienteRegistroRequestDTO"
+          }
+        }
+      },
+      "CatalogoItemResponseDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "codigoSunat": {
+            "type": "string"
+          }
+        }
+      },
+      "CatalogosResponseDTO": {
+        "type": "object",
+        "properties": {
+          "tiposDocumento": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CatalogoItemResponseDTO"
+            }
+          },
+          "formasPago": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CatalogoItemResponseDTO"
+            }
+          },
+          "tiposHabitacion": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CatalogoItemResponseDTO"
+            }
+          },
+          "tiposItem": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CatalogoItemResponseDTO"
+            }
+          },
+          "tiposGasto": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CatalogoItemResponseDTO"
+            }
+          },
+          "usuarios": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CatalogoItemResponseDTO"
+            }
+          },
+          "turnosAbiertos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TurnoDisponibleDTO"
+            }
+          }
+        }
+      },
+      "TurnoDisponibleDTO": {
+        "type": "object",
+        "properties": {
+          "idTurno": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "idUsuario": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "usuario": {
+            "type": "string"
+          },
+          "fechaApertura": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PaginaResponseDTOProductoResponseDTO": {
+        "type": "object",
+        "properties": {
+          "contenido": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductoResponseDTO"
+            }
+          },
+          "pagina": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tamanio": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElementos": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPaginas": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ultima": {
+            "type": "boolean"
+          }
+        }
+      },
+      "MovimientoRespuestaDTO": {
+        "type": "object",
+        "properties": {
+          "idMovimiento": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "claveOperacion": {
+            "type": "string"
+          },
+          "idUsuario": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "signo": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "cantidad": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "stockResultante": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "fechaMovimiento": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "observacion": {
+            "type": "string"
+          }
+        }
+      },
+      "ItemHistorialDTO": {
+        "type": "object",
+        "properties": {
+          "idMovimiento": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "accion": {
+            "type": "string"
+          },
+          "idUsuario": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "usuario": {
+            "type": "string"
+          },
+          "fechaMovimiento": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "idHabitacionOrigen": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "numeroOrigen": {
+            "type": "string"
+          },
+          "idHabitacionDestino": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "numeroDestino": {
+            "type": "string"
+          },
+          "estadoConservacion": {
+            "type": "string",
+            "enum": [
+              "BUENO",
+              "DANADO",
+              "FALTANTE",
+              "EN_REPARACION"
+            ]
+          },
+          "observacion": {
+            "type": "string"
+          }
+        }
+      },
+      "PaginaResponseDTOItemResponseDTO": {
+        "type": "object",
+        "properties": {
+          "contenido": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemResponseDTO"
+            }
+          },
+          "pagina": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tamanio": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElementos": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPaginas": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ultima": {
+            "type": "boolean"
+          }
+        }
+      },
+      "HabitacionEstadoResponseDTO": {
+        "type": "object",
+        "properties": {
+          "idHabitacion": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "numero": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "capacidad": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "plazasCama": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "maxMenoresSinCama": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "precio": {
+            "type": "number"
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "DISPONIBLE",
+              "OCUPADO",
+              "MANTENIMIENTO",
+              "LIMPIEZA"
+            ]
+          },
+          "ocupadaActualmente": {
+            "type": "boolean"
+          },
+          "disponible": {
+            "type": "boolean"
+          },
+          "reservas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HabitacionReservaResponseDTO"
+            }
+          }
+        }
+      },
+      "HabitacionReservaResponseDTO": {
+        "type": "object",
+        "properties": {
+          "referencia": {
+            "type": "string"
+          },
+          "cliente": {
+            "type": "string"
+          },
+          "ingreso": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "salida": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "estado": {
+            "type": "string"
+          }
+        }
+      },
+      "PaginaResponseDTOHabitacionResponseDTO": {
+        "type": "object",
+        "properties": {
+          "contenido": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HabitacionResponseDTO"
+            }
+          },
+          "pagina": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tamanio": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElementos": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPaginas": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ultima": {
+            "type": "boolean"
+          }
+        }
+      },
+      "GastoHistorialDTO": {
+        "type": "object",
+        "properties": {
+          "gastos": {
+            "$ref": "#/components/schemas/PaginaResponseDTOGastoResponseDTO"
+          },
+          "resumen": {
+            "$ref": "#/components/schemas/GastoResumenDTO"
+          }
+        }
+      },
+      "GastoResumenDTO": {
+        "type": "object",
+        "properties": {
+          "cantidadGastos": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalGastado": {
+            "type": "number"
+          }
+        }
+      },
+      "PaginaResponseDTOGastoResponseDTO": {
+        "type": "object",
+        "properties": {
+          "contenido": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GastoResponseDTO"
+            }
+          },
+          "pagina": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tamanio": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElementos": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPaginas": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ultima": {
+            "type": "boolean"
+          }
+        }
+      },
+      "DocumentoConsultaResponseDTO": {
+        "type": "object",
+        "properties": {
+          "numeroDocumento": {
+            "type": "string"
+          },
+          "nombres": {
+            "type": "string"
+          },
+          "apellidos": {
+            "type": "string"
+          },
+          "razonSocial": {
+            "type": "string"
+          },
+          "direccionFiscal": {
+            "type": "string"
+          }
+        }
+      },
+      "ConfiguracionCatalogosDTO": {
+        "type": "object",
+        "properties": {
+          "tiposHabitacion": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TipoHabitacionResponseDTO"
+            }
+          },
+          "tiposItem": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TipoItemResponseDTO"
+            }
+          },
+          "categorias": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CategoriaResponseDTO"
+            }
+          },
+          "estadosHabitacion": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "DISPONIBLE",
+                "OCUPADO",
+                "MANTENIMIENTO",
+                "LIMPIEZA"
+              ]
+            }
+          },
+          "estadosItem": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "Activo",
+                "Inactivo",
+                "En habitacion"
+              ]
+            }
+          },
+          "estadosConservacion": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "BUENO",
+                "DANADO",
+                "FALTANTE",
+                "EN_REPARACION"
+              ]
+            }
+          },
+          "estadosProducto": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ACTIVO",
+                "INACTIVO"
+              ]
+            }
+          }
+        }
+      },
+      "HealthResponseDTO": {
+        "type": "object",
+        "properties": {
+          "application": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

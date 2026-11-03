@@ -1,0 +1,1787 @@
+{
+  "info": {
+    "name": "REBOLSYS - facturación beta vía APIsPerú simulada",
+    "description": "Ejecutar solo contra el backend configurado con el simulador local. Crea seis ventas propias, conserva pagos y demuestra boleta, factura, rechazo, timeout tras emisión, CDR pendiente y concurrencia. No emite documentos reales. Requiere Oracle inicializado y la simulación local.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8082"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Preparación del operador",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/recepcion/catalogos"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const c=pm.response.json(),t=c.turnosAbiertos[0];pm.collectionVariables.set('usuario',t.idUsuario);pm.collectionVariables.set('turno',t.idTurno);pm.collectionVariables.set('formaPago',c.formasPago[0].id);pm.collectionVariables.set('dni',c.tiposDocumento.find(d=>d.codigoSunat==='1').id);pm.collectionVariables.set('ruc',c.tiposDocumento.find(d=>d.codigoSunat==='6').id);pm.collectionVariables.set('clave',Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,5));pm.collectionVariables.set('documentoBase',Date.now());"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Configuración beta activa",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/facturacion/configuracion"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Configuración sin secretos',()=>{const c=pm.response.json();pm.expect(c.ambiente).to.eql('BETA');pm.expect(c.habilitada).to.eql(true);pm.expect(c.configuracionPendiente).to.have.lengthOf(0);pm.expect(pm.response.text()).not.to.include('token-facturacion-local');});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Crear categoría propia",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/categorias",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreCategoria\": \"Fiscal {{clave}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('categoria',pm.response.json().idCategoria);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Crear producto con precio final",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/productos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreProducto\": \"Producto fiscal {{clave}}\",\n  \"precioActual\": 118,\n  \"stock\": 0,\n  \"stockMinimo\": 1,\n  \"idCategoria\": \"{{categoria}}\",\n  \"estadoProducto\": \"ACTIVO\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('producto',pm.response.json().idProducto);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Cargar existencias",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/productos/{{producto}}/ajustes-stock",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"{{clave}}-stock\",\n  \"idUsuario\": \"{{usuario}}\",\n  \"stockAnterior\": 0,\n  \"stockNuevo\": 30,\n  \"observacion\": \"Demostración de facturación beta\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Crear receptor Boleta",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/clientes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"persona\": {\n    \"idTipoDocumento\": \"{{dni}}\",\n    \"numeroDocumento\": \"{{dniPrueba}}\",\n    \"empresa\": false,\n    \"nombres\": \"SIM_ACEPTADO\",\n    \"apellidos\": \"{{clave}}\",\n    \"fechaNacimiento\": \"1990-01-01\"\n  }\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const n=String(Number(pm.collectionVariables.get('documentoBase'))+1);pm.collectionVariables.set('dniPrueba',n.slice(-8));pm.collectionVariables.set('rucPrueba','20'+n.slice(-8)+'1');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('clienteBoleta',pm.response.json().idCliente);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 - Registrar venta Boleta",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/confirmadas",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveRegistro\": \"{{clave}}-Boleta\",\n  \"idUsuario\": \"{{usuario}}\",\n  \"idClienteComprador\": \"{{clienteBoleta}}\",\n  \"modalidadCobro\": \"SEPARADA\",\n  \"detalles\": [\n    {\n      \"idProducto\": \"{{producto}}\",\n      \"cantidad\": 1\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('ventaBoleta',pm.response.json().idVenta);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 - Cobrar venta Boleta",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/{{ventaBoleta}}/pagos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"{{clave}}-pago-Boleta\",\n  \"idUsuario\": \"{{usuario}}\",\n  \"idTurno\": \"{{turno}}\",\n  \"idFormaPago\": \"{{formaPago}}\",\n  \"monto\": 118\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 - Emitir registro interno Boleta",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/{{ventaBoleta}}/comprobantes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{usuario}}\",\n  \"idTurno\": \"{{turno}}\",\n  \"tipo\": \"BOLETA\",\n  \"idClienteReceptor\": \"{{clienteBoleta}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('cuentaBoleta',pm.response.json().idCuenta);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 - Preparar copia fiscal Boleta",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaBoleta}}/emision-electronica",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"{{clave}}-cpe-Boleta\",\n  \"idUsuario\": \"{{usuario}}\",\n  \"tasaIgv\": 18\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.test('Total cobrado conservado y desglosado',()=>{const c=pm.response.json();pm.expect(c.estado).to.eql('PREPARADO');pm.expect(c.total).to.eql(118);pm.expect(c.subtotal).to.eql(100);pm.expect(c.igv).to.eql(18);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 - Reintentar preparación sin duplicar",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaBoleta}}/emision-electronica",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"{{clave}}-cpe-Boleta\",\n  \"idUsuario\": \"{{usuario}}\",\n  \"tasaIgv\": 18\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 - XML aún no disponible",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaBoleta}}/emision-electronica/xml"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 404',()=>pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 - Enviar a proveedor Boleta",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaBoleta}}/emision-electronica/envio",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{usuario}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Resultado CDR correcto',()=>{const e=pm.response.json();pm.expect(e.estado).to.eql('ACEPTADO');pm.expect(e.ambiente).to.eql('BETA');pm.expect(e.intentos).to.eql(1);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "14 - Reintentar envío sin duplicar Boleta",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaBoleta}}/emision-electronica/envio",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{usuario}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Conserva el único intento',()=>{pm.expect(pm.response.json().intentos).to.eql(1);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "15 - Descargar XML Boleta",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaBoleta}}/emision-electronica/xml"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Archivo de beta',()=>{pm.expect(pm.response.headers.get('X-Comprobante-Ambiente')).to.eql('BETA');pm.expect(pm.response.text()).to.include('<Invoice>');});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "16 - Descargar CDR Boleta",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaBoleta}}/emision-electronica/cdr"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "17 - Obtener PDF Boleta",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaBoleta}}/emision-electronica/pdf"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Representación PDF',()=>{pm.expect(pm.response.headers.get('Content-Type')).to.include('application/pdf');});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "18 - Verificar caja conservada Boleta",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/ventas/{{ventaBoleta}}/cuenta"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Un pago y saldo cero',()=>{const c=pm.response.json();pm.expect(c.total).to.eql(118);pm.expect(c.pagado).to.eql(118);pm.expect(c.saldo).to.eql(0);pm.expect(c.pagos).to.have.lengthOf(1);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "19 - Crear receptor Factura",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/clientes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"persona\": {\n    \"idTipoDocumento\": \"{{ruc}}\",\n    \"numeroDocumento\": \"{{rucPrueba}}\",\n    \"empresa\": true,\n    \"razonSocial\": \"EMPRESA FICTICIA {{clave}}\",\n    \"direccionFiscal\": \"DIRECCION FICTICIA\"\n  }\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const n=String(Number(pm.collectionVariables.get('documentoBase'))+2);pm.collectionVariables.set('dniPrueba',n.slice(-8));pm.collectionVariables.set('rucPrueba','20'+n.slice(-8)+'1');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('clienteFactura',pm.response.json().idCliente);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "20 - Registrar venta Factura",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/confirmadas",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveRegistro\": \"{{clave}}-Factura\",\n  \"idUsuario\": \"{{usuario}}\",\n  \"idClienteComprador\": \"{{clienteFactura}}\",\n  \"modalidadCobro\": \"SEPARADA\",\n  \"detalles\": [\n    {\n      \"idProducto\": \"{{producto}}\",\n      \"cantidad\": 1\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('ventaFactura',pm.response.json().idVenta);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "21 - Cobrar venta Factura",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/{{ventaFactura}}/pagos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"{{clave}}-pago-Factura\",\n  \"idUsuario\": \"{{usuario}}\",\n  \"idTurno\": \"{{turno}}\",\n  \"idFormaPago\": \"{{formaPago}}\",\n  \"monto\": 118\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "22 - Emitir registro interno Factura",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/{{ventaFactura}}/comprobantes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{usuario}}\",\n  \"idTurno\": \"{{turno}}\",\n  \"tipo\": \"FACTURA\",\n  \"idClienteReceptor\": \"{{clienteFactura}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('cuentaFactura',pm.response.json().idCuenta);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "23 - Preparar copia fiscal Factura",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaFactura}}/emision-electronica",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"{{clave}}-cpe-Factura\",\n  \"idUsuario\": \"{{usuario}}\",\n  \"tasaIgv\": 18,\n  \"direccionReceptor\": \"DIRECCION FICTICIA\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.test('Total cobrado conservado y desglosado',()=>{const c=pm.response.json();pm.expect(c.estado).to.eql('PREPARADO');pm.expect(c.total).to.eql(118);pm.expect(c.subtotal).to.eql(100);pm.expect(c.igv).to.eql(18);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "24 - Enviar a proveedor Factura",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaFactura}}/emision-electronica/envio",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{usuario}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Resultado CDR correcto',()=>{const e=pm.response.json();pm.expect(e.estado).to.eql('ACEPTADO');pm.expect(e.ambiente).to.eql('BETA');pm.expect(e.intentos).to.eql(1);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "25 - Reintentar envío sin duplicar Factura",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaFactura}}/emision-electronica/envio",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{usuario}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Conserva el único intento',()=>{pm.expect(pm.response.json().intentos).to.eql(1);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "26 - Descargar XML Factura",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaFactura}}/emision-electronica/xml"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Archivo de beta',()=>{pm.expect(pm.response.headers.get('X-Comprobante-Ambiente')).to.eql('BETA');pm.expect(pm.response.text()).to.include('<Invoice>');});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "27 - Descargar CDR Factura",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaFactura}}/emision-electronica/cdr"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "28 - Obtener PDF Factura",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaFactura}}/emision-electronica/pdf"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Representación PDF',()=>{pm.expect(pm.response.headers.get('Content-Type')).to.include('application/pdf');});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "29 - Verificar caja conservada Factura",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/ventas/{{ventaFactura}}/cuenta"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Un pago y saldo cero',()=>{const c=pm.response.json();pm.expect(c.total).to.eql(118);pm.expect(c.pagado).to.eql(118);pm.expect(c.saldo).to.eql(0);pm.expect(c.pagos).to.have.lengthOf(1);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "30 - Crear receptor Rechazo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/clientes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"persona\": {\n    \"idTipoDocumento\": \"{{dni}}\",\n    \"numeroDocumento\": \"{{dniPrueba}}\",\n    \"empresa\": false,\n    \"nombres\": \"SIM_RECHAZO\",\n    \"apellidos\": \"{{clave}}\",\n    \"fechaNacimiento\": \"1990-01-01\"\n  }\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const n=String(Number(pm.collectionVariables.get('documentoBase'))+3);pm.collectionVariables.set('dniPrueba',n.slice(-8));pm.collectionVariables.set('rucPrueba','20'+n.slice(-8)+'1');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('clienteRechazo',pm.response.json().idCliente);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "31 - Registrar venta Rechazo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/confirmadas",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveRegistro\": \"{{clave}}-Rechazo\",\n  \"idUsuario\": \"{{usuario}}\",\n  \"idClienteComprador\": \"{{clienteRechazo}}\",\n  \"modalidadCobro\": \"SEPARADA\",\n  \"detalles\": [\n    {\n      \"idProducto\": \"{{producto}}\",\n      \"cantidad\": 1\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('ventaRechazo',pm.response.json().idVenta);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "32 - Cobrar venta Rechazo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/{{ventaRechazo}}/pagos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"{{clave}}-pago-Rechazo\",\n  \"idUsuario\": \"{{usuario}}\",\n  \"idTurno\": \"{{turno}}\",\n  \"idFormaPago\": \"{{formaPago}}\",\n  \"monto\": 118\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "33 - Emitir registro interno Rechazo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/{{ventaRechazo}}/comprobantes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{usuario}}\",\n  \"idTurno\": \"{{turno}}\",\n  \"tipo\": \"BOLETA\",\n  \"idClienteReceptor\": \"{{clienteRechazo}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('cuentaRechazo',pm.response.json().idCuenta);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "34 - Preparar copia fiscal Rechazo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaRechazo}}/emision-electronica",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"{{clave}}-cpe-Rechazo\",\n  \"idUsuario\": \"{{usuario}}\",\n  \"tasaIgv\": 18\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.test('Total cobrado conservado y desglosado',()=>{const c=pm.response.json();pm.expect(c.estado).to.eql('PREPARADO');pm.expect(c.total).to.eql(118);pm.expect(c.subtotal).to.eql(100);pm.expect(c.igv).to.eql(18);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "35 - Enviar a proveedor Rechazo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaRechazo}}/emision-electronica/envio",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{usuario}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Resultado CDR correcto',()=>{const e=pm.response.json();pm.expect(e.estado).to.eql('RECHAZADO');pm.expect(e.ambiente).to.eql('BETA');pm.expect(e.intentos).to.eql(1);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "36 - Reintentar envío sin duplicar Rechazo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaRechazo}}/emision-electronica/envio",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{usuario}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Conserva el único intento',()=>{pm.expect(pm.response.json().intentos).to.eql(1);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "37 - Verificar caja conservada Rechazo",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/ventas/{{ventaRechazo}}/cuenta"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Un pago y saldo cero',()=>{const c=pm.response.json();pm.expect(c.total).to.eql(118);pm.expect(c.pagado).to.eql(118);pm.expect(c.saldo).to.eql(0);pm.expect(c.pagos).to.have.lengthOf(1);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "38 - Crear receptor Timeout",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/clientes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"persona\": {\n    \"idTipoDocumento\": \"{{dni}}\",\n    \"numeroDocumento\": \"{{dniPrueba}}\",\n    \"empresa\": false,\n    \"nombres\": \"SIM_TIMEOUT\",\n    \"apellidos\": \"{{clave}}\",\n    \"fechaNacimiento\": \"1990-01-01\"\n  }\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const n=String(Number(pm.collectionVariables.get('documentoBase'))+4);pm.collectionVariables.set('dniPrueba',n.slice(-8));pm.collectionVariables.set('rucPrueba','20'+n.slice(-8)+'1');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('clienteTimeout',pm.response.json().idCliente);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "39 - Registrar venta Timeout",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/confirmadas",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveRegistro\": \"{{clave}}-Timeout\",\n  \"idUsuario\": \"{{usuario}}\",\n  \"idClienteComprador\": \"{{clienteTimeout}}\",\n  \"modalidadCobro\": \"SEPARADA\",\n  \"detalles\": [\n    {\n      \"idProducto\": \"{{producto}}\",\n      \"cantidad\": 1\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('ventaTimeout',pm.response.json().idVenta);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "40 - Cobrar venta Timeout",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/{{ventaTimeout}}/pagos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"{{clave}}-pago-Timeout\",\n  \"idUsuario\": \"{{usuario}}\",\n  \"idTurno\": \"{{turno}}\",\n  \"idFormaPago\": \"{{formaPago}}\",\n  \"monto\": 118\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "41 - Emitir registro interno Timeout",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/{{ventaTimeout}}/comprobantes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{usuario}}\",\n  \"idTurno\": \"{{turno}}\",\n  \"tipo\": \"BOLETA\",\n  \"idClienteReceptor\": \"{{clienteTimeout}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('cuentaTimeout',pm.response.json().idCuenta);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "42 - Preparar copia fiscal Timeout",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaTimeout}}/emision-electronica",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"{{clave}}-cpe-Timeout\",\n  \"idUsuario\": \"{{usuario}}\",\n  \"tasaIgv\": 18\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.test('Total cobrado conservado y desglosado',()=>{const c=pm.response.json();pm.expect(c.estado).to.eql('PREPARADO');pm.expect(c.total).to.eql(118);pm.expect(c.subtotal).to.eql(100);pm.expect(c.igv).to.eql(18);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "43 - Enviar a proveedor Timeout",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaTimeout}}/emision-electronica/envio",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{usuario}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Resultado CDR correcto',()=>{const e=pm.response.json();pm.expect(e.estado).to.eql('INCIERTO');pm.expect(e.ambiente).to.eql('BETA');pm.expect(e.intentos).to.eql(1);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "44 - Bloquear reenvío incierto Timeout",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaTimeout}}/emision-electronica/envio",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{usuario}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409',()=>pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "45 - Resolver consultando CDR Timeout",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaTimeout}}/emision-electronica/consulta",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{usuario}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Aceptado sin segundo envío',()=>{const e=pm.response.json();pm.expect(e.estado).to.eql('ACEPTADO');pm.expect(e.intentos).to.eql(1);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "46 - Verificar caja conservada Timeout",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/ventas/{{ventaTimeout}}/cuenta"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Un pago y saldo cero',()=>{const c=pm.response.json();pm.expect(c.total).to.eql(118);pm.expect(c.pagado).to.eql(118);pm.expect(c.saldo).to.eql(0);pm.expect(c.pagos).to.have.lengthOf(1);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "47 - Crear receptor SinCdr",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/clientes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"persona\": {\n    \"idTipoDocumento\": \"{{dni}}\",\n    \"numeroDocumento\": \"{{dniPrueba}}\",\n    \"empresa\": false,\n    \"nombres\": \"SIM_SINCDR\",\n    \"apellidos\": \"{{clave}}\",\n    \"fechaNacimiento\": \"1990-01-01\"\n  }\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const n=String(Number(pm.collectionVariables.get('documentoBase'))+5);pm.collectionVariables.set('dniPrueba',n.slice(-8));pm.collectionVariables.set('rucPrueba','20'+n.slice(-8)+'1');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('clienteSinCdr',pm.response.json().idCliente);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "48 - Registrar venta SinCdr",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/confirmadas",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveRegistro\": \"{{clave}}-SinCdr\",\n  \"idUsuario\": \"{{usuario}}\",\n  \"idClienteComprador\": \"{{clienteSinCdr}}\",\n  \"modalidadCobro\": \"SEPARADA\",\n  \"detalles\": [\n    {\n      \"idProducto\": \"{{producto}}\",\n      \"cantidad\": 1\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('ventaSinCdr',pm.response.json().idVenta);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "49 - Cobrar venta SinCdr",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/{{ventaSinCdr}}/pagos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"{{clave}}-pago-SinCdr\",\n  \"idUsuario\": \"{{usuario}}\",\n  \"idTurno\": \"{{turno}}\",\n  \"idFormaPago\": \"{{formaPago}}\",\n  \"monto\": 118\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "50 - Emitir registro interno SinCdr",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/{{ventaSinCdr}}/comprobantes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{usuario}}\",\n  \"idTurno\": \"{{turno}}\",\n  \"tipo\": \"BOLETA\",\n  \"idClienteReceptor\": \"{{clienteSinCdr}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('cuentaSinCdr',pm.response.json().idCuenta);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "51 - Preparar copia fiscal SinCdr",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaSinCdr}}/emision-electronica",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"{{clave}}-cpe-SinCdr\",\n  \"idUsuario\": \"{{usuario}}\",\n  \"tasaIgv\": 18\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.test('Total cobrado conservado y desglosado',()=>{const c=pm.response.json();pm.expect(c.estado).to.eql('PREPARADO');pm.expect(c.total).to.eql(118);pm.expect(c.subtotal).to.eql(100);pm.expect(c.igv).to.eql(18);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "52 - Enviar a proveedor SinCdr",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaSinCdr}}/emision-electronica/envio",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{usuario}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Resultado CDR correcto',()=>{const e=pm.response.json();pm.expect(e.estado).to.eql('INCIERTO');pm.expect(e.ambiente).to.eql('BETA');pm.expect(e.intentos).to.eql(1);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "53 - Bloquear reenvío incierto SinCdr",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaSinCdr}}/emision-electronica/envio",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{usuario}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409',()=>pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "54 - Resolver consultando CDR SinCdr",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaSinCdr}}/emision-electronica/consulta",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{usuario}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Aceptado sin segundo envío',()=>{const e=pm.response.json();pm.expect(e.estado).to.eql('ACEPTADO');pm.expect(e.intentos).to.eql(1);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "55 - Verificar caja conservada SinCdr",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/ventas/{{ventaSinCdr}}/cuenta"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Un pago y saldo cero',()=>{const c=pm.response.json();pm.expect(c.total).to.eql(118);pm.expect(c.pagado).to.eql(118);pm.expect(c.saldo).to.eql(0);pm.expect(c.pagos).to.have.lengthOf(1);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "56 - Crear receptor Carrera",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/clientes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"persona\": {\n    \"idTipoDocumento\": \"{{dni}}\",\n    \"numeroDocumento\": \"{{dniPrueba}}\",\n    \"empresa\": false,\n    \"nombres\": \"SIM_CARRERA\",\n    \"apellidos\": \"{{clave}}\",\n    \"fechaNacimiento\": \"1990-01-01\"\n  }\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const n=String(Number(pm.collectionVariables.get('documentoBase'))+6);pm.collectionVariables.set('dniPrueba',n.slice(-8));pm.collectionVariables.set('rucPrueba','20'+n.slice(-8)+'1');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('clienteCarrera',pm.response.json().idCliente);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "57 - Registrar venta Carrera",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/confirmadas",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveRegistro\": \"{{clave}}-Carrera\",\n  \"idUsuario\": \"{{usuario}}\",\n  \"idClienteComprador\": \"{{clienteCarrera}}\",\n  \"modalidadCobro\": \"SEPARADA\",\n  \"detalles\": [\n    {\n      \"idProducto\": \"{{producto}}\",\n      \"cantidad\": 1\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('ventaCarrera',pm.response.json().idVenta);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "58 - Cobrar venta Carrera",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/{{ventaCarrera}}/pagos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"{{clave}}-pago-Carrera\",\n  \"idUsuario\": \"{{usuario}}\",\n  \"idTurno\": \"{{turno}}\",\n  \"idFormaPago\": \"{{formaPago}}\",\n  \"monto\": 118\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "59 - Emitir registro interno Carrera",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/{{ventaCarrera}}/comprobantes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{usuario}}\",\n  \"idTurno\": \"{{turno}}\",\n  \"tipo\": \"BOLETA\",\n  \"idClienteReceptor\": \"{{clienteCarrera}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('cuentaCarrera',pm.response.json().idCuenta);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "60 - Preparar copia fiscal Carrera",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaCarrera}}/emision-electronica",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"{{clave}}-cpe-Carrera\",\n  \"idUsuario\": \"{{usuario}}\",\n  \"tasaIgv\": 18\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.test('Total cobrado conservado y desglosado',()=>{const c=pm.response.json();pm.expect(c.estado).to.eql('PREPARADO');pm.expect(c.total).to.eql(118);pm.expect(c.subtotal).to.eql(100);pm.expect(c.igv).to.eql(18);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "61 - Dos envíos concurrentes del mismo documento",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaCarrera}}/emision-electronica"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const r={url:pm.variables.replaceIn('{{baseUrl}}/api/v1/comprobantes/{{cuentaCarrera}}/emision-electronica/envio'),method:'POST',header:{'Content-Type':'application/json'},body:{mode:'raw',raw:JSON.stringify({idUsuario:Number(pm.collectionVariables.get('usuario'))})}};let respuestas=[];for(let i=0;i<2;i++)pm.sendRequest(r,(err,res)=>{pm.test('Envío concurrente responde',()=>{pm.expect(err).to.eql(null);pm.expect(res.code).to.eql(200);});respuestas.push(res.json());if(respuestas.length===2)pm.test('Un solo intento persistido',()=>{respuestas.forEach(e=>pm.expect(e.intentos).to.eql(1));pm.expect(respuestas.some(e=>e.estado==='ENVIANDO')).to.eql(true);});});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "62 - Bloquear reenvío incierto Carrera",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaCarrera}}/emision-electronica/envio",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{usuario}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409',()=>pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "63 - Resolver consultando CDR Carrera",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{cuentaCarrera}}/emision-electronica/consulta",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{usuario}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Aceptado sin segundo envío',()=>{const e=pm.response.json();pm.expect(e.estado).to.eql('ACEPTADO');pm.expect(e.intentos).to.eql(1);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "64 - Verificar caja conservada Carrera",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/ventas/{{ventaCarrera}}/cuenta"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Un pago y saldo cero',()=>{const c=pm.response.json();pm.expect(c.total).to.eql(118);pm.expect(c.pagado).to.eql(118);pm.expect(c.saldo).to.eql(0);pm.expect(c.pagos).to.have.lengthOf(1);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "65 - Stock final sin descuentos por facturar",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/productos/{{producto}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Solo se descuentan las seis ventas',()=>{pm.expect(pm.response.json().stock).to.eql(24);});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

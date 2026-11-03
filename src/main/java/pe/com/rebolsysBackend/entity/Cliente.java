@@ -19,25 +19,30 @@ import lombok.Setter;
 @Entity
 @Table(
     name = "cliente",
-    uniqueConstraints = { @UniqueConstraint(name = "cliente_perfil_unq", columnNames = { "idPerfil" }) }
-)
+    uniqueConstraints = {
+      @UniqueConstraint(
+          name = "cliente_perfil_unq",
+          columnNames = {"idPerfil"})
+    })
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Cliente {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idCliente", nullable = false, columnDefinition = "NUMBER")
-    private Long idCliente;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "idCliente", nullable = false, columnDefinition = "NUMBER")
+  private Long idCliente;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(
-        name = "idPerfil",
-        columnDefinition = "NUMBER",
-        nullable = false,
-        foreignKey = @ForeignKey(name = "cliente_perfil_fk")
-    )
-    private Perfil perfil;
+  @OneToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(
+      name = "idPerfil",
+      columnDefinition = "NUMBER",
+      nullable = false,
+      foreignKey = @ForeignKey(name = "cliente_perfil_fk"))
+  private Perfil perfil;
+
+  @Column(name = "restriccionesMedicas", length = 500, columnDefinition = "VARCHAR2(500)")
+  private String restriccionesMedicas;
 }

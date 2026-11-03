@@ -1,0 +1,48 @@
+purpose:
+  stands_in_for: API 1.3 de facturación de APIsPerú, exclusivamente los endpoints usados por REBOLSYS.
+  unblocks: Verificar autenticación, serialización, beta, envíos, consulta CDR, PDF y fallos sin credenciales reales.
+assumptions:
+  - id: contrato-publico-v1-3
+    status: supported
+    claim: La especificación pública define bearerAuth, invoice/send con DocumentResponse e invoice/status con StatusResult.
+    reason: Se descargó la especificación del proveedor; la implementación se basa en esos esquemas.
+    verification: Lectura del OpenAPI el 2026-11-02; el 2026-11-03 se emitieron factura y boleta beta con código 0, XML y CDR verificado, y se obtuvo el PDF con invoice/pdf.
+    source: https://facturacion.apisperu.com/doc/swagger; api/dependencies/apisperu-facturacion.openapi.json
+    updated_at: '2026-11-03'
+  - id: forma-ambiente-beta
+    status: supported
+    claim: La respuesta autenticada observada identifica beta mediante environment.nombre y publica el receptor beta en fe_url.
+    reason: GET companies y companies/{id} respondieron HTTP 200 para la empresa configurada. La simulación se actualizó a ese formato y se agregaron pruebas de bloqueo de producción.
+    verification: El 2026-11-03 se verificó la respuesta real y pasaron cinco pruebas de ambiente con servidor HTTP local. Se preserva compatibilidad con name y se bloquea un fe_url que no sea el de SUNAT beta.
+    source: api/dependencies/apisperu-facturacion.openapi.json; src/main/java/pe/com/rebolsysBackend/service/impl/ApisPeruFacturacionClient.java
+    updated_at: '2026-11-03'
+  - id: fechas-del-proveedor
+    status: supported
+    claim: Las fechas con segundos, sin fracciones y con -05:00 pasan la validación observada de APIsPerú.
+    reason: Una fecha con microsegundos fue rechazada por invoice/xml; al eliminar las fracciones la API respondió XML HTTP 200 y las emisiones nuevas fueron aceptadas.
+    verification: El 2026-11-03 se validaron fechaEmision y formato de cuotas en pruebas y se verificaron los CDR de FINT-6 y BINT-25.
+    source: src/main/java/pe/com/rebolsysBackend/service/impl/DocumentoFiscalBuilder.java; src/test/java/pe/com/rebolsysBackend/service/impl/DocumentoFiscalBuilderTest.java; API-FACTURACION.md
+    updated_at: '2026-11-03'
+  - id: timeout-tras-emision
+    status: supported
+    claim: Bajo una simulación que guarda el documento antes del timeout, REBOLSYS marca INCIERTO y consulta el CDR sin otro invoice/send.
+    reason: Se observaron las llamadas del backend real y el resultado en Oracle; el simulador registró un envío por documento.
+    verification: El 2026-11-02 pasaron FacturacionElectronicaOracleTest y la colección facturacion-beta (67 solicitudes, 97 aserciones); el registro de la simulación mostró cero documentos con envíos duplicados.
+    source: api/mocks/apisperu-facturacion/default.js; src/test/java/pe/com/rebolsysBackend/propuesta/FacturacionElectronicaOracleTest.java; api/postman/facturacion-beta.postman_collection.json; .local/simulacion-facturacion-v2.ndjson
+    updated_at: '2026-11-02'
+  - id: idempotencia-remota
+    status: unknown
+    claim: APIsPerú deduplica automáticamente envíos repetidos de la misma numeración bajo cualquier error de transporte.
+    reason: El OpenAPI no promete esa garantía; el backend no depende de ella y bloquea el reenvío incierto.
+    verification: El 2026-11-03 se verificaron emisiones beta únicas y reintentos atendidos localmente. No se repitió invoice/send remoto para una misma numeración; la garantía de idempotencia del proveedor sigue sin establecerse.
+    source: api/dependencies/apisperu-facturacion.openapi.json; src/main/java/pe/com/rebolsysBackend/service/impl/EmisionElectronicaServiceImpl.java
+    updated_at: '2026-11-02'
+fingerprints:
+  - id: facturacion-beta-autenticada
+    date: '2026-11-03'
+    commit: '864baa97050aaee53d47d91f7b35d578cd7dce5f (árbol con cambios locales)'
+    cli: Postman 1.74.0
+  - id: facturacion-beta-inicial
+    date: '2026-11-02'
+    commit: '864baa97050aaee53d47d91f7b35d578cd7dce5f (árbol con cambios locales)'
+    cli: Postman 1.74.0

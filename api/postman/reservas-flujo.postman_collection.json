@@ -1,0 +1,852 @@
+{
+  "info": {
+    "name": "REBOLSYS - flujo de reservas asistidas",
+    "description": "Crea datos nuevos de demostración en Oracle local y los conserva. Requiere DATOS_INICIALES_PROPUESTA.sql, V8 y DATOS_RESERVAS.sql. Comprueba anticipo, ocupantes al ingreso, consumo consolidado y separado, boletas internas, saldo y salida. Sin SUNAT.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Preparación de reserva asistida",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/recepcion/catalogos"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+              "const c=pm.response.json();\npm.test('Operador, turno y tipo de gasto preparados',()=>{\n pm.expect(c.turnosAbiertos.length).to.be.above(0);\n pm.expect(c.tiposGasto.length).to.be.above(0);\n pm.expect(c.tiposDocumento.some(d=>d.codigoSunat==='1')).to.eql(true);\n});\nif(c.turnosAbiertos.length){\n const turno=c.turnosAbiertos[0];\n pm.collectionVariables.set('idUsuario',turno.idUsuario);\n pm.collectionVariables.set('idTurno',turno.idTurno);\n}\nconst dni=c.tiposDocumento.find(d=>d.codigoSunat==='1');\nif(dni)pm.collectionVariables.set('idTipoDocumento',dni.id);\nif(c.tiposGasto.length)pm.collectionVariables.set('idTipoMovimiento',c.tiposGasto[0].id);\nconst n=Date.now().toString();\npm.collectionVariables.set('numeroCuarto','P'+n.slice(-8));\npm.collectionVariables.set('documentoAdulto',n.slice(-8));\npm.collectionVariables.set('documentoMenor',(Number(n.slice(-8))+1).toString().padStart(8,'0').slice(-8));\npm.collectionVariables.set('clave',n);\nconst hoy=new Date().toLocaleDateString('en-CA',{timeZone:'America/Lima'});\nconst f=new Date(hoy+'T12:00:00Z');f.setUTCDate(f.getUTCDate()+1);\npm.collectionVariables.set('fechaDesde',f.toISOString().slice(0,10));\npm.collectionVariables.set('fechaIngreso',f.toISOString().slice(0,10)+'T14:00:00');\nf.setUTCDate(f.getUTCDate()+1);\npm.collectionVariables.set('fechaHasta',f.toISOString().slice(0,10));\npm.collectionVariables.set('fechaSalida',f.toISOString().slice(0,10)+'T12:00:00');\npm.collectionVariables.set('nacimientoMenor',(Number(hoy.slice(0,4))-4)+'-01-01');",
+              "const preparacion=pm.response.json();pm.test('Forma de pago preparada',()=>pm.expect(preparacion.formasPago.length).to.be.above(0));pm.collectionVariables.set('idFormaPago',preparacion.formasPago[0].id);",
+              "const local=d=>new Intl.DateTimeFormat('sv-SE',{timeZone:'America/Lima',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).format(d).replace(' ','T');pm.collectionVariables.set('fechaIngreso',local(new Date(Date.now()-3600000)));pm.collectionVariables.set('fechaSalida',local(new Date(Date.now()+86400000)));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2a - Crear tipo de habitación",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/tipos-habitacion",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreTipo\": \"Demo {{clave}}\",\n  \"capacidadMax\": 4,\n  \"precioBase\": 80\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('idTipoHabitacion',pm.response.json().idTipoHabitacion);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2e - Crear categoría de productos",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/categorias",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreCategoria\": \"Productos {{clave}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('idCategoria',pm.response.json().idCategoria);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3 - Registrar cliente Adulto",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/clientes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"persona\": {\n    \"idTipoDocumento\": \"{{idTipoDocumento}}\",\n    \"numeroDocumento\": \"{{documentoAdulto}}\",\n    \"empresa\": false,\n    \"nombres\": \"Adulto\",\n    \"apellidos\": \"Prueba Postman\",\n    \"fechaNacimiento\": \"1990-01-01\"\n  },\n  \"restriccionesMedicas\": null\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+              "pm.collectionVariables.set('idCliente',pm.response.json().idCliente);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3 - Registrar cliente Menor",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/clientes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"persona\": {\n    \"idTipoDocumento\": \"{{idTipoDocumento}}\",\n    \"numeroDocumento\": \"{{documentoMenor}}\",\n    \"empresa\": false,\n    \"nombres\": \"Menor\",\n    \"apellidos\": \"Prueba Postman\",\n    \"fechaNacimiento\": \"{{nacimientoMenor}}\"\n  },\n  \"restriccionesMedicas\": null\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+              "pm.collectionVariables.set('idMenor',pm.response.json().idCliente);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4 - Configuración de habitaciones - crear",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/habitaciones",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"numeroCuarto\": \"{{numeroCuarto}}\",\n  \"idTipoHabitacion\": \"{{idTipoHabitacion}}\",\n  \"estadoHabitacion\": \"DISPONIBLE\",\n  \"capacidadPersonas\": 2,\n  \"plazasCama\": 1,\n  \"maxMenoresSinCama\": 1\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+              "pm.collectionVariables.set('idHabitacion',pm.response.json().idHabitacion);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "9 - Configuración de productos - crear",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/productos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreProducto\": \"Agua prueba {{clave}}\",\n  \"precioActual\": 3.5,\n  \"stock\": 0,\n  \"stockMinimo\": 2,\n  \"idCategoria\": \"{{idCategoria}}\",\n  \"estadoProducto\": \"ACTIVO\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+              "pm.collectionVariables.set('idProducto',pm.response.json().idProducto);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 - Registrar existencias iniciales",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/productos/{{idProducto}}/ajustes-stock",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"stock-{{clave}}\",\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"stockAnterior\": 0,\n  \"stockNuevo\": 10,\n  \"observacion\": \"Existencias iniciales de prueba\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Respuesta JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+              "pm.test('Saldo inicial',()=>pm.expect(pm.response.json().stock).to.eql(10));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 - Reservar habitación sin ocupantes",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/reservas",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveRegistro\": \"reserva-flujo-{{clave}}\",\n  \"idCliente\": \"{{idCliente}}\",\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"detalles\": [\n    {\n      \"idHabitacion\": \"{{idHabitacion}}\",\n      \"fechaIngreso\": \"{{fechaIngreso}}\",\n      \"fechaSalida\": \"{{fechaSalida}}\",\n      \"costoEstadia\": 80\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "const r=pm.response.json();pm.collectionVariables.set('idReserva',r.idReserva);pm.collectionVariables.set('idDetalleReserva',r.detalles[0].idDetalleReserva);pm.test('Sin ocupantes iniciales',()=>pm.expect(r.detalles[0].ocupantes).to.have.lengthOf(0));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 - Consultar deuda sin crear comprobante",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/reservas/{{idReserva}}/cuenta"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Saldo 80 y cuenta virtual',()=>{const r=pm.response.json();pm.expect(r.saldoPendiente).to.eql(80);pm.expect(r.cuentas[0].idCuenta).to.eql(null);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 - Registrar anticipo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/reservas/{{idReserva}}/pagos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"anticipo-{{clave}}\",\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idTurno\": \"{{idTurno}}\",\n  \"idFormaPago\": \"{{idFormaPago}}\",\n  \"monto\": 20\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.test('Saldo 60',()=>pm.expect(pm.response.json().saldoPendiente).to.eql(60));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 - Repetir anticipo sin duplicarlo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/reservas/{{idReserva}}/pagos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"anticipo-{{clave}}\",\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idTurno\": \"{{idTurno}}\",\n  \"idFormaPago\": \"{{idFormaPago}}\",\n  \"monto\": 20\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.test('Solo un anticipo',()=>pm.expect(pm.response.json().totalPagado).to.eql(20));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 - Rechazar ingreso sin ocupantes",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/reservas/detalles/{{idDetalleReserva}}/ingreso",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{idUsuario}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409',()=>pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "14 - Completar adulto y menor con responsable",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/reservas/detalles/{{idDetalleReserva}}/ocupantes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"ocupantes\": [\n    {\n      \"idCliente\": \"{{idCliente}}\",\n      \"ocupaPlazaCama\": true\n    },\n    {\n      \"idCliente\": \"{{idMenor}}\",\n      \"idClienteResponsable\": \"{{idCliente}}\",\n      \"parentescoResponsable\": \"PADRE\",\n      \"ocupaPlazaCama\": false\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Dos ocupantes',()=>pm.expect(pm.response.json().ocupantes).to.have.lengthOf(2));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "15 - Ingresar con saldo pendiente",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/reservas/detalles/{{idDetalleReserva}}/ingreso",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{idUsuario}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Habitación en curso',()=>pm.expect(pm.response.json().estadoDetalle).to.eql('EN_CURSO'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "16 - Consumo cargado a reserva",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/reservas/{{idReserva}}/consumos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveRegistro\": \"consolidado-{{clave}}\",\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idClienteComprador\": \"{{idCliente}}\",\n  \"modalidadCobro\": \"RESERVA\",\n  \"idDetalleReserva\": \"{{idDetalleReserva}}\",\n  \"detalles\": [\n    {\n      \"idProducto\": \"{{idProducto}}\",\n      \"cantidad\": 2\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.test('Consumo 7 soles',()=>pm.expect(pm.response.json().venta.total).to.eql(7));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "17 - Consumo separado antes de pagar reserva",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/reservas/{{idReserva}}/consumos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveRegistro\": \"separado-{{clave}}\",\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idClienteComprador\": \"{{idCliente}}\",\n  \"modalidadCobro\": \"SEPARADA\",\n  \"idDetalleReserva\": \"{{idDetalleReserva}}\",\n  \"detalles\": [\n    {\n      \"idProducto\": \"{{idProducto}}\",\n      \"cantidad\": 1\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('idVentaSeparada',pm.response.json().venta.idVenta);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "18 - Boleta interna aparte con número de reserva",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/reservas/{{idReserva}}/comprobantes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idTurno\": \"{{idTurno}}\",\n  \"tipo\": \"BOLETA\",\n  \"idClienteReceptor\": \"{{idCliente}}\",\n  \"idVenta\": \"{{idVentaSeparada}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Documento separado vinculado',()=>{const d=pm.response.json();pm.expect(d.numeroReserva).to.eql('R'+pm.collectionVariables.get('idReserva'));pm.expect(d.tipo).to.eql('BOLETA');pm.expect(d.estado).to.eql('EMITIDO');pm.expect(d.saldo).to.eql(3.5);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "19 - Pagar consumo aparte",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/reservas/{{idReserva}}/pagos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"pago-consumo-{{clave}}\",\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idTurno\": \"{{idTurno}}\",\n  \"idFormaPago\": \"{{idFormaPago}}\",\n  \"monto\": 3.5,\n  \"idVenta\": \"{{idVentaSeparada}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.test('Restan 67 de la cuenta principal',()=>pm.expect(pm.response.json().saldoPendiente).to.eql(67));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "20 - Impedir salida con deuda",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/reservas/detalles/{{idDetalleReserva}}/salida",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{idUsuario}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409',()=>pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "21 - Liquidar cuenta principal",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/reservas/{{idReserva}}/pagos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"liquidacion-{{clave}}\",\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idTurno\": \"{{idTurno}}\",\n  \"idFormaPago\": \"{{idFormaPago}}\",\n  \"monto\": 67\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.test('Sin deuda',()=>pm.expect(pm.response.json().saldoPendiente).to.eql(0));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "22 - Emitir boleta principal",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/reservas/{{idReserva}}/comprobantes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idTurno\": \"{{idTurno}}\",\n  \"tipo\": \"BOLETA\",\n  \"idClienteReceptor\": \"{{idCliente}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('numeroBoletaPrincipal',pm.response.json().numero);pm.test('Total consolidado 87',()=>pm.expect(pm.response.json().total).to.eql(87));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "23 - Repetir emisión sin nueva numeración",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/reservas/{{idReserva}}/comprobantes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idTurno\": \"{{idTurno}}\",\n  \"tipo\": \"BOLETA\",\n  \"idClienteReceptor\": \"{{idCliente}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Mismo documento',()=>pm.expect(pm.response.json().numero).to.eql(pm.collectionVariables.get('numeroBoletaPrincipal')));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "24 - No reabrir cuenta principal pagada",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/reservas/{{idReserva}}/consumos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveRegistro\": \"rechazo-{{clave}}\",\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idClienteComprador\": \"{{idCliente}}\",\n  \"modalidadCobro\": \"RESERVA\",\n  \"idDetalleReserva\": \"{{idDetalleReserva}}\",\n  \"detalles\": [\n    {\n      \"idProducto\": \"{{idProducto}}\",\n      \"cantidad\": 1\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409',()=>pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "25 - Nuevo consumo separado con reserva pagada",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/reservas/{{idReserva}}/consumos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveRegistro\": \"ultimo-{{clave}}\",\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idClienteComprador\": \"{{idCliente}}\",\n  \"modalidadCobro\": \"SEPARADA\",\n  \"idDetalleReserva\": \"{{idDetalleReserva}}\",\n  \"detalles\": [\n    {\n      \"idProducto\": \"{{idProducto}}\",\n      \"cantidad\": 1\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('idVentaUltima',pm.response.json().venta.idVenta);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "26 - Pagar último consumo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/reservas/{{idReserva}}/pagos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"ultimo-pago-{{clave}}\",\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idTurno\": \"{{idTurno}}\",\n  \"idFormaPago\": \"{{idFormaPago}}\",\n  \"monto\": 3.5,\n  \"idVenta\": \"{{idVentaUltima}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "27 - Finalizar estadía",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/reservas/detalles/{{idDetalleReserva}}/salida",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{idUsuario}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Estadía finalizada',()=>pm.expect(pm.response.json().estadoDetalle).to.eql('FINALIZADA'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "28 - Verificar todos los cargos y pagos",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/reservas/{{idReserva}}/cuenta"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Cuenta completa saldada',()=>{const r=pm.response.json();pm.expect(r.totalCargos).to.eql(94);pm.expect(r.totalPagado).to.eql(94);pm.expect(r.saldoPendiente).to.eql(0);pm.expect(r.cuentas).to.have.lengthOf(3);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "29 - No registrar nuevo consumo después de salir",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/reservas/{{idReserva}}/consumos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveRegistro\": \"fuera-estadia-{{clave}}\",\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idClienteComprador\": \"{{idCliente}}\",\n  \"modalidadCobro\": \"SEPARADA\",\n  \"idDetalleReserva\": \"{{idDetalleReserva}}\",\n  \"detalles\": [\n    {\n      \"idProducto\": \"{{idProducto}}\",\n      \"cantidad\": 1\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409',()=>pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "30 - Verificar historial de consumos",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/reservas/{{idReserva}}/consumos"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Tres consumos con reserva',()=>{const r=pm.response.json();pm.expect(r).to.have.lengthOf(3);r.forEach(c=>pm.expect(c.numeroReserva).to.eql('R'+pm.collectionVariables.get('idReserva')));});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

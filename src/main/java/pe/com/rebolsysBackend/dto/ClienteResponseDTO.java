@@ -11,7 +11,9 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ClienteResponseDTO {
 
-    private Long idCliente;
+  private Long idCliente;
 
-    private Long idPerfil;
+  private Long idPerfil;
+
+  private String restriccionesMedicas;
 }

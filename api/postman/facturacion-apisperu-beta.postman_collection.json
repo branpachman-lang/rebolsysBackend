@@ -1,0 +1,228 @@
+{
+  "info": {
+    "name": "REBOLSYS - emisión contra APIsPerú beta real",
+    "description": "Requiere cuenta de facturación y empresa beta configuradas en APIsPerú, y variables de facturación en el backend. Completar idComprobante de una BOLETA/FACTURA interna emitida, idUsuario y tasaIgv aplicable. No contiene credenciales. La última consulta exige aceptación beta y no considera HTTP 200 como prueba suficiente. Validada contra una empresa beta autenticada el 2026-11-03.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "idComprobante",
+      "value": ""
+    },
+    {
+      "key": "idUsuario",
+      "value": ""
+    },
+    {
+      "key": "tasaIgv",
+      "value": ""
+    },
+    {
+      "key": "direccionReceptor",
+      "value": ""
+    },
+    {
+      "key": "claveOperacion",
+      "value": ""
+    },
+    {
+      "key": "tratamientos",
+      "value": "[]"
+    },
+    {
+      "key": "cuotas",
+      "value": "[]"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Revisar configuración beta",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/facturacion/configuracion"
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if(!pm.variables.get('claveOperacion'))pm.collectionVariables.set('claveOperacion','cpe-'+pm.variables.replaceIn('{{$guid}}'));",
+              "for(const k of ['idComprobante','idUsuario','tasaIgv'])if(!pm.variables.get(k))throw new Error('Completar la variable '+k+' antes de ejecutar');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Configuración preparada',()=>{const c=pm.response.json();pm.expect(c.habilitada).to.eql(true);pm.expect(c.ambiente).to.eql('BETA');pm.expect(c.configuracionPendiente).to.have.lengthOf(0);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Preparar copia fiscal",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{idComprobante}}/emision-electronica",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n \"claveOperacion\":\"{{claveOperacion}}\",\n \"idUsuario\":\"{{idUsuario}}\",\n \"tasaIgv\":\"{{tasaIgv}}\",\n \"direccionReceptor\":\"{{direccionReceptor}}\",\n \"tratamientos\":{{tratamientos}},\n \"cuotas\":{{cuotas}}\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body=JSON.parse(pm.variables.replaceIn(pm.request.body.raw));if(!body.direccionReceptor)delete body.direccionReceptor;pm.request.body.update(JSON.stringify(body));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.test('Total desglosado sin agregar impuesto',()=>{const c=pm.response.json();pm.expect(c.ambiente).to.eql('BETA');pm.expect(Math.abs(c.subtotal+c.igv-c.total)).to.be.below(0.005);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Enviar a APIsPerú beta",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{idComprobante}}/emision-electronica/envio",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"idUsuario\":\"{{idUsuario}}\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Respuesta de envío interpretada',()=>{pm.expect(['ENVIANDO','ACEPTADO','RECHAZADO','INCIERTO','ERROR_ENVIO']).to.include(pm.response.json().estado);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Consultar resultado definitivo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{idComprobante}}/emision-electronica/consulta",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"idUsuario\":\"{{idUsuario}}\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Aceptación beta confirmada',()=>{const c=pm.response.json();pm.expect(c.estado).to.eql('ACEPTADO');pm.expect(c.ambiente).to.eql('BETA');});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Descargar XML firmado",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{idComprobante}}/emision-electronica/xml"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Archivo XML beta',()=>{pm.expect(pm.response.headers.get('Content-Type')).to.include('application/xml');pm.expect(pm.response.headers.get('X-Comprobante-Ambiente')).to.eql('BETA');});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Descargar CDR",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{idComprobante}}/emision-electronica/cdr"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 - Obtener PDF",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/comprobantes/{{idComprobante}}/emision-electronica/pdf"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Representación PDF',()=>pm.expect(pm.response.headers.get('Content-Type')).to.include('application/pdf'));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

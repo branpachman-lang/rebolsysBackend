@@ -20,64 +20,90 @@ import lombok.Setter;
 @Entity
 @Table(
     name = "comprobante_detalle",
-    uniqueConstraints = { @UniqueConstraint(name = "cd_linea_unq", columnNames = { "idComprobante", "numeroLinea" }) }
-)
+    uniqueConstraints = {
+      @UniqueConstraint(
+          name = "cd_linea_unq",
+          columnNames = {"idComprobante", "numeroLinea"})
+    })
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ComprobanteDetalle {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idComprobanteDetalle", nullable = false, columnDefinition = "NUMBER")
-    private Long idComprobanteDetalle;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "idComprobanteDetalle", nullable = false, columnDefinition = "NUMBER")
+  private Long idComprobanteDetalle;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(
-        name = "idComprobante",
-        columnDefinition = "NUMBER",
-        nullable = false,
-        foreignKey = @ForeignKey(name = "cd_comprobante_fk")
-    )
-    private Comprobante comprobante;
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(
+      name = "idComprobante",
+      columnDefinition = "NUMBER",
+      nullable = false,
+      foreignKey = @ForeignKey(name = "cd_comprobante_fk"))
+  private Comprobante comprobante;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(
-        name = "idConsumo",
-        columnDefinition = "NUMBER",
-        nullable = false,
-        foreignKey = @ForeignKey(name = "cd_consumo_fk")
-    )
-    private Consumo consumo;
+  @ManyToOne(fetch = FetchType.LAZY, optional = true)
+  @JoinColumn(name = "idDetalleReserva", nullable = true, columnDefinition = "NUMBER")
+  private DetalleReserva detalleReserva;
 
-    @Column(name = "numeroLinea", nullable = false, precision = 4, scale = 0, columnDefinition = "NUMBER(4)")
-    private Integer numeroLinea;
+  @ManyToOne(fetch = FetchType.LAZY, optional = true)
+  @JoinColumn(name = "idDetalleVenta", nullable = true, columnDefinition = "NUMBER")
+  private DetalleVenta detalleVenta;
 
-    @Column(name = "descripcion", nullable = false, length = 300, columnDefinition = "VARCHAR2(300)")
-    private String descripcion;
+  @Column(
+      name = "numeroLinea",
+      nullable = false,
+      precision = 4,
+      scale = 0,
+      columnDefinition = "NUMBER(4)")
+  private Integer numeroLinea;
 
-    @Column(name = "cantidad", nullable = false, precision = 12, scale = 3, columnDefinition = "NUMBER(12,3)")
-    private BigDecimal cantidad;
+  @Column(name = "descripcion", nullable = false, length = 300, columnDefinition = "VARCHAR2(300)")
+  private String descripcion;
 
-    @Column(name = "valorUnitario", nullable = false, precision = 12, scale = 4, columnDefinition = "NUMBER(12,4)")
-    private BigDecimal valorUnitario;
+  @Column(
+      name = "cantidad",
+      nullable = false,
+      precision = 12,
+      scale = 3,
+      columnDefinition = "NUMBER(12,3)")
+  private BigDecimal cantidad;
 
-    @Column(name = "subtotal", nullable = false, precision = 12, scale = 2, columnDefinition = "NUMBER(12,2)")
-    private BigDecimal subtotal;
+  @Column(
+      name = "valorUnitario",
+      nullable = false,
+      precision = 12,
+      scale = 4,
+      columnDefinition = "NUMBER(12,4)")
+  private BigDecimal valorUnitario;
 
-    @Column(name = "igv", nullable = false, precision = 12, scale = 2, columnDefinition = "NUMBER(12,2)")
-    private BigDecimal igv;
+  @Column(
+      name = "subtotal",
+      insertable = false,
+      updatable = false,
+      nullable = true,
+      precision = 12,
+      scale = 2,
+      columnDefinition = "NUMBER(12,2)")
+  private BigDecimal subtotal;
 
-    @Column(name = "total", nullable = false, precision = 12, scale = 2, columnDefinition = "NUMBER(12,2)")
-    private BigDecimal total;
+  @Column(
+      name = "igv",
+      nullable = false,
+      precision = 12,
+      scale = 2,
+      columnDefinition = "NUMBER(12,2)")
+  private BigDecimal igv;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = true)
-    @JoinColumn(
-        name = "IDHABITACION",
-        columnDefinition = "NUMBER",
-        nullable = true,
-        foreignKey = @ForeignKey(name = "cd_habitacion_fk")
-    )
-    private Habitacion habitacion;
+  @Column(
+      name = "total",
+      insertable = false,
+      updatable = false,
+      nullable = true,
+      precision = 12,
+      scale = 2,
+      columnDefinition = "NUMBER(12,2)")
+  private BigDecimal total;
 }

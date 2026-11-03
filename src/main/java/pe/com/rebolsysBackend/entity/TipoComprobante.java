@@ -16,27 +16,34 @@ import lombok.Setter;
 @Table(
     name = "tipo_comprobante",
     uniqueConstraints = {
-        @UniqueConstraint(name = "tipo_comprobante_codigo_unq", columnNames = { "codigo" }),
-        @UniqueConstraint(name = "tipo_comprobante_nombre_unq", columnNames = { "nombreComprobante" }),
-    }
-)
+      @UniqueConstraint(
+          name = "tipo_comprobante_codigo_unq",
+          columnNames = {"codigo"}),
+      @UniqueConstraint(
+          name = "tipo_comprobante_nombre_unq",
+          columnNames = {"nombreComprobante"}),
+    })
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class TipoComprobante {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idTipoComprobante", nullable = false, columnDefinition = "NUMBER")
-    private Long idTipoComprobante;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "idTipoComprobante", nullable = false, columnDefinition = "NUMBER")
+  private Long idTipoComprobante;
 
-    @Column(name = "codigo", nullable = false, length = 20, columnDefinition = "VARCHAR2(20)")
-    private String codigo;
+  @Column(name = "codigo", nullable = false, length = 20, columnDefinition = "VARCHAR2(20)")
+  private String codigo;
 
-    @Column(name = "nombreComprobante", nullable = false, length = 30, columnDefinition = "VARCHAR2(30)")
-    private String nombreComprobante;
+  @Column(
+      name = "nombreComprobante",
+      nullable = false,
+      length = 30,
+      columnDefinition = "VARCHAR2(30)")
+  private String nombreComprobante;
 
-    @Column(name = "codigoSunat", nullable = true, length = 2, columnDefinition = "VARCHAR2(2)")
-    private String codigoSunat;
+  @Column(name = "codigoSunat", nullable = true, length = 2, columnDefinition = "VARCHAR2(2)")
+  private String codigoSunat;
 }

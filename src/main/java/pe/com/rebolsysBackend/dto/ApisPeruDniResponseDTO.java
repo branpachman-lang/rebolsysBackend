@@ -12,7 +12,6 @@ import lombok.Setter;
 @Setter
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ApisPeruDniResponseDTO {
-
     private String dni;
     private String nombres;
     private String apellidoPaterno;

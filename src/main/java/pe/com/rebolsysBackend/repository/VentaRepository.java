@@ -1,19 +1,18 @@
 package pe.com.rebolsysBackend.repository;
 
-import java.util.List;
-import java.util.Optional;
-import org.springframework.data.jpa.repository.JpaRepository;
-import pe.com.rebolsysBackend.entity.Venta;
 import jakarta.persistence.LockModeType;
-import org.springframework.data.jpa.repository.Lock;
-import org.springframework.data.jpa.repository.Query;
+import java.time.*;
+import java.util.*;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
+import pe.com.rebolsysBackend.entity.*;
 
 public interface VentaRepository extends JpaRepository<Venta, Long> {
-    Optional<Venta> findByClaveRegistro(String clave);
-    List<Venta> findAllByOrderByIdVentaDesc();
+  List<Venta> findByDetalleReservaReservaIdReservaOrderByIdVenta(Long id);
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select v from Venta v where v.idVenta=:id")
-    Optional<Venta> bloquear(@Param("id") Long id);
+  Optional<Venta> findByClaveRegistro(String clave);
+
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("select v from Venta v where v.idVenta=:id")
+  Optional<Venta> bloquear(@Param("id") Long id);
 }

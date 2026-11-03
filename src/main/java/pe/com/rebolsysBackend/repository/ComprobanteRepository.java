@@ -1,16 +1,23 @@
 package pe.com.rebolsysBackend.repository;
 
-import java.util.List;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import pe.com.rebolsysBackend.entity.Comprobante;
-import pe.com.rebolsysBackend.entity.DetalleReserva;
+import java.time.*;
+import java.util.*;
+import org.springframework.data.jpa.repository.*;
+import pe.com.rebolsysBackend.entity.*;
 
 public interface ComprobanteRepository extends JpaRepository<Comprobante, Long> {
-    @Query("select distinct d.comprobante from ComprobanteDetalle d where d.consumo.detalleReserva in :reservas")
-    List<Comprobante> buscarPorReservas(@Param("reservas") List<DetalleReserva> reservas);
+  boolean existsByVentaIdVenta(Long id);
 
-    @Query("select distinct d.comprobante from ComprobanteDetalle d where d.consumo.venta.idVenta=:id")
-    List<Comprobante> buscarPorVenta(@Param("id") Long id);
+  Optional<Comprobante> findByClaveIdempotencia(String clave);
+
+  @Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+  @Query("select c from Comprobante c where c.idComprobante=:id")
+  Optional<Comprobante> bloquear(@org.springframework.data.repository.query.Param("id") Long id);
+
+  @Query(
+      "select c from Comprobante c left join c.venta v left join v.detalleReserva d where"
+          + " (c.reserva.idReserva=:id or d.reserva.idReserva=:id) and"
+          + " c.estadoComprobante<>pe.com.rebolsysBackend.enums.EstadoComprobante.ANULADO order by"
+          + " c.idComprobante")
+  List<Comprobante> cuentasReserva(@org.springframework.data.repository.query.Param("id") Long id);
 }

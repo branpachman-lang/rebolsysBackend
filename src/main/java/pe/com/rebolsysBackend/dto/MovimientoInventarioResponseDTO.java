@@ -12,25 +12,27 @@ import lombok.Setter;
 @AllArgsConstructor
 public class MovimientoInventarioResponseDTO {
 
-    private Long idMovimiento;
+  private Long idMovimiento;
 
-    private Long idProducto;
+  private Long idProducto;
 
-    private Long idItem;
+  private Long idItem;
 
-    private Long idConsumo;
+  private Long idDetalleVenta;
 
-    private Long idDetalleHabitacion;
+  private String claveOperacion;
 
-    private Long idTipoMovimientoAlmacen;
+  private Long idDetalleHabitacion;
 
-    private Integer cantidad;
+  private Long idTipoMovimientoAlmacen;
 
-    private Integer stockResultante;
+  private Integer cantidad;
 
-    private Long idUsuario;
+  private Integer stockResultante;
 
-    private String observacion;
+  private Long idUsuario;
 
-    private LocalDateTime fechaMovimiento;
+  private String observacion;
+
+  private LocalDateTime fechaMovimiento;
 }

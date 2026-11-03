@@ -42,7 +42,6 @@ application-local-private.*
 ### Archivos de trabajo y comprobaciones locales ###
 /docs/
 /postman/
-/src/test/
 /tmp/
 *.log
 *.bak

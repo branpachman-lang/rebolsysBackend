@@ -12,6 +12,9 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ClienteRequestDTO {
 
-    @NotNull(message = "idPerfil es obligatorio")
-    private Long idPerfil;
+  @NotNull(message = "idPerfil es obligatorio")
+  private Long idPerfil;
+
+  @jakarta.validation.constraints.Size(max = 500)
+  private String restriccionesMedicas;
 }

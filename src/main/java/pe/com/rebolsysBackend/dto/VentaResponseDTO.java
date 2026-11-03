@@ -1,35 +1,21 @@
 package pe.com.rebolsysBackend.dto;
 
+import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import pe.com.rebolsysBackend.enums.ModoVenta;
+import java.time.*;
+import java.util.*;
+import pe.com.rebolsysBackend.enums.*;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class VentaResponseDTO {
-
-    private Long idVenta;
-    private String numero;
-    private LocalDateTime fechaVenta;
-    private ModoVenta modoVenta;
-    private String compradorNombre;
-    private Long idDetalleReserva;
-    private Long idReserva;
-    private String referenciaReserva;
-    private String habitacion;
-    private String estadoCobro;
-    private BigDecimal subtotal;
-    private BigDecimal igv;
-    private BigDecimal total;
-    private BigDecimal vuelto;
-    private List<VentaDetalleResponseDTO> detalles;
-    private ComprobanteInternoResponseDTO comprobante;
-    private boolean editable;
-}
+public record VentaResponseDTO(
+    Long idVenta,
+    Long idClienteComprador,
+    String compradorNombreLibre,
+    Long idDetalleReserva,
+    Long idUsuario,
+    ModalidadCobro modalidadCobro,
+    EstadoVenta estadoVenta,
+    LocalDateTime fechaRegistro,
+    LocalDateTime fechaConfirmacion,
+    String claveRegistro,
+    BigDecimal total,
+    List<VentaLineaRespuestaDTO> detalles) {}

@@ -1,0 +1,988 @@
+{
+  "info": {
+    "name": "REBOLSYS - venta de varios productos y cobro directo",
+    "description": "Crea dos productos y compradores de demostración. Prueba carrito, edición, confirmación atómica, stock, pagos y boleta/factura internas. Conserva sus datos. Requiere preparación original, de reservas y DATOS_VENTAS.sql. Sin autenticación ni SUNAT.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Preparar operador, turno y documentos",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/recepcion/catalogos"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const c=pm.response.json();pm.test('Preparación disponible',()=>{pm.expect(c.turnosAbiertos.length).to.be.above(0);pm.expect(c.formasPago.length).to.be.above(0);pm.expect(c.tiposDocumento.some(t=>t.codigoSunat==='1')).to.eql(true);pm.expect(c.tiposDocumento.some(t=>t.codigoSunat==='6')).to.eql(true);});const turno=c.turnosAbiertos[0];pm.collectionVariables.set('idUsuario',turno.idUsuario);pm.collectionVariables.set('idTurno',turno.idTurno);pm.collectionVariables.set('idFormaPago',c.formasPago[0].id);pm.collectionVariables.set('idDni',c.tiposDocumento.find(t=>t.codigoSunat==='1').id);pm.collectionVariables.set('idRuc',c.tiposDocumento.find(t=>t.codigoSunat==='6').id);",
+              "const n=Date.now().toString();pm.collectionVariables.set('clave',n+'-'+Math.random().toString(36).slice(2,7));pm.collectionVariables.set('dni',n.slice(-8));pm.collectionVariables.set('ruc','20'+n.slice(-8)+'1');"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Crear categoría de demostración",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/categorias",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreCategoria\": \"Venta {{clave}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('idCategoria',pm.response.json().idCategoria);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Crear comprador de demostración",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/clientes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"persona\": {\n    \"idTipoDocumento\": \"{{idDni}}\",\n    \"numeroDocumento\": \"{{dni}}\",\n    \"empresa\": false,\n    \"nombres\": \"Cliente\",\n    \"apellidos\": \"Prueba de venta\",\n    \"fechaNacimiento\": \"1990-01-01\"\n  }\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('idCliente',pm.response.json().idCliente);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Crear producto Agua",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/productos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreProducto\": \"Agua venta {{clave}}\",\n  \"precioActual\": 3.5,\n  \"stock\": 0,\n  \"stockMinimo\": 1,\n  \"idCategoria\": \"{{idCategoria}}\",\n  \"estadoProducto\": \"ACTIVO\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('idAgua',pm.response.json().idProducto);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cargar existencias de Agua",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/productos/{{idAgua}}/ajustes-stock",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"stock-Agua-{{clave}}\",\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"stockAnterior\": 0,\n  \"stockNuevo\": 10,\n  \"observacion\": \"Existencias para demostración de venta\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Crear producto Galletas",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/productos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreProducto\": \"Galletas venta {{clave}}\",\n  \"precioActual\": 2,\n  \"stock\": 0,\n  \"stockMinimo\": 1,\n  \"idCategoria\": \"{{idCategoria}}\",\n  \"estadoProducto\": \"ACTIVO\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('idGalletas',pm.response.json().idProducto);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cargar existencias de Galletas",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/productos/{{idGalletas}}/ajustes-stock",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"stock-Galletas-{{clave}}\",\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"stockAnterior\": 0,\n  \"stockNuevo\": 10,\n  \"observacion\": \"Existencias para demostración de venta\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 - Crear carrito con dos productos",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveRegistro\": \"carrito-{{clave}}\",\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idClienteComprador\": \"{{idCliente}}\",\n  \"modalidadCobro\": \"SEPARADA\",\n  \"detalles\": [\n    {\n      \"idProducto\": \"{{idAgua}}\",\n      \"cantidad\": 2\n    },\n    {\n      \"idProducto\": \"{{idGalletas}}\",\n      \"cantidad\": 3\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "const v=pm.response.json();pm.collectionVariables.set('idVenta',v.idVenta);pm.test('Borrador por 13 soles',()=>{pm.expect(v.estadoVenta).to.eql('BORRADOR');pm.expect(v.detalles).to.have.lengthOf(2);pm.expect(v.total).to.eql(13);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 - El borrador no descuenta stock",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/productos/{{idAgua}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Stock intacto',()=>pm.expect(pm.response.json().stock).to.eql(10));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 - Editar cantidades del carrito",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/{{idVenta}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idClienteComprador\": \"{{idCliente}}\",\n  \"detalles\": [\n    {\n      \"idProducto\": \"{{idAgua}}\",\n      \"cantidad\": 3\n    },\n    {\n      \"idProducto\": \"{{idGalletas}}\",\n      \"cantidad\": 2\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Total 14.50 calculado por servidor',()=>pm.expect(pm.response.json().total).to.eql(14.5));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 - Confirmar carrito completo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/{{idVenta}}/confirmacion",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{idUsuario}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Venta confirmada',()=>pm.expect(pm.response.json().estadoVenta).to.eql('CONFIRMADA'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 - Repetir confirmación sin descontar otra vez",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/{{idVenta}}/confirmacion",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{idUsuario}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 - Verificar stock de agua",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/productos/{{idAgua}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Quedan 7 aguas',()=>pm.expect(pm.response.json().stock).to.eql(7));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "14 - Verificar stock de galletas",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/productos/{{idGalletas}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Quedan 8 galletas',()=>pm.expect(pm.response.json().stock).to.eql(8));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "15 - Consultar cuenta sin materializar documento",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/ventas/{{idVenta}}/cuenta"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Cuenta virtual pendiente',()=>{const c=pm.response.json();pm.expect(c.idCuenta).to.eql(null);pm.expect(c.saldo).to.eql(14.5);pm.expect(c.idReserva).to.eql(null);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "16 - Registrar abono de venta directa",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/{{idVenta}}/pagos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"abono-{{clave}}\",\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idTurno\": \"{{idTurno}}\",\n  \"idFormaPago\": \"{{idFormaPago}}\",\n  \"monto\": 5\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.test('Saldo 9.50',()=>pm.expect(pm.response.json().saldo).to.eql(9.5));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "17 - Repetir abono sin duplicar caja",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/{{idVenta}}/pagos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"abono-{{clave}}\",\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idTurno\": \"{{idTurno}}\",\n  \"idFormaPago\": \"{{idFormaPago}}\",\n  \"monto\": 5\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.test('Un solo abono',()=>pm.expect(pm.response.json().pagos).to.have.lengthOf(1));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "18 - Pagar saldo restante",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/{{idVenta}}/pagos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"saldo-{{clave}}\",\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idTurno\": \"{{idTurno}}\",\n  \"idFormaPago\": \"{{idFormaPago}}\",\n  \"monto\": 9.5\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.test('Venta pagada',()=>{const c=pm.response.json();pm.expect(c.saldo).to.eql(0);pm.expect(c.pagado).to.eql(14.5);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "19 - Emitir boleta interna con todos los productos",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/{{idVenta}}/comprobantes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idTurno\": \"{{idTurno}}\",\n  \"tipo\": \"BOLETA\",\n  \"idClienteReceptor\": \"{{idCliente}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const c=pm.response.json();pm.collectionVariables.set('numeroBoleta',c.numero);pm.test('Boleta directa por 14.50',()=>{pm.expect(c.tipo).to.eql('BOLETA');pm.expect(c.estado).to.eql('EMITIDO');pm.expect(c.total).to.eql(14.5);pm.expect(c.lineas).to.have.lengthOf(2);pm.expect(c.numeroReserva).to.eql(null);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "20 - Repetir emisión sin nueva numeración",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/{{idVenta}}/comprobantes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idTurno\": \"{{idTurno}}\",\n  \"tipo\": \"BOLETA\",\n  \"idClienteReceptor\": \"{{idCliente}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Misma boleta',()=>pm.expect(pm.response.json().numero).to.eql(pm.collectionVariables.get('numeroBoleta')));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "21 - Impedir edición de venta confirmada",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/{{idVenta}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idClienteComprador\": \"{{idCliente}}\",\n  \"detalles\": [\n    {\n      \"idProducto\": \"{{idAgua}}\",\n      \"cantidad\": 1\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409',()=>pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "22 - Impedir anulación sin reverso de una venta cobrada",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/{{idVenta}}/anulacion",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{idUsuario}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409',()=>pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "23 - Falla en segundo producto revierte todo el registro",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/confirmadas",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveRegistro\": \"fallida-{{clave}}\",\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idClienteComprador\": \"{{idCliente}}\",\n  \"modalidadCobro\": \"SEPARADA\",\n  \"detalles\": [\n    {\n      \"idProducto\": \"{{idAgua}}\",\n      \"cantidad\": 1\n    },\n    {\n      \"idProducto\": \"{{idGalletas}}\",\n      \"cantidad\": 99\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409',()=>pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "24 - Stock de agua no cambia por venta fallida",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/productos/{{idAgua}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Conserva 7',()=>pm.expect(pm.response.json().stock).to.eql(7));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "25 - Stock de galletas no cambia por venta fallida",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/productos/{{idGalletas}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Conserva 8',()=>pm.expect(pm.response.json().stock).to.eql(8));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "26 - Venta fallida no deja borrador",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/ventas?pagina=0&tamanio=100"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Sin venta parcial',()=>pm.expect(pm.response.json().contenido.some(v=>v.claveRegistro==='fallida-'+pm.collectionVariables.get('clave'))).to.eql(false));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "27 - Registrar y confirmar otra venta en una operación",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/confirmadas",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveRegistro\": \"rapida-{{clave}}\",\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idClienteComprador\": \"{{idCliente}}\",\n  \"modalidadCobro\": \"SEPARADA\",\n  \"detalles\": [\n    {\n      \"idProducto\": \"{{idAgua}}\",\n      \"cantidad\": 1\n    },\n    {\n      \"idProducto\": \"{{idGalletas}}\",\n      \"cantidad\": 2\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('idVentaRapida',pm.response.json().idVenta);pm.test('Venta confirmada por 7.50',()=>{const v=pm.response.json();pm.expect(v.estadoVenta).to.eql('CONFIRMADA');pm.expect(v.total).to.eql(7.5);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "28 - Anular venta sin cobros y reponer productos",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/{{idVentaRapida}}/anulacion",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{idUsuario}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "29 - Repetir anulación sin reponer dos veces",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/{{idVentaRapida}}/anulacion",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{idUsuario}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "30 - Verificar reposición de galletas",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/productos/{{idGalletas}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Stock repuesto una sola vez',()=>pm.expect(pm.response.json().stock).to.eql(8));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "31 - Rechazar producto duplicado en el carrito",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveRegistro\": \"repetidos-{{clave}}\",\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idClienteComprador\": \"{{idCliente}}\",\n  \"modalidadCobro\": \"SEPARADA\",\n  \"detalles\": [\n    {\n      \"idProducto\": \"{{idAgua}}\",\n      \"cantidad\": 1\n    },\n    {\n      \"idProducto\": \"{{idAgua}}\",\n      \"cantidad\": 1\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409',()=>pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "32 - Rechazar cantidad cero",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/confirmadas",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveRegistro\": \"cero-{{clave}}\",\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idClienteComprador\": \"{{idCliente}}\",\n  \"modalidadCobro\": \"SEPARADA\",\n  \"detalles\": [\n    {\n      \"idProducto\": \"{{idAgua}}\",\n      \"cantidad\": 0\n    },\n    {\n      \"idProducto\": \"{{idGalletas}}\",\n      \"cantidad\": 1\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400',()=>pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "33 - Crear receptor empresarial de demostración",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/clientes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"persona\": {\n    \"idTipoDocumento\": \"{{idRuc}}\",\n    \"numeroDocumento\": \"{{ruc}}\",\n    \"empresa\": true,\n    \"razonSocial\": \"Empresa de prueba {{clave}}\",\n    \"direccionFiscal\": \"Dirección local de prueba\"\n  }\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('idEmpresa',pm.response.json().idCliente);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "34 - Venta de varios productos para factura",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/confirmadas",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveRegistro\": \"factura-{{clave}}\",\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idClienteComprador\": \"{{idEmpresa}}\",\n  \"modalidadCobro\": \"SEPARADA\",\n  \"detalles\": [\n    {\n      \"idProducto\": \"{{idAgua}}\",\n      \"cantidad\": 1\n    },\n    {\n      \"idProducto\": \"{{idGalletas}}\",\n      \"cantidad\": 1\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('idVentaFactura',pm.response.json().idVenta);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "35 - Cobrar venta para factura",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/{{idVentaFactura}}/pagos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"pago-factura-{{clave}}\",\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idTurno\": \"{{idTurno}}\",\n  \"idFormaPago\": \"{{idFormaPago}}\",\n  \"monto\": 5.5\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "36 - Emitir factura interna a receptor con RUC",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/ventas/{{idVentaFactura}}/comprobantes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": \"{{idUsuario}}\",\n  \"idTurno\": \"{{idTurno}}\",\n  \"tipo\": \"FACTURA\",\n  \"idClienteReceptor\": \"{{idEmpresa}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Factura directa pagada',()=>{const c=pm.response.json();pm.expect(c.tipo).to.eql('FACTURA');pm.expect(c.serie).to.eql('FINT');pm.expect(c.total).to.eql(5.5);pm.expect(c.saldo).to.eql(0);pm.expect(c.lineas).to.have.lengthOf(2);pm.expect(c.numeroReserva).to.eql(null);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "37 - Verificar historial de cuenta principal de la demostración",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/ventas/{{idVenta}}/cuenta"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Saldo y cobros conservados',()=>{const c=pm.response.json();pm.expect(c.tipo).to.eql('BOLETA');pm.expect(c.pagado).to.eql(14.5);pm.expect(c.saldo).to.eql(0);pm.expect(c.pagos).to.have.lengthOf(2);});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

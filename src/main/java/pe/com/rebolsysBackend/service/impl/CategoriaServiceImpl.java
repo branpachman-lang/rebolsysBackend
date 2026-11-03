@@ -10,6 +10,7 @@ import pe.com.rebolsysBackend.entity.Categoria;
 import pe.com.rebolsysBackend.exception.RecursoNoEncontradoException;
 import pe.com.rebolsysBackend.exception.ReglaNegocioException;
 import pe.com.rebolsysBackend.repository.CategoriaRepository;
+import pe.com.rebolsysBackend.repository.ProductoRepository;
 import pe.com.rebolsysBackend.service.service.CategoriaService;
 
 @Service
@@ -17,24 +18,28 @@ import pe.com.rebolsysBackend.service.service.CategoriaService;
 public class CategoriaServiceImpl implements CategoriaService {
 
     private final CategoriaRepository categoriaRepository;
+    private final ProductoRepository productos;
+    private final ReglasPropuesta reglas;
 
     @Override
     @Transactional
     public CategoriaResponseDTO create(CategoriaRequestDTO r) {
+        reglas.validar(r);
         if (categoriaRepository.existsByNombreCategoria(r.getNombreCategoria().trim())) throw new ReglaNegocioException(
             "Ya existe una categoría con ese nombre"
         );
         var c = new Categoria();
         c.setNombreCategoria(r.getNombreCategoria().trim());
-        return convertirResponse(categoriaRepository.save(c));
+        return convertirResponse(categoriaRepository.saveAndFlush(c));
     }
 
     @Override
     @Transactional
     public CategoriaResponseDTO update(Long id, CategoriaRequestDTO r) {
+        reglas.validar(r);
         var c = buscar(id);
         c.setNombreCategoria(r.getNombreCategoria().trim());
-        return convertirResponse(categoriaRepository.save(c));
+        return convertirResponse(categoriaRepository.saveAndFlush(c));
     }
 
     @Override
@@ -52,7 +57,11 @@ public class CategoriaServiceImpl implements CategoriaService {
     @Override
     @Transactional
     public void delete(Long id) {
-        categoriaRepository.delete(buscar(id));
+        var c = buscar(id);
+        ReglasPropuesta.exigir(!productos.existsByCategoriaIdCategoria(id),
+            "La categoría tiene productos asociados");
+        categoriaRepository.delete(c);
+        categoriaRepository.flush();
     }
 
     private Categoria buscar(Long id) {

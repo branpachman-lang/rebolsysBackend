@@ -24,20 +24,23 @@ import pe.com.rebolsysBackend.entity.id.SerieComprobanteId;
 @AllArgsConstructor
 public class SerieComprobante {
 
-    @EmbeddedId
-    private SerieComprobanteId id;
+  @EmbeddedId private SerieComprobanteId id;
 
-    @ColumnDefault("1")
-    @Column(name = "siguienteNumero", nullable = false, precision = 10, scale = 0, columnDefinition = "NUMBER(10)")
-    private Long siguienteNumero = 1L;
+  @ColumnDefault("1")
+  @Column(
+      name = "siguienteNumero",
+      nullable = false,
+      precision = 10,
+      scale = 0,
+      columnDefinition = "NUMBER(10)")
+  private Long siguienteNumero = 1L;
 
-    @MapsId("idTipoComprobante")
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(
-        name = "idTipoComprobante",
-        columnDefinition = "NUMBER",
-        nullable = false,
-        foreignKey = @ForeignKey(name = "sc_tipo_fk")
-    )
-    private TipoComprobante tipoComprobante;
+  @MapsId("idTipoComprobante")
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(
+      name = "idTipoComprobante",
+      columnDefinition = "NUMBER",
+      nullable = false,
+      foreignKey = @ForeignKey(name = "sc_tipo_fk"))
+  private TipoComprobante tipoComprobante;
 }

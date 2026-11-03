@@ -1,10 +1,17 @@
 package pe.com.rebolsysBackend.repository;
 
-import java.util.List;
-import org.springframework.data.jpa.repository.JpaRepository;
-import pe.com.rebolsysBackend.entity.TurnoCaja;
-import pe.com.rebolsysBackend.entity.Usuario;
+import jakarta.persistence.LockModeType;
+import java.time.*;
+import java.util.*;
+import org.springframework.data.jpa.repository.*;
+import org.springframework.data.repository.query.Param;
+import pe.com.rebolsysBackend.entity.*;
 
 public interface TurnoCajaRepository extends JpaRepository<TurnoCaja, Long> {
-    List<TurnoCaja> findByUsuarioAndFechaCierreIsNullOrderByIdTurno(Usuario usuario);
+  List<TurnoCaja> findByUsuarioIdUsuarioAndEstadoSesionAndFechaCierreIsNullOrderByIdTurno(
+      Long usuario, Integer estado);
+
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("select t from TurnoCaja t where t.idTurno=:id")
+  Optional<TurnoCaja> bloquear(@Param("id") Long id);
 }

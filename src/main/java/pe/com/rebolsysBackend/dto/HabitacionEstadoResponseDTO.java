@@ -1,33 +1,20 @@
 package pe.com.rebolsysBackend.dto;
 
+import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
-import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import java.time.*;
+import java.util.*;
+import pe.com.rebolsysBackend.enums.*;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
-public class HabitacionEstadoResponseDTO {
-
-    private Long idHabitacion;
-
-    private String numero;
-
-    private String tipo;
-
-    private int capacidad;
-    private int plazasCama;
-    private int maxMenoresSinCama;
-
-    private BigDecimal precio;
-
-    private String estado;
-
-    private boolean disponible;
-
-    private List<HabitacionReservaResponseDTO> reservas;
-}
+public record HabitacionEstadoResponseDTO(
+    Long idHabitacion,
+    String numero,
+    String tipo,
+    int capacidad,
+    int plazasCama,
+    int maxMenoresSinCama,
+    BigDecimal precio,
+    EstadoHabitacion estado,
+    boolean ocupadaActualmente,
+    boolean disponible,
+    List<HabitacionReservaResponseDTO> reservas) {}

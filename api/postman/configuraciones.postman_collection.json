@@ -1,0 +1,1192 @@
+{
+  "info": {
+    "name": "REBOLSYS - configuración de habitaciones, mobiliario y productos",
+    "description": "Verifica mantenimientos, filtros paginados, estados físicos, historial de mobiliario y stock bajo en el backend real. Crea registros propios de demostración y conserva los que tienen historial. Requiere DATOS_INICIALES_PROPUESTA.sql y DATOS_CONFIGURACIONES.sql. Sin autenticación.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Catálogos para formularios",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/configuraciones/catalogos"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Estados y listas completas',()=>{const c=pm.response.json();pm.expect(c.estadosHabitacion).to.include('MANTENIMIENTO');pm.expect(c.estadosItem).to.include('En habitacion');pm.expect(c.estadosConservacion).to.include('EN_REPARACION');pm.expect(c.tiposHabitacion).to.be.an('array');pm.expect(c.categorias).to.be.an('array');});",
+              "const clave=Date.now().toString(36)+Math.random().toString(36).slice(2,5);pm.collectionVariables.set('clave',clave);pm.collectionVariables.set('numero','C'+Date.now().toString(36));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Operador existente",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/recepcion/catalogos"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Existe operador con turno abierto',()=>{pm.expect(pm.response.json().turnosAbiertos.length).to.be.above(0);});",
+              "pm.collectionVariables.set('usuario',pm.response.json().turnosAbiertos[0].idUsuario);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Crear tipo de habitación",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/tipos-habitacion",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreTipo\": \"Config {{clave}}\",\n  \"capacidadMax\": 4,\n  \"precioBase\": 95\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('tipo',pm.response.json().idTipoHabitacion);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Editar tipo de habitación",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/tipos-habitacion/{{tipo}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreTipo\": \"Config {{clave}}\",\n  \"capacidadMax\": 4,\n  \"precioBase\": 100\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Tarifa actualizada',()=>{pm.expect(pm.response.json().precioBase).to.eql(100);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Crear tipo de mobiliario",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/tipos-item",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreItem\": \"Mueble {{clave}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('tipoItem',pm.response.json().idTipoItem);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Editar tipo de mobiliario",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/tipos-item/{{tipoItem}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreItem\": \"Equipo {{clave}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 - Crear categoría",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/categorias",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreCategoria\": \"Config {{clave}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('categoria',pm.response.json().idCategoria);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 - Editar categoría",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/categorias/{{categoria}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreCategoria\": \"Hospedaje {{clave}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 - Crear habitación",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/habitaciones",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"numeroCuarto\": \"{{numero}}\",\n  \"idTipoHabitacion\": \"{{tipo}}\",\n  \"estadoHabitacion\": \"DISPONIBLE\",\n  \"capacidadPersonas\": 3,\n  \"plazasCama\": 2,\n  \"maxMenoresSinCama\": 1\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('habitacion',pm.response.json().idHabitacion);",
+              "pm.test('Capacidad y tarifa',()=>{pm.expect(pm.response.json().precioBase).to.eql(100);pm.expect(pm.response.json().plazasCama).to.eql(2);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 - Crear segunda habitación",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/habitaciones",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"numeroCuarto\": \"D{{numero}}\",\n  \"idTipoHabitacion\": \"{{tipo}}\",\n  \"estadoHabitacion\": \"DISPONIBLE\",\n  \"capacidadPersonas\": 3,\n  \"plazasCama\": 2,\n  \"maxMenoresSinCama\": 1\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('habitacion2',pm.response.json().idHabitacion);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 - Filtrar y paginar habitaciones",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/habitaciones/configuracion/pagina?idTipoHabitacion={{tipo}}&tamanio=1"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Dos habitaciones en dos páginas',()=>{const p=pm.response.json();pm.expect(p.totalElementos).to.eql(2);pm.expect(p.totalPaginas).to.eql(2);pm.expect(p.contenido.length).to.eql(1);pm.expect(p.ultima).to.eql(false);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 - Marcar mantenimiento",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/habitaciones/{{habitacion}}/estado",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"estadoHabitacion\": \"MANTENIMIENTO\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Solo cambia el estado',()=>{const h=pm.response.json();pm.expect(h.estadoHabitacion).to.eql('MANTENIMIENTO');pm.expect(h.capacidadPersonas).to.eql(3);pm.expect(h.numeroCuarto).to.eql(pm.collectionVariables.get('numero'));});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 - Filtrar estado físico",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/habitaciones/configuracion/pagina?idTipoHabitacion={{tipo}}&estado=MANTENIMIENTO&capacidadMinima=3"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Una habitación en mantenimiento',()=>{pm.expect(pm.response.json().totalElementos).to.eql(1);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "14 - Impedir ocupación ficticia",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/habitaciones/{{habitacion}}/estado",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"estadoHabitacion\": \"OCUPADO\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409',()=>pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "15 - Habilitar habitación",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/habitaciones/{{habitacion}}/estado",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"estadoHabitacion\": \"DISPONIBLE\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "16 - Impedir reducir máximo por debajo de habitaciones",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/tipos-habitacion/{{tipo}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreTipo\": \"Config {{clave}}\",\n  \"capacidadMax\": 2,\n  \"precioBase\": 95\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409',()=>pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "17 - Crear mobiliario con estado canónico",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/items",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreItem\": \"Televisor {{clave}}\",\n  \"idTipoItem\": \"{{tipoItem}}\",\n  \"estadoItem\": \"ACTIVO\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('item',pm.response.json().idItem);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "18 - Asignar mobiliario",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/items/{{item}}/asignacion",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"{{clave}}-asignar\",\n  \"idUsuario\": \"{{usuario}}\",\n  \"idHabitacion\": \"{{habitacion}}\",\n  \"estadoActualItem\": \"BUENO\",\n  \"observacion\": \"Instalación\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Ubicación y tipo visibles',()=>{const i=pm.response.json();pm.expect(i.idHabitacion).to.eql(Number(pm.collectionVariables.get('habitacion')));pm.expect(i.nombreTipo).to.include('Equipo');pm.expect(i.numeroCuarto).to.eql(pm.collectionVariables.get('numero'));});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "19 - Impedir baja de mobiliario asignado",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/items/{{item}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409',()=>pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "20 - Registrar conservación",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/items/{{item}}/conservacion",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"{{clave}}-conservacion\",\n  \"idUsuario\": \"{{usuario}}\",\n  \"estadoActualItem\": \"DANADO\",\n  \"observacion\": \"Pantalla dañada\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Condición actualizada',()=>{pm.expect(pm.response.json().estadoActualItem).to.eql('DANADO');});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "21 - Reintentar conservación sin duplicar",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/items/{{item}}/conservacion",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"{{clave}}-conservacion\",\n  \"idUsuario\": \"{{usuario}}\",\n  \"estadoActualItem\": \"DANADO\",\n  \"observacion\": \"Pantalla dañada\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "22 - Filtrar mobiliario por ubicación y conservación",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/items/configuracion?idTipoItem={{tipoItem}}&idHabitacion={{habitacion}}&estado=En%20habitacion&estadoConservacion=DANADO&sinAsignar=false"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Una unidad actual',()=>{pm.expect(pm.response.json().totalElementos).to.eql(1);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "23 - Trasladar a otra habitación",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/items/{{item}}/asignacion",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"{{clave}}-traslado\",\n  \"idUsuario\": \"{{usuario}}\",\n  \"idHabitacion\": \"{{habitacion2}}\",\n  \"estadoActualItem\": \"DANADO\",\n  \"observacion\": \"Traslado para revisión\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "24 - Habitación anterior sin mobiliario",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/habitaciones/{{habitacion}}/items"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('No lista asignaciones antiguas',()=>{pm.expect(pm.response.json()).to.have.lengthOf(0);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "25 - Retirar conservando estado final",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/items/{{item}}/asignacion",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"{{clave}}-retiro\",\n  \"idUsuario\": \"{{usuario}}\",\n  \"idHabitacion\": null,\n  \"estadoActualItem\": \"EN_REPARACION\",\n  \"observacion\": \"Enviar al taller\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Sin ubicación con última condición',()=>{const i=pm.response.json();pm.expect(i.idHabitacion).to.eql(null);pm.expect(i.estadoActualItem).to.eql('EN_REPARACION');pm.expect(i.estadoItem).to.eql('Activo');});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "26 - Historial de mobiliario",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/items/{{item}}/historial"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Cuatro hechos sin duplicación ni firmas internas',()=>{const h=pm.response.json();pm.expect(h.map(x=>x.accion)).to.eql(['RETIRO','TRASLADO','CONSERVACION','ASIGNACION']);pm.expect(h[0].idHabitacionDestino).to.eql(null);pm.expect(h[1].idHabitacionOrigen).to.eql(Number(pm.collectionVariables.get('habitacion')));h.forEach(x=>{pm.expect(x.usuario).to.be.a('string');pm.expect(x.observacion).not.to.match(/[[0-9a-f]{64}]$/);});});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "27 - Filtrar mobiliario retirado en reparación",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/items/configuracion?idTipoItem={{tipoItem}}&sinAsignar=true&estadoConservacion=EN_REPARACION"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Unidad disponible para gestión',()=>{pm.expect(pm.response.json().totalElementos).to.eql(1);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "28 - Desactivar mobiliario",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/items/{{item}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 204',()=>pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "29 - Reactivar mobiliario",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/items/{{item}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreItem\": \"Televisor {{clave}}\",\n  \"idTipoItem\": \"{{tipoItem}}\",\n  \"estadoItem\": \"Activo\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "30 - Crear producto sin existencias",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/productos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreProducto\": \"Agua %_! {{clave}}\",\n  \"precioActual\": 3.5,\n  \"stock\": 0,\n  \"stockMinimo\": 5,\n  \"idCategoria\": \"{{categoria}}\",\n  \"estadoProducto\": \"ACTIVO\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('producto',pm.response.json().idProducto);",
+              "pm.test('Stock bajo inicial',()=>{pm.expect(pm.response.json().stockBajo).to.eql(true);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "31 - Cargar stock con responsable",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/productos/{{producto}}/ajustes-stock",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"{{clave}}-stock\",\n  \"idUsuario\": \"{{usuario}}\",\n  \"stockAnterior\": 0,\n  \"stockNuevo\": 5,\n  \"observacion\": \"Carga inicial\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Mínimo incluido en alerta',()=>{pm.expect(pm.response.json().stock).to.eql(5);pm.expect(pm.response.json().stockBajo).to.eql(true);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "32 - Reintentar ajuste sin duplicar",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/productos/{{producto}}/ajustes-stock",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveOperacion\": \"{{clave}}-stock\",\n  \"idUsuario\": \"{{usuario}}\",\n  \"stockAnterior\": 0,\n  \"stockNuevo\": 5,\n  \"observacion\": \"Carga inicial\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "33 - Buscar caracteres literales y stock bajo",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/productos?idCategoria={{categoria}}&buscar=%25_%21&stockBajo=true&estado=ACTIVO"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Coincide producto literal',()=>{pm.expect(pm.response.json().totalElementos).to.eql(1);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "34 - Editar datos sin alterar existencias",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/productos/{{producto}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreProducto\": \"Agua %_! {{clave}}\",\n  \"precioActual\": 4,\n  \"stock\": 5,\n  \"stockMinimo\": 4,\n  \"idCategoria\": \"{{categoria}}\",\n  \"estadoProducto\": \"ACTIVO\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Stock conservado y alerta recalculada',()=>{const p=pm.response.json();pm.expect(p.stock).to.eql(5);pm.expect(p.precioActual).to.eql(4);pm.expect(p.stockBajo).to.eql(false);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "35 - Filtrar stock superior al mínimo",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/productos?idCategoria={{categoria}}&stockBajo=false"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Un producto suficiente',()=>{pm.expect(pm.response.json().totalElementos).to.eql(1);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "36 - Impedir cambiar stock por edición",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/productos/{{producto}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreProducto\": \"Agua %_! {{clave}}\",\n  \"precioActual\": 3.5,\n  \"stock\": 99,\n  \"stockMinimo\": 5,\n  \"idCategoria\": \"{{categoria}}\",\n  \"estadoProducto\": \"ACTIVO\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409',()=>pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "37 - Consultar movimientos de producto",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/productos/{{producto}}/movimientos"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Un ajuste con operador',()=>{const m=pm.response.json();pm.expect(m).to.have.lengthOf(1);pm.expect(m[0].idUsuario).to.eql(Number(pm.collectionVariables.get('usuario')));});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "38 - Desactivar producto",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/productos/{{producto}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 204',()=>pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "39 - Producto inactivo visible en configuración",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/productos?idCategoria={{categoria}}&estado=INACTIVO"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Conserva existencias e historial',()=>{const p=pm.response.json();pm.expect(p.totalElementos).to.eql(1);pm.expect(p.contenido[0].stock).to.eql(5);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "40 - Reactivar producto",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/productos/{{producto}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreProducto\": \"Agua %_! {{clave}}\",\n  \"precioActual\": 3.5,\n  \"stock\": 5,\n  \"stockMinimo\": 4,\n  \"idCategoria\": \"{{categoria}}\",\n  \"estadoProducto\": \"ACTIVO\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "41 - Proteger habitación con historial",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/habitaciones/{{habitacion}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409',()=>pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "42 - Proteger tipo de habitación en uso",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/tipos-habitacion/{{tipo}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409',()=>pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "43 - Proteger tipo de mobiliario en uso",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/tipos-item/{{tipoItem}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409',()=>pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "44 - Proteger categoría en uso",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/categorias/{{categoria}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409',()=>pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "45 - Validar paginación",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/items/configuracion?tamanio=101"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400',()=>pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "46 - Validar referencia de filtros",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/habitaciones/configuracion/pagina?idTipoHabitacion=999999999"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 404',()=>pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "47 - Crear categoría temporal sin uso",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/categorias",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreCategoria\": \"Temporal {{clave}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('temporal',pm.response.json().idCategoria);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "48 - Eliminar categoría sin referencias",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/categorias/{{temporal}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 204',()=>pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
