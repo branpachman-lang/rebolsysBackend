@@ -53,6 +53,7 @@ public class GastoServiceImpl implements GastoService {
             .findById(r.idTipoMovimiento())
             .orElseThrow(() -> new RecursoNoEncontradoException("El tipo de gasto no existe"));
     exigir(tipo.getSigno() == -1, "El tipo de movimiento debe corresponder a una salida de caja");
+    exigir(!EvidenciaCajaService.esRutaCaja(limpiar(r.evidenciaRuta())), "Adjunta el archivo desde el módulo de Caja");
     exigir(
         (limpiar(r.evidenciaRuta()) == null) == (r.evidenciaSha256() == null),
         "Indica la ruta y la huella de la evidencia juntas");

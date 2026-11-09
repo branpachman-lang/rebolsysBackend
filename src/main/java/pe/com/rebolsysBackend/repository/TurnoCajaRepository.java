@@ -11,6 +11,9 @@ public interface TurnoCajaRepository extends JpaRepository<TurnoCaja, Long> {
   List<TurnoCaja> findByUsuarioIdUsuarioAndEstadoSesionAndFechaCierreIsNullOrderByIdTurno(
       Long usuario, Integer estado);
 
+  Optional<TurnoCaja> findFirstByUsuarioIdUsuarioAndEstadoSesionAndFechaCierreIsNotNullOrderByIdTurnoDesc(
+      Long usuario, Integer estado);
+
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("select t from TurnoCaja t where t.idTurno=:id")
   Optional<TurnoCaja> bloquear(@Param("id") Long id);

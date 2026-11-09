@@ -27,9 +27,33 @@ de reservas activas. Editar precio base no cambia el costo de reservas guardadas
 Las plazas de cama y capacidad se configuran aparte del número de muebles; una
 cama matrimonial puede representar varias plazas.
 
+La política actual permite hasta **un menor de 7 años** adicional sin plaza
+propia. `maxMenoresSinCama` solo acepta 0 o 1. El máximo total de
+personas debe incluir ese cupo; no se aumenta el número de plazas de cama. V12
+configura las 20 habitaciones reales con `capacidadPersonas >= plazasCama + 1`
+y un menor sin cama, sin modificar tarifas ni reservas existentes.
+
 Solo se elimina una habitación sin reservas ni asignaciones históricas. El DDL
 no tiene estado INACTIVO para habitaciones. MANTENIMIENTO impide nuevos ingresos
 y reservas mientras permanezca ese estado; no anula reservas existentes.
+
+### Tarifa propia por habitación (V11)
+
+POST y PUT de habitaciones aceptan `precioPorNoche` opcional, con impuesto incluido,
+desde cero hasta 99999999.99 y hasta dos decimales. Al crear sin tarifa propia se
+usa el precio base del tipo. Al editar omitiendo el campo o enviando null se conserva
+la tarifa propia existente, por lo que los formularios anteriores de ocupación
+no la borran. Cero explícito significa tarifa pendiente en la interfaz actual.
+
+La configuración devuelve `precioPorNoche` y conserva `precioBase` como precio
+efectivo, por compatibilidad. El calendario conserva `precio` con ese mismo valor.
+Modificar la tarifa del tipo no sustituye una tarifa propia; cambiar tarifas
+no altera el costo de reservas previamente guardadas.
+
+Ejemplo para la habitación 506: `precioPorNoche: 40.00`; las 402 y 405 conservan
+50.00 aunque comparten el mismo tipo Simple con baño. La V11 agrega una columna
+nullable y un CHECK no negativo. Ejecutarla antes de iniciar la nueva versión en
+una base existente. El DDL consolidado ya la incluye.
 
 ## Mobiliario
 
@@ -65,12 +89,39 @@ stockBajo=true selecciona stock <= stockMinimo; false selecciona stock superior.
 Si se omite, no filtra existencias. El indicador se devuelve también en cada
 producto. El filtro no excluye inactivos por sí solo; usar estado=ACTIVO si se desea.
 
-Crear producto exige stock cero. PUT edita nombre, precio, categoría, mínimo,
+Crear producto permite existencias iniciales mayores o iguales a cero. Si `stock`
+es mayor a cero, `idUsuario` es obligatorio: se guardan el producto y una entrada
+de inventario AJ_ENT en la misma transacción, con el motivo automático
+«Existencias iniciales al registrar el producto». No requiere otro ajuste manual.
+Stock cero sigue siendo compatible con las solicitudes anteriores sin operador.
+
+`descripcion` es opcional, admite hasta 500 caracteres y se devuelve en los
+listados, catálogo y detalle. V13__descripcion_producto.sql agrega la columna
+nullable PRODUCTO.descripcion conservando los registros existentes. El modelo
+consolidado contiene 47 tablas y 290 columnas.
+
+PUT edita nombre, descripción, precio, categoría, mínimo,
 imagen y estado, conservando existencias. POST /productos/{id}/ajustes-stock
 carga o corrige cantidades con operador, motivo, stock observado y clave.
 Una clave repetida no duplica movimientos. GET /productos/{id}/movimientos
 conserva el historial. DELETE desactiva; no elimina ventas ni movimientos.
 Las categorías con productos asociados no se eliminan.
+
+El motivo de un ajuste posterior explica una reposición, merma o corrección de
+conteo; se guarda en MOVIMIENTO_INVENTARIO.observacion junto con el usuario,
+fecha, cantidad y stock resultante. GET /productos/{id}/movimientos lo expone.
+El frontend incorpora el stock inicial en el alta y un modal superior de
+categorías reutilizable desde el listado y el formulario.
+
+Ejemplo de alta con existencias:
+
+```json
+{"nombreProducto":"Agua 500 ml","descripcion":"Agua sin gas","precioActual":3.50,"stock":50,"stockMinimo":5,"idCategoria":1,"estadoProducto":"ACTIVO","idUsuario":130}
+```
+
+POST de alta crea un producto por solicitud y no ofrece idempotencia. Si se pierde
+su confirmación, el frontend pide verificar el listado antes de crear otro.
+Los ajustes posteriores conservan su clave de operación para reintentos seguros.
 
 ## Validación y compatibilidad
 
@@ -78,7 +129,8 @@ Buscar trata %, _ y barra invertida como texto literal. Los listados tienen
 orden estable; pagina y tamanio se validan, y las referencias inexistentes
 devuelven 404. Las bajas o cambios incompatibles con historial devuelven 409.
 
-No se agregan tablas ni columnas: se conservan 46 tablas y 265 columnas.
+La ampliación V11 agrega precioPorNoche a HABITACION. Con las ampliaciones
+anteriores, el modelo actual contiene 47 tablas y 289 columnas.
 DATOS_CONFIGURACIONES.sql prepara EST_ITEM, movimiento de signo cero para
 cambios de conservación, sin reemplazar registros existentes.
 

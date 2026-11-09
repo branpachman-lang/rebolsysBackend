@@ -1,5 +1,6 @@
 package pe.com.rebolsysBackend.controller;
 
+import pe.com.rebolsysBackend.config.Acceso;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import pe.com.rebolsysBackend.service.service.ConfiguracionService;
 public class ConfiguracionController {
   private final ConfiguracionService servicio;
 
+  @Acceso("@CATALOGOS")
   @GetMapping("/catalogos")
   @Operation(summary = "Obtener tipos, categorías y estados para los formularios de configuración")
   public ConfiguracionCatalogosDTO catalogos() {

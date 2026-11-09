@@ -1,5 +1,6 @@
 package pe.com.rebolsysBackend.controller;
 
+import pe.com.rebolsysBackend.config.Acceso;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,27 +16,32 @@ import pe.com.rebolsysBackend.service.service.TipoItemService;
 public class TipoItemController {
   private final TipoItemService servicio;
 
+  @Acceso("MOBILIARIO:VER")
   @GetMapping
   public Iterable<TipoItemResponseDTO> listar() {
     return servicio.readAll();
   }
 
+  @Acceso("MOBILIARIO:VER")
   @GetMapping("/{id}")
   public TipoItemResponseDTO obtener(@PathVariable Long id) {
     return servicio.read(id);
   }
 
+  @Acceso("MOBILIARIO:CREAR_TIPO")
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public TipoItemResponseDTO crear(@Valid @RequestBody TipoItemRequestDTO r) {
     return servicio.create(r);
   }
 
+  @Acceso("MOBILIARIO:EDITAR_TIPO")
   @PutMapping("/{id}")
   public TipoItemResponseDTO editar(@PathVariable Long id, @Valid @RequestBody TipoItemRequestDTO r) {
     return servicio.update(id, r);
   }
 
+  @Acceso("MOBILIARIO:ELIMINAR_TIPO")
   @DeleteMapping("/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void eliminar(@PathVariable Long id) {

@@ -2,7 +2,7 @@
   "openapi": "3.0.1",
   "info": {
     "title": "REBOLSYS API",
-    "description": "Siete casos de uso del hospedaje con cliente unificado: reservas, estados de habitaciones, gastos, ventas y configuración de habitaciones, mobiliario y productos. Reservas asistidas con anticipos, ocupantes al ingreso, consumos, pagos y comprobantes internos con emisión electrónica beta mediante APIsPerú. La integración verifica el ambiente beta; producción bloqueada.",
+    "description": "Siete casos de uso del hospedaje con cliente unificado: reservas, estados de habitaciones, limpieza, mantenimiento, gastos, ventas y configuración de habitaciones, mobiliario y productos. Reservas asistidas con anticipos, ocupantes al ingreso, consumos, pagos y comprobantes internos con emisión electrónica beta mediante APIsPerú. La integración verifica el ambiente beta; producción bloqueada.",
     "version": "v1"
   },
   "servers": [
@@ -40,7 +40,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -80,7 +85,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/tipos-item/{id}": {
@@ -111,7 +121,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -150,7 +165,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -172,7 +192,12 @@
           "204": {
             "description": "No Content"
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/tipos-habitacion/{id}": {
@@ -203,7 +228,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -242,7 +272,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -264,7 +299,12 @@
           "204": {
             "description": "No Content"
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/reservas/detalles/{id}/ocupantes": {
@@ -306,7 +346,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/productos/{id}": {
@@ -337,7 +382,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -376,7 +426,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -398,7 +453,12 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/items/{id}": {
@@ -429,7 +489,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -468,7 +533,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -490,7 +560,12 @@
           "204": {
             "description": "No Content"
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/items/{id}/conservacion": {
@@ -532,7 +607,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/items/{id}/asignacion": {
@@ -573,7 +653,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/habitaciones/{id}": {
@@ -604,7 +689,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -643,7 +733,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -665,7 +760,12 @@
           "204": {
             "description": "No Content"
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/clientes/{id}": {
@@ -696,7 +796,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -735,7 +840,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/categorias/{id}": {
@@ -766,7 +876,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -805,7 +920,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -827,7 +947,12 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/ventas": {
@@ -872,7 +997,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -901,7 +1031,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/ventas/{id}/confirmacion": {
@@ -943,7 +1078,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/ventas/{id}/anulacion": {
@@ -985,7 +1125,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/ventas/{idVenta}/pagos": {
@@ -1027,7 +1172,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/ventas/{idVenta}/comprobantes": {
@@ -1069,7 +1219,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/ventas/confirmadas": {
@@ -1100,7 +1255,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/tipos-item": {
@@ -1120,7 +1280,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -1148,7 +1313,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/tipos-habitacion": {
@@ -1168,7 +1338,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -1196,7 +1371,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/reservas": {
@@ -1241,7 +1421,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -1270,7 +1455,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/reservas/{idReserva}/pagos": {
@@ -1312,7 +1502,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/reservas/{idReserva}/consumos": {
@@ -1347,7 +1542,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -1387,7 +1587,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/reservas/{idReserva}/comprobantes": {
@@ -1430,56 +1635,12 @@
               }
             }
           }
-        }
-      }
-    },
-    "/api/v1/reservas/detalles/{id}/{accion}": {
-      "post": {
-        "tags": [
-          "Reservas"
-        ],
-        "operationId": "estado",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          },
-          {
-            "name": "accion",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/OperacionUsuarioDTO"
-              }
-            }
-          },
-          "required": true
         },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReservaDetalleRespuestaDTO"
-                }
-              }
-            }
+        "security": [
+          {
+            "sesion": []
           }
-        }
+        ]
       }
     },
     "/api/v1/productos": {
@@ -1564,7 +1725,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -1592,7 +1758,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/productos/{id}/ajustes-stock": {
@@ -1633,7 +1804,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/items": {
@@ -1656,7 +1832,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -1684,7 +1865,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/habitaciones": {
@@ -1727,7 +1913,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -1755,7 +1946,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/gastos": {
@@ -1792,7 +1988,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -1821,7 +2022,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/comprobantes/{id}/emision-electronica": {
@@ -1853,7 +2059,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -1894,7 +2105,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/comprobantes/{id}/emision-electronica/envio": {
@@ -1936,7 +2152,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/comprobantes/{id}/emision-electronica/consulta": {
@@ -1978,7 +2199,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/clientes": {
@@ -2008,7 +2234,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/categorias": {
@@ -2028,7 +2259,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -2056,7 +2292,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/habitaciones/{id}/estado": {
@@ -2098,7 +2339,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/ventas/{idVenta}/cuenta": {
@@ -2130,7 +2376,38 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/sesion/actual": {
+      "get": {
+        "tags": [
+          "sesion-operacion-controller"
+        ],
+        "summary": "Consultar el usuario, turno y permisos de la sesión",
+        "operationId": "actual",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SesionActualDTO"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/reservas/{id}": {
@@ -2161,7 +2438,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/reservas/{idReserva}/cuenta": {
@@ -2193,7 +2475,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/recepcion/clientes": {
@@ -2232,7 +2519,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/recepcion/catalogos": {
@@ -2252,7 +2544,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/productos/{id}/movimientos": {
@@ -2286,7 +2583,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/productos/catalogo": {
@@ -2309,7 +2611,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/items/{id}/movimientos": {
@@ -2343,7 +2650,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/items/{id}/historial": {
@@ -2378,7 +2690,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/items/configuracion": {
@@ -2489,7 +2806,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/habitaciones/{id}/items": {
@@ -2523,7 +2845,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/habitaciones/configuracion": {
@@ -2546,7 +2873,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/habitaciones/configuracion/pagina": {
@@ -2636,7 +2968,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/gastos/{id}": {
@@ -2668,7 +3005,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/gastos/tipos": {
@@ -2692,7 +3034,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/gastos/historial": {
@@ -2816,7 +3163,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/facturacion/configuracion": {
@@ -2840,7 +3192,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/documentos/ruc/{numero}": {
@@ -2871,7 +3228,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/documentos/dni/{numero}": {
@@ -2902,7 +3264,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/configuraciones/catalogos": {
@@ -2923,7 +3290,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/comprobantes/{id}/emision-electronica/xml": {
@@ -2956,7 +3328,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/comprobantes/{id}/emision-electronica/pdf": {
@@ -2989,7 +3366,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/comprobantes/{id}/emision-electronica/cdr": {
@@ -3022,7 +3404,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/health": {
@@ -3045,6 +3432,1504 @@
             }
           }
         }
+      }
+    },
+    "/api/v1/limpieza/tickets/{id}": {
+      "get": {
+        "tags": [
+          "Limpieza y mantenimiento"
+        ],
+        "summary": "Ver un ticket de mantenimiento",
+        "operationId": "ticket",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketDetalle"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Limpieza y mantenimiento"
+        ],
+        "summary": "Editar acción, observaciones y costo de un ticket de un informe por aprobar",
+        "operationId": "editarTicket",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DatosTicket"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketDetalle"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Limpieza y mantenimiento"
+        ],
+        "summary": "Eliminar un ticket y reabrir la incidencia de su informe por aprobar",
+        "operationId": "eliminarTicket",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/limpieza/informes/{id}/items/{idDetalleInforme}/ticket": {
+      "post": {
+        "tags": [
+          "Limpieza y mantenimiento"
+        ],
+        "summary": "Registrar la resolución de una incidencia con un ticket de mantenimiento",
+        "operationId": "crearTicket",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "idDetalleInforme",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrearTicket"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketDetalle"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/limpieza/informes/{id}/aprobar": {
+      "post": {
+        "tags": [
+          "Limpieza y mantenimiento"
+        ],
+        "summary": "Aprobar un informe sin incidencias pendientes y liberar la habitación",
+        "operationId": "aprobar",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/InformeDetalle"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/limpieza/habitaciones/{id}/iniciar": {
+      "post": {
+        "tags": [
+          "Limpieza y mantenimiento"
+        ],
+        "summary": "Iniciar o retomar el borrador de limpieza de la habitación",
+        "operationId": "iniciar",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Borrador"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/limpieza/evidencias": {
+      "post": {
+        "tags": [
+          "Limpieza y mantenimiento"
+        ],
+        "summary": "Cargar una foto de evidencia para un informe o ticket",
+        "operationId": "guardar",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "archivo"
+                ],
+                "type": "object",
+                "properties": {
+                  "archivo": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Evidencia"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/limpieza/borradores/{id}/enviar": {
+      "post": {
+        "tags": [
+          "Limpieza y mantenimiento"
+        ],
+        "summary": "Enviar el informe completo y dejarlo por aprobar",
+        "operationId": "enviarInformeLimpieza",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnviarInforme"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/InformeDetalle"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/limpieza/informes/{id}": {
+      "get": {
+        "tags": [
+          "Limpieza y mantenimiento"
+        ],
+        "summary": "Ver un informe, sus incidencias y sus tickets",
+        "operationId": "informe",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/InformeDetalle"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Limpieza y mantenimiento"
+        ],
+        "summary": "Eliminar un informe por aprobar y sus tickets",
+        "operationId": "eliminarInforme",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "Limpieza y mantenimiento"
+        ],
+        "summary": "Corregir los ítems indicados de un informe por aprobar",
+        "operationId": "editarInforme",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditarInforme"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/InformeDetalle"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/limpieza/tickets": {
+      "get": {
+        "tags": [
+          "Limpieza y mantenimiento"
+        ],
+        "summary": "Buscar tickets de mantenimiento",
+        "operationId": "tickets",
+        "parameters": [
+          {
+            "name": "nombre",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "numeroHabitacion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tipoAccion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "REPARACION",
+                "REPOSICION"
+              ]
+            }
+          },
+          {
+            "name": "fechaEmision",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "pagina",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "tamanio",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginaResponseDTOTicketResumen"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/limpieza/inicio": {
+      "get": {
+        "tags": [
+          "Limpieza y mantenimiento"
+        ],
+        "summary": "Consultar el resumen de limpieza según el rol del usuario",
+        "operationId": "inicio",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Inicio"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/limpieza/informes": {
+      "get": {
+        "tags": [
+          "Limpieza y mantenimiento"
+        ],
+        "summary": "Buscar informes de limpieza enviados",
+        "operationId": "informes",
+        "parameters": [
+          {
+            "name": "nombre",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "estado",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "BORRADOR",
+                "POR_APROBAR",
+                "APROBADO"
+              ]
+            }
+          },
+          {
+            "name": "fechaEmision",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "numeroHabitacion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pagina",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "tamanio",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginaResponseDTOInformeResumen"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/limpieza/habitaciones": {
+      "get": {
+        "tags": [
+          "Limpieza y mantenimiento"
+        ],
+        "summary": "Listar habitaciones con su estado en el flujo de limpieza",
+        "operationId": "habitaciones",
+        "parameters": [
+          {
+            "name": "numeroHabitacion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idTipoHabitacion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "estado",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DISPONIBLE",
+                "OCUPADO",
+                "MANTENIMIENTO",
+                "POR_LIMPIAR",
+                "EN_LIMPIEZA"
+              ]
+            }
+          },
+          {
+            "name": "fechaSalida",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HabitacionResumen"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/limpieza/habitaciones/{id}": {
+      "get": {
+        "tags": [
+          "Limpieza y mantenimiento"
+        ],
+        "summary": "Ver mobiliario y último informe visible de una habitación",
+        "operationId": "habitacion",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/HabitacionDetalle"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/limpieza/evidencias/{nombre}": {
+      "get": {
+        "tags": [
+          "Limpieza y mantenimiento"
+        ],
+        "summary": "Descargar una foto de evidencia de limpieza",
+        "operationId": "descargarEvidenciaLimpieza",
+        "parameters": [
+          {
+            "name": "nombre",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/limpieza/borradores/{id}": {
+      "delete": {
+        "tags": [
+          "Limpieza y mantenimiento"
+        ],
+        "summary": "Cancelar el borrador propio y devolver la habitación a Por limpiar",
+        "operationId": "cancelar",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/seguridad/usuarios/{id}/estado": {
+      "put": {
+        "tags": [
+          "gestion-accesos-controller"
+        ],
+        "operationId": "cambiarEstadoUsuario",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CambiarEstado"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioVista"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/seguridad/usuarios/{id}/accesos": {
+      "put": {
+        "tags": [
+          "gestion-accesos-controller"
+        ],
+        "operationId": "cambiarAccesos",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SeleccionAccesos"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioVista"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/seguridad/roles/{id}": {
+      "put": {
+        "tags": [
+          "gestion-accesos-controller"
+        ],
+        "operationId": "editarRol",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuardarRol"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/RolVista"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/sesion/iniciar": {
+      "post": {
+        "tags": [
+          "sesion-operacion-controller"
+        ],
+        "operationId": "iniciarSesion",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Iniciar"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SesionActualDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sesion/contrasena": {
+      "post": {
+        "tags": [
+          "sesion-operacion-controller"
+        ],
+        "operationId": "cambiar",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Cambiar"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SesionActualDTO"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/sesion/cerrar": {
+      "post": {
+        "tags": [
+          "sesion-operacion-controller"
+        ],
+        "operationId": "cerrar",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/seguridad/usuarios": {
+      "get": {
+        "tags": [
+          "gestion-accesos-controller"
+        ],
+        "operationId": "usuarios",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UsuarioVista"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "gestion-accesos-controller"
+        ],
+        "operationId": "crearUsuario",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NuevoUsuario"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioCreado"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/seguridad/usuarios/{id}/credencial-temporal": {
+      "post": {
+        "tags": [
+          "gestion-accesos-controller"
+        ],
+        "operationId": "reemitir",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Temporal"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/seguridad/roles": {
+      "get": {
+        "tags": [
+          "gestion-accesos-controller"
+        ],
+        "operationId": "roles",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RolVista"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "gestion-accesos-controller"
+        ],
+        "operationId": "crearRol",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuardarRol"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/RolVista"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/seguridad/empleados": {
+      "get": {
+        "tags": [
+          "gestion-accesos-controller"
+        ],
+        "operationId": "empleados",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EmpleadoVista"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "gestion-accesos-controller"
+        ],
+        "operationId": "crearEmpleado",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NuevoEmpleado"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmpleadoVista"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/reservas/detalles/{id}/salida": {
+      "post": {
+        "tags": [
+          "Reservas"
+        ],
+        "operationId": "salida",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OperacionUsuarioDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservaDetalleRespuestaDTO"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/reservas/detalles/{id}/ingreso": {
+      "post": {
+        "tags": [
+          "Reservas"
+        ],
+        "operationId": "ingreso",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OperacionUsuarioDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservaDetalleRespuestaDTO"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/reservas/detalles/{id}/cancelacion": {
+      "post": {
+        "tags": [
+          "Reservas"
+        ],
+        "operationId": "cancelarEstancia",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OperacionUsuarioDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservaDetalleRespuestaDTO"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/sesion/csrf": {
+      "get": {
+        "tags": [
+          "sesion-operacion-controller"
+        ],
+        "operationId": "csrf",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CsrfToken"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Proteccion"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/seguridad/funcionalidades": {
+      "get": {
+        "tags": [
+          "gestion-accesos-controller"
+        ],
+        "operationId": "funcionalidades",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Funcion"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     }
   },
@@ -3102,6 +4987,10 @@
             "minimum": 1,
             "type": "integer",
             "format": "int32"
+          },
+          "precioEsperado": {
+            "minimum": 0,
+            "type": "number"
           }
         }
       },
@@ -3244,7 +5133,7 @@
             "format": "int32"
           },
           "precioBase": {
-            "minimum": 0.0,
+            "minimum": 0,
             "exclusiveMinimum": false,
             "type": "number"
           }
@@ -3428,6 +5317,7 @@
           "stock": {
             "minimum": 0,
             "type": "integer",
+            "description": "Existencias iniciales al crear; si son mayores a cero se requiere idUsuario y se registra una entrada de inventario. Al editar se conserva el stock observado.",
             "format": "int32"
           },
           "stockMinimo": {
@@ -3458,6 +5348,18 @@
             "minimum": 0,
             "type": "integer",
             "format": "int32"
+          },
+          "descripcion": {
+            "maxLength": 500,
+            "minLength": 0,
+            "type": "string"
+          },
+          "idUsuario": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "description": "Responsable obligatorio cuando las existencias iniciales son mayores a cero.",
+            "format": "int64"
           }
         }
       },
@@ -3497,6 +5399,9 @@
             "type": "string"
           },
           "categoriaNombre": {
+            "type": "string"
+          },
+          "descripcion": {
             "type": "string"
           },
           "stockBajo": {
@@ -3702,10 +5607,16 @@
             "format": "int32"
           },
           "maxMenoresSinCama": {
-            "maximum": 98,
+            "maximum": 1,
             "minimum": 0,
             "type": "integer",
             "format": "int32"
+          },
+          "precioPorNoche": {
+            "minimum": 0,
+            "exclusiveMinimum": false,
+            "type": "number",
+            "description": "Tarifa de la habitación con impuesto incluido. Si se omite al editar, se conserva la tarifa actual. Al crear sin tarifa propia se usa la del tipo."
           }
         }
       },
@@ -3748,6 +5659,10 @@
             "format": "int32"
           },
           "precioBase": {
+            "type": "number",
+            "description": "Precio efectivo por noche: tarifa propia de la habitación o, si no existe, precio del tipo."
+          },
+          "precioPorNoche": {
             "type": "number"
           }
         }
@@ -4750,6 +6665,47 @@
           }
         }
       },
+      "SesionActualDTO": {
+        "type": "object",
+        "properties": {
+          "idUsuario": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "usuario": {
+            "type": "string"
+          },
+          "modo": {
+            "type": "string"
+          },
+          "idTurno": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "idFormaPagoEfectivo": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "requiereCambio": {
+            "type": "boolean"
+          },
+          "gerente": {
+            "type": "boolean"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "permisos": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
       "PaginaResponseDTOReservaRespuestaDTO": {
         "type": "object",
         "properties": {
@@ -5275,6 +7231,926 @@
             "type": "string"
           }
         }
+      },
+      "TicketDetalle": {
+        "type": "object",
+        "properties": {
+          "ticket": {
+            "$ref": "#/components/schemas/TicketResumen"
+          },
+          "idEmpleado": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "fechaResolucion": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "observacionTecnica": {
+            "type": "string"
+          },
+          "costoReparacion": {
+            "type": "number"
+          },
+          "evidencia": {
+            "$ref": "#/components/schemas/Evidencia"
+          }
+        }
+      },
+      "TicketResumen": {
+        "type": "object",
+        "properties": {
+          "idTicket": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "idInformeRevision": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "idDetalleInforme": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "idHabitacion": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "numeroHabitacion": {
+            "type": "string"
+          },
+          "idItem": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "item": {
+            "type": "string"
+          },
+          "tipoAccion": {
+            "type": "string",
+            "enum": [
+              "REPARACION",
+              "REPOSICION"
+            ]
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "PENDIENTE",
+              "ASIGNADO",
+              "EN_PROCESO",
+              "RESUELTO",
+              "CANCELADO"
+            ]
+          },
+          "fechaGeneracion": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "puedeEditar": {
+            "type": "boolean"
+          },
+          "puedeEliminar": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Evidencia": {
+        "required": [
+          "evidenciaRuta",
+          "evidenciaSha256"
+        ],
+        "type": "object",
+        "properties": {
+          "evidenciaRuta": {
+            "maxLength": 300,
+            "minLength": 0,
+            "type": "string"
+          },
+          "evidenciaSha256": {
+            "pattern": "[a-fA-F0-9]{64}",
+            "type": "string"
+          }
+        }
+      },
+      "DatosTicket": {
+        "required": [
+          "tipoAccion"
+        ],
+        "type": "object",
+        "properties": {
+          "tipoAccion": {
+            "type": "string",
+            "enum": [
+              "REPARACION",
+              "REPOSICION"
+            ]
+          },
+          "observacionTecnica": {
+            "maxLength": 1000,
+            "minLength": 0,
+            "type": "string"
+          },
+          "costoReparacion": {
+            "minimum": 0,
+            "type": "number"
+          }
+        }
+      },
+      "CrearTicket": {
+        "required": [
+          "accion",
+          "evidencia"
+        ],
+        "type": "object",
+        "properties": {
+          "accion": {
+            "$ref": "#/components/schemas/DatosTicket"
+          },
+          "evidencia": {
+            "$ref": "#/components/schemas/Evidencia"
+          }
+        }
+      },
+      "InformeDetalle": {
+        "type": "object",
+        "properties": {
+          "informe": {
+            "$ref": "#/components/schemas/InformeResumen"
+          },
+          "idDetalleReserva": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "observaciones": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetalleItem"
+            }
+          },
+          "tickets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TicketResumen"
+            }
+          }
+        }
+      },
+      "InformeResumen": {
+        "type": "object",
+        "properties": {
+          "idInformeRevision": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "idHabitacion": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "numeroHabitacion": {
+            "type": "string"
+          },
+          "fechaEnvio": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "BORRADOR",
+              "POR_APROBAR",
+              "APROBADO"
+            ]
+          },
+          "responsable": {
+            "$ref": "#/components/schemas/Responsable"
+          },
+          "tieneIncidencias": {
+            "type": "boolean"
+          },
+          "incidenciasPendientes": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "tieneTickets": {
+            "type": "boolean"
+          },
+          "puedeAprobar": {
+            "type": "boolean"
+          },
+          "puedeEditar": {
+            "type": "boolean"
+          },
+          "puedeEliminar": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Responsable": {
+        "type": "object",
+        "properties": {
+          "idUsuario": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "usuario": {
+            "type": "string"
+          }
+        }
+      },
+      "DetalleItem": {
+        "type": "object",
+        "properties": {
+          "idDetalleInforme": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "idDetalleHabitacion": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "idItem": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "item": {
+            "type": "string"
+          },
+          "estadoEncontrado": {
+            "type": "string",
+            "enum": [
+              "BUENO",
+              "DANADO",
+              "FALTANTE",
+              "EN_REPARACION"
+            ]
+          },
+          "estadoActualItem": {
+            "type": "string",
+            "enum": [
+              "BUENO",
+              "DANADO",
+              "FALTANTE",
+              "EN_REPARACION"
+            ]
+          },
+          "observaciones": {
+            "type": "string"
+          },
+          "evidencia": {
+            "$ref": "#/components/schemas/Evidencia"
+          },
+          "idTicket": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "puedeCrearTicket": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Borrador": {
+        "type": "object",
+        "properties": {
+          "idInformeRevision": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "habitacion": {
+            "$ref": "#/components/schemas/HabitacionResumen"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemHabitacion"
+            }
+          }
+        }
+      },
+      "HabitacionResumen": {
+        "type": "object",
+        "properties": {
+          "idHabitacion": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "numeroHabitacion": {
+            "type": "string"
+          },
+          "idTipoHabitacion": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "tipoHabitacion": {
+            "type": "string"
+          },
+          "fechaSalida": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "DISPONIBLE",
+              "OCUPADO",
+              "MANTENIMIENTO",
+              "POR_LIMPIAR",
+              "EN_LIMPIEZA"
+            ]
+          },
+          "responsable": {
+            "$ref": "#/components/schemas/Responsable"
+          },
+          "puedeIniciarLimpieza": {
+            "type": "boolean"
+          },
+          "puedeRetomarBorrador": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ItemHabitacion": {
+        "type": "object",
+        "properties": {
+          "idDetalleHabitacion": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "idItem": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "item": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string"
+          }
+        }
+      },
+      "EnviarInforme": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "observaciones": {
+            "maxLength": 1000,
+            "minLength": 0,
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemInforme"
+            }
+          }
+        }
+      },
+      "ItemInforme": {
+        "required": [
+          "estadoEncontrado",
+          "idDetalleHabitacion"
+        ],
+        "type": "object",
+        "properties": {
+          "idDetalleHabitacion": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "estadoEncontrado": {
+            "type": "string",
+            "enum": [
+              "BUENO",
+              "DANADO",
+              "FALTANTE",
+              "EN_REPARACION"
+            ]
+          },
+          "observaciones": {
+            "maxLength": 1000,
+            "minLength": 0,
+            "type": "string"
+          },
+          "evidencia": {
+            "$ref": "#/components/schemas/Evidencia"
+          }
+        }
+      },
+      "EditarInforme": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemInforme"
+            }
+          }
+        }
+      },
+      "PaginaResponseDTOTicketResumen": {
+        "type": "object",
+        "properties": {
+          "contenido": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TicketResumen"
+            }
+          },
+          "pagina": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tamanio": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElementos": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPaginas": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ultima": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Inicio": {
+        "type": "object",
+        "properties": {
+          "idTurno": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "fechaApertura": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "informesEnviados": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "informesPorAprobar": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "informesAprobados": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "ticketsGenerados": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "alcance": {
+            "type": "string"
+          }
+        }
+      },
+      "PaginaResponseDTOInformeResumen": {
+        "type": "object",
+        "properties": {
+          "contenido": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InformeResumen"
+            }
+          },
+          "pagina": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tamanio": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElementos": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPaginas": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ultima": {
+            "type": "boolean"
+          }
+        }
+      },
+      "HabitacionDetalle": {
+        "type": "object",
+        "properties": {
+          "habitacion": {
+            "$ref": "#/components/schemas/HabitacionResumen"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemHabitacion"
+            }
+          },
+          "estadoInforme": {
+            "type": "string"
+          },
+          "ultimoInforme": {
+            "$ref": "#/components/schemas/InformeDetalle"
+          },
+          "estadoTickets": {
+            "type": "string"
+          },
+          "tickets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TicketResumen"
+            }
+          }
+        }
+      },
+      "CambiarEstado": {
+        "required": [
+          "estado"
+        ],
+        "type": "object",
+        "properties": {
+          "estado": {
+            "type": "string",
+            "enum": [
+              "ACTIVO",
+              "BLOQUEADO",
+              "INACTIVO"
+            ]
+          }
+        }
+      },
+      "UsuarioVista": {
+        "type": "object",
+        "properties": {
+          "idUsuario": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "idEmpleado": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "usuario": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "ACTIVO",
+              "BLOQUEADO",
+              "INACTIVO"
+            ]
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "nombresRoles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "permisosIndividuales": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "permisosEfectivos": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gerente": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SeleccionAccesos": {
+        "required": [
+          "permisos",
+          "roles"
+        ],
+        "type": "object",
+        "properties": {
+          "roles": {
+            "maxItems": 50,
+            "minItems": 0,
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "permisos": {
+            "maxItems": 250,
+            "minItems": 0,
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "maxLength": 151,
+              "minLength": 0,
+              "type": "string"
+            }
+          }
+        }
+      },
+      "GuardarRol": {
+        "required": [
+          "nombre",
+          "permisos"
+        ],
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "minLength": 1,
+            "pattern": "[a-zA-Z0-9_-]{2,30}",
+            "type": "string"
+          },
+          "permisos": {
+            "maxItems": 250,
+            "minItems": 0,
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "maxLength": 151,
+              "minLength": 0,
+              "type": "string"
+            }
+          }
+        }
+      },
+      "RolVista": {
+        "type": "object",
+        "properties": {
+          "idRol": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "permisos": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "protegido": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Iniciar": {
+        "required": [
+          "contrasena",
+          "usuario"
+        ],
+        "type": "object",
+        "properties": {
+          "usuario": {
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string"
+          },
+          "contrasena": {
+            "maxLength": 128,
+            "minLength": 0,
+            "type": "string"
+          }
+        }
+      },
+      "Cambiar": {
+        "required": [
+          "actual",
+          "nueva"
+        ],
+        "type": "object",
+        "properties": {
+          "actual": {
+            "maxLength": 128,
+            "minLength": 0,
+            "type": "string"
+          },
+          "nueva": {
+            "maxLength": 128,
+            "minLength": 0,
+            "type": "string"
+          }
+        }
+      },
+      "NuevoUsuario": {
+        "required": [
+          "accesos",
+          "idEmpleado",
+          "usuario"
+        ],
+        "type": "object",
+        "properties": {
+          "idEmpleado": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "usuario": {
+            "minLength": 1,
+            "pattern": "[a-zA-Z0-9][a-zA-Z0-9._@+-]{2,49}",
+            "type": "string"
+          },
+          "accesos": {
+            "$ref": "#/components/schemas/SeleccionAccesos"
+          }
+        }
+      },
+      "UsuarioCreado": {
+        "type": "object",
+        "properties": {
+          "cuenta": {
+            "$ref": "#/components/schemas/UsuarioVista"
+          },
+          "credencial": {
+            "$ref": "#/components/schemas/Temporal"
+          }
+        }
+      },
+      "Temporal": {
+        "type": "object",
+        "properties": {
+          "contrasenaTemporal": {
+            "type": "string"
+          },
+          "vence": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "EmpleadoVista": {
+        "type": "object",
+        "properties": {
+          "idEmpleado": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "idTipoDocumento": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "numeroDocumento": {
+            "type": "string"
+          },
+          "nombres": {
+            "type": "string"
+          },
+          "apellidos": {
+            "type": "string"
+          },
+          "correo": {
+            "type": "string"
+          },
+          "telefono": {
+            "type": "string"
+          },
+          "fechaNacimiento": {
+            "type": "string",
+            "format": "date"
+          },
+          "fechaContratacion": {
+            "type": "string",
+            "format": "date"
+          },
+          "tieneUsuario": {
+            "type": "boolean"
+          }
+        }
+      },
+      "NuevoEmpleado": {
+        "required": [
+          "apellidos",
+          "correo",
+          "fechaContratacion",
+          "idTipoDocumento",
+          "nombres",
+          "numeroDocumento"
+        ],
+        "type": "object",
+        "properties": {
+          "idTipoDocumento": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          "numeroDocumento": {
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string"
+          },
+          "nombres": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "apellidos": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "correo": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string",
+            "format": "email"
+          },
+          "telefono": {
+            "maxLength": 15,
+            "minLength": 0,
+            "type": "string"
+          },
+          "fechaNacimiento": {
+            "type": "string",
+            "format": "date"
+          },
+          "fechaContratacion": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      },
+      "CsrfToken": {
+        "type": "object",
+        "properties": {
+          "headerName": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          },
+          "parameterName": {
+            "type": "string"
+          }
+        }
+      },
+      "Proteccion": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "cabecera": {
+            "type": "string"
+          }
+        }
+      },
+      "Funcion": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string"
+          },
+          "modulo": {
+            "type": "string"
+          },
+          "accion": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "sesion": {
+        "type": "apiKey",
+        "name": "JSESSIONID",
+        "in": "cookie"
       }
     }
   }

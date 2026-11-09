@@ -39,14 +39,12 @@ public class VentaServiceImpl implements VentaService {
     var firma = reglas.firma(r);
     var anterior = ventas.findByClaveRegistro(r.claveRegistro());
     if (anterior.isPresent()) {
-      exigir(
-          firma.equals(anterior.get().getFirmaSolicitud()),
+      exigir(firma.equals(anterior.get().getFirmaSolicitud()),
           "La clave de registro ya corresponde a otra solicitud");
       return respuesta(anterior.get());
     }
     exigir(
-        r.idClienteComprador() == null || limpiar(r.compradorNombreLibre()) == null,
-        "Selecciona un comprador registrado o un nombre libre");
+        r.idClienteComprador() == null || limpiar(r.compradorNombreLibre()) == null, "Selecciona un comprador registrado o un nombre libre");
     exigir(
         r.modalidadCobro() != ModalidadCobro.RESERVA || r.idDetalleReserva() != null,
         "La modalidad RESERVA requiere una estancia");
@@ -88,6 +86,8 @@ public class VentaServiceImpl implements VentaService {
               .findById(l.idProducto())
               .orElseThrow(() -> new RecursoNoEncontradoException("El producto no existe"));
       exigir(p.getEstadoProducto() == EstadoProducto.ACTIVO, "El producto está inactivo");
+      exigir(l.precioEsperado()==null||l.precioEsperado().compareTo(p.getPrecioActual())==0,
+          "El precio de "+p.getNombreProducto()+" cambió; actualiza el catálogo antes de confirmar");
       var d = new DetalleVenta();
       d.setVenta(venta);
       d.setProducto(p);
@@ -150,10 +150,7 @@ public class VentaServiceImpl implements VentaService {
   @Transactional
   public VentaResponseDTO confirmar(Long id, OperacionUsuarioDTO r) {
     reglas.validar(r);
-    var previo =
-        ventas
-            .findById(id)
-            .orElseThrow(() -> new RecursoNoEncontradoException("La venta no existe"));
+    var previo = ventas.findById(id).orElseThrow(() -> new RecursoNoEncontradoException("La venta no existe"));
     if (previo.getDetalleReserva() != null)
       bloquearReserva(previo.getDetalleReserva().getIdDetalleReserva());
     var operador = reglas.usuario(r.idUsuario());

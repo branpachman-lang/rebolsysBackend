@@ -28,7 +28,7 @@ public class HabitacionOcupacionRequestDTO {
 
     @NotNull(message = "El máximo de menores sin plaza propia es obligatorio")
     @Min(value = 0, message = "El máximo de menores sin plaza propia no puede ser negativo")
-    @Max(value = 98, message = "El máximo de menores sin plaza propia no puede superar 98")
+    @Max(value = 1, message = "Solo se permite un menor adicional sin cama por habitación")
     private Integer maxMenoresSinCama;
 
     @JsonIgnore

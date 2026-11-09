@@ -62,4 +62,7 @@ public class Producto {
 
     @Column(name = "imagenRuta", length = 300, columnDefinition = "VARCHAR2(300)")
     private String imagenRuta;
+
+    @Column(name = "descripcion", length = 500, columnDefinition = "VARCHAR2(500 CHAR)")
+    private String descripcion;
 }

@@ -1,5 +1,6 @@
 package pe.com.rebolsysBackend.controller;
 
+import pe.com.rebolsysBackend.config.Acceso;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +19,7 @@ public class ClienteController {
         this.clienteService = clienteService;
     }
 
+    @Acceso("CLIENTES:VER")
     @GetMapping
     public ResponseEntity<ClienteResumenResponseDTO> buscar(
         @RequestParam Long tipoDocumento,

@@ -24,6 +24,8 @@ conservan sus reglas y cuenta. Los cobros y documentos usan un servicio común.
 Se incluye [ventas-productos.postman_collection.json](api/postman/ventas-productos.postman_collection.json).
 DATOS_VENTAS.sql prepara COBRO_VENTA; ya está aplicado en la base local.
 
+[Caja del turno](API-CAJA.md) describe los ingresos manuales, los gastos y el cierre con arqueo por forma de pago.
+
 Los mantenimientos siguen el patrón de Pharma:
 `service/generic/CrudService<REQ, RES, ID>` → interfaz por módulo en
 `service/service` → implementación en `service/impl` → controlador REST.
@@ -47,6 +49,15 @@ de operación para evitar duplicados. Los menores requieren un adulto de la mism
 habitación; solo menores de siete años pueden alojarse sin cama dentro del límite.
 
 ## Base de datos y arranque
+
+Las tarifas de las 20 habitaciones reales están registradas según la imagen del
+usuario, con impuesto incluido. La V11 añade `precioPorNoche` opcional a HABITACION
+para permitir precios distintos dentro del mismo tipo; las habitaciones anteriores
+sin tarifa propia siguen usando la del tipo. Ejecutar
+[V11](src/main/resources/db/iteration/V11__tarifa_por_habitacion.sql) antes de arrancar
+esta versión sobre una base existente. No modifica el costo de reservas guardadas.
+El [inventario y sus tarifas](api/fixtures/README.md) documenta los 26 muebles de cama
+y las correcciones de la 303, 401 y 504.
 
 El esquema Oracle de esta versión es **PropuestaHospedajeRB**. El DDL propuesto ya
 fue ejecutado. Hibernate usa `validate`; Flyway está deshabilitado y no se insertan
@@ -79,6 +90,8 @@ operador del negocio son registros diferentes.
 
 - [Rutas y reglas de los siete casos](API-PROPUESTA.md).
 - [Configuraciones de habitaciones, mobiliario y productos](API-CONFIGURACIONES.md).
+- [Flujo de informes de limpieza y tickets de mantenimiento](API-LIMPIEZA.md).
+- [Inicio de sesión y gestión de permisos](API-SEGURIDAD.md).
 - [Facturación electrónica beta con APIsPerú](API-FACTURACION.md).
 - [Prueba Postman de las configuraciones](api/postman/configuraciones.postman_collection.json).
 - [Guía de prueba y resultados de esta reconstrucción](PRUEBAS-BACKEND.md).
@@ -93,9 +106,18 @@ La colección de verificación usa consultas y peticiones
 inválidas; funciona incluso con el esquema vacío. Variable `baseUrl` para cambiar
 el puerto. Las colecciones permanecen locales; no contienen credenciales.
 
-Los productos se crean con stock cero. Para cargar o corregir existencias se usa
+Los productos permiten registrar existencias iniciales en el alta, con responsable
+y una entrada de inventario automática. También admiten descripción opcional de
+hasta 500 caracteres (migración V13). Para reponer o corregir existencias se usa
 `POST /productos/{id}/ajustes-stock`, indicando operador, saldo observado, saldo
 nuevo, motivo y clave. Editar los datos del producto conserva las existencias.
+
+El perfil dev centraliza el usuario de prueba en `/api/v1/sesion/actual`, por
+defecto `operacion_local`, y comprueba que esté activo para las escrituras.
+Completa el actor/turno de los DTO de operación y rechaza valores de otra sesión.
+Las operaciones HTTP exitosas se registran en AUDITORIA_GENERAL. Véase
+[API-SESION-OPERACION.md](API-SESION-OPERACION.md), incluido el flujo de confirmación
+y pago de ventas. La autenticación real permanece pendiente de la etapa de seguridad.
 Los precios guardados en las líneas de una venta se mantienen al confirmarla y
 representan el importe final con impuesto incluido. Las cuentas internas conservan
 sus importes anteriores; la copia fiscal nueva desglosa base e impuesto por línea
@@ -108,7 +130,7 @@ Para una base ya creada con el DDL original, aplicar
 consumo separado conserve su estancia de origen; no agrega ni elimina columnas.
 Ya se aplicó en la base local de desarrollo. Flyway sigue deshabilitado.
 
-Las rutas funcionan sin login, roles ni restricciones por IP en esta etapa.
+Las rutas operativas requieren inicio de sesión y permisos por funcionalidad.
 `idUsuario` identifica al responsable que exige el DDL. APIs Perú conserva su consulta opcional
 con `APISPERU_TOKEN`; los siete casos funcionan sin ese servicio.
 
@@ -129,7 +151,7 @@ postman collection run api/postman/verificacion.postman_collection.json --no-rep
 Las pruebas funcionales se revierten al terminar cada transacción. Las seis pruebas
 de concurrencia necesitan transacciones independientes: crean registros propios y
 los eliminan por sus claves en `finally`. No usan usuarios ni datos operativos
-preexistentes. La prueba de modelo comprueba exactamente 47 tablas y 288 columnas con V10,
+preexistentes. La prueba de modelo comprueba exactamente 47 tablas y 289 columnas con V11,
 y que Java no intente escribir columnas calculadas.
 
 Las pruebas del modelo anterior se conservaron localmente en

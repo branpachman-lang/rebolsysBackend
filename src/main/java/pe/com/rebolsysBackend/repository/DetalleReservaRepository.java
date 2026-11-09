@@ -36,4 +36,27 @@ public interface DetalleReservaRepository extends JpaRepository<DetalleReserva, 
       @Param("ingreso") LocalDateTime ingreso, @Param("salida") LocalDateTime salida);
 
   List<DetalleReserva> findByHabitacionIdHabitacion(Long id);
+
+  @Query("""
+      select d from DetalleReserva d
+      where d.estadoDetalle in (pe.com.rebolsysBackend.enums.EstadoReserva.EN_CURSO,
+        pe.com.rebolsysBackend.enums.EstadoReserva.FINALIZADA)
+      and (:id is null or d.habitacion.idHabitacion = :id)
+      and not exists (
+        select x.idDetalleReserva from DetalleReserva x
+        where x.habitacion = d.habitacion
+        and x.estadoDetalle in (pe.com.rebolsysBackend.enums.EstadoReserva.EN_CURSO,
+          pe.com.rebolsysBackend.enums.EstadoReserva.FINALIZADA)
+        and (
+          (x.estadoDetalle = pe.com.rebolsysBackend.enums.EstadoReserva.EN_CURSO
+            and d.estadoDetalle = pe.com.rebolsysBackend.enums.EstadoReserva.FINALIZADA)
+          or (x.estadoDetalle = d.estadoDetalle and (
+            coalesce(x.fechaSalidaReal, x.fechaSalida) > coalesce(d.fechaSalidaReal, d.fechaSalida)
+            or (coalesce(x.fechaSalidaReal, x.fechaSalida) = coalesce(d.fechaSalidaReal, d.fechaSalida)
+              and x.idDetalleReserva > d.idDetalleReserva)
+          ))
+        )
+      )
+      """)
+  List<DetalleReserva> ultimasSalidas(@Param("id") Long idHabitacion);
 }

@@ -1,5 +1,6 @@
 package pe.com.rebolsysBackend.controller;
 
+import pe.com.rebolsysBackend.config.Acceso;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,27 +27,32 @@ public class CategoriaController {
         this.categoriaService = categoriaService;
     }
 
+    @Acceso("PRODUCTOS:VER")
     @GetMapping
     public ResponseEntity<Iterable<CategoriaResponseDTO>> readAll() {
         return ResponseEntity.ok(categoriaService.readAll());
     }
 
+    @Acceso("PRODUCTOS:CREAR_CATEGORIA")
     @PostMapping
     public ResponseEntity<CategoriaResponseDTO> create(@Valid @RequestBody CategoriaRequestDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(categoriaService.create(request));
     }
 
+    @Acceso("PRODUCTOS:VER")
     @GetMapping("/{id}")
     public ResponseEntity<CategoriaResponseDTO> read(@PathVariable Long id) {
         return ResponseEntity.ok(categoriaService.read(id));
     }
 
+    @Acceso("PRODUCTOS:EDITAR_CATEGORIA")
     @PutMapping("/{id}")
     public ResponseEntity<CategoriaResponseDTO> update(
             @PathVariable Long id, @Valid @RequestBody CategoriaRequestDTO request) {
         return ResponseEntity.ok(categoriaService.update(id, request));
     }
 
+    @Acceso("PRODUCTOS:ELIMINAR_CATEGORIA")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         categoriaService.delete(id);

@@ -12,6 +12,12 @@ ocupantes siempre son personas naturales. No se implementa autenticación.
 2. Completar o corregir ocupantes antes del ingreso. Todo menor requiere un adulto
    responsable en la misma habitación. Menores de siete años pueden no ocupar
    cama, dentro de los límites de personas y menores sin cama de la habitación.
+   Para el inventario real se confirmó hasta **un menor adicional sin cama por
+   habitación**: dos plazas admiten dos adultos y un menor de siete años que
+   comparta cama con su responsable. `capacidadPersonas` incluye ese cupo;
+   `plazasCama` conserva las plazas originales y `maxMenoresSinCama` admite 0 o 1.
+   Al cumplir siete años se requiere plaza propia. La configuración se aplica
+   mediante V12__menor_adicional_sin_cama.sql, conservando precios y camas.
    Una edad no obliga por sí sola a contratar una habitación adicional.
 3. Registrar ingreso dentro del periodo reservado. Es obligatorio completar
    ocupantes; se permite saldo pendiente, según la decisión del usuario.

@@ -13,6 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -59,4 +60,7 @@ public class Habitacion {
 
     @Column(name = "maxMenoresSinCama", nullable = false, precision = 2, scale = 0, columnDefinition = "NUMBER(2)")
     private Integer maxMenoresSinCama = 0;
+
+    @Column(name = "precioPorNoche", precision = 10, scale = 2, columnDefinition = "NUMBER(10,2)")
+    private BigDecimal precioPorNoche;
 }

@@ -67,4 +67,7 @@ public class DetalleInforme {
 
     @Column(name = "evidenciaSha256", nullable = true, length = 64, columnDefinition = "CHAR(64)")
     private String evidenciaSha256;
+
+    @Column(name = "observaciones", length = 1000, columnDefinition = "VARCHAR2(1000)")
+    private String observaciones;
 }

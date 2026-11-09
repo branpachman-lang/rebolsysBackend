@@ -14,4 +14,6 @@ public record HabitacionResponseDTO(
     int capacidadPersonas,
     int plazasCama,
     int maxMenoresSinCama,
-    java.math.BigDecimal precioBase) {}
+    @io.swagger.v3.oas.annotations.media.Schema(description = "Precio efectivo por noche: tarifa propia de la habitación o, si no existe, precio del tipo.")
+    java.math.BigDecimal precioBase,
+    java.math.BigDecimal precioPorNoche) {}

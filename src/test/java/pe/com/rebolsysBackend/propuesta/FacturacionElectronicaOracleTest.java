@@ -11,7 +11,7 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import pe.com.rebolsysBackend.config.MockMvcReglasNegocio;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +32,7 @@ import tools.jackson.databind.ObjectMapper;
     "facturacion.apisperu.razon-social=HOSPEDAJE FICTICIO","facturacion.apisperu.direccion=DIRECCION FICTICIA",
     "facturacion.apisperu.ubigeo=150101","facturacion.apisperu.departamento=LIMA",
     "facturacion.apisperu.provincia=LIMA","facturacion.apisperu.distrito=LIMA","facturacion.apisperu.timeout-millis=1000"})
-@AutoConfigureMockMvc @Transactional
+@MockMvcReglasNegocio @Transactional
 @EnabledIfEnvironmentVariable(named="RUN_FACTURACION_SIM_TESTS",matches="true")
 class FacturacionElectronicaOracleTest {
   @Autowired EntityManager em;

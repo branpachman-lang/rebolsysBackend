@@ -28,6 +28,7 @@ public class HabitacionServiceImpl implements HabitacionService {
   private final ReglasPropuesta reglas;
   private final DetalleHabitacionRepository mobiliario;
   private final ItemService items;
+  private final InformeRevisionRepository informes;
 
   @Override
   @Transactional
@@ -63,6 +64,8 @@ public class HabitacionServiceImpl implements HabitacionService {
         "No se puede eliminar una habitación con historial de reservas");
     exigir(mobiliario.findByHabitacionIdHabitacion(id).isEmpty(),
         "No se puede eliminar una habitación con historial de mobiliario");
+    exigir(!informes.existsByHabitacionIdHabitacion(id),
+        "No se puede eliminar una habitación con historial de limpieza");
     habitaciones.delete(h);
     habitaciones.flush();
   }
@@ -110,7 +113,7 @@ public class HabitacionServiceImpl implements HabitacionService {
                   h.getCapacidadPersonas(),
                   h.getPlazasCama(),
                   h.getMaxMenoresSinCama(),
-                  h.getTipoHabitacion().getPrecioBase(),
+                  precioVigente(h),
                   h.getEstadoHabitacion(),
                   enCurso,
                   h.getEstadoHabitacion() == EstadoHabitacion.DISPONIBLE
@@ -151,6 +154,7 @@ public class HabitacionServiceImpl implements HabitacionService {
         .anyMatch(d -> d.getEstadoDetalle() == EstadoReserva.EN_CURSO);
     exigir((r.estadoHabitacion() == EstadoHabitacion.OCUPADO) == enCurso,
         "El estado OCUPADO solo corresponde a una estancia en curso");
+    validarEstadoLimpieza(h, r.estadoHabitacion());
     h.setEstadoHabitacion(r.estadoHabitacion());
     return respuesta(habitaciones.saveAndFlush(h));
   }
@@ -196,6 +200,10 @@ public class HabitacionServiceImpl implements HabitacionService {
         (r.estadoHabitacion() == EstadoHabitacion.OCUPADO) == enCurso,
         "El estado OCUPADO solo corresponde a una estancia en curso");
     if (id != null) {
+      if (h.getEstadoHabitacion() != r.estadoHabitacion()) {
+        SesionOperacionService.exigirPermisoEnPeticion("HABITACIONES:CAMBIAR_ESTADO");
+      }
+      validarEstadoLimpieza(h, r.estadoHabitacion());
       Map<Long, List<ReservaOcupante>> porDetalle = new HashMap<>();
       for (var o : ocupantes.activosHabitacion(id))
         porDetalle
@@ -216,7 +224,16 @@ public class HabitacionServiceImpl implements HabitacionService {
     h.setCapacidadPersonas(r.capacidadPersonas());
     h.setPlazasCama(r.plazasCama());
     h.setMaxMenoresSinCama(r.maxMenoresSinCama());
+    if (r.precioPorNoche() != null) h.setPrecioPorNoche(r.precioPorNoche());
     return respuesta(habitaciones.saveAndFlush(h));
+  }
+
+  private void validarEstadoLimpieza(Habitacion habitacion, EstadoHabitacion estado) {
+    if (habitacion.getEstadoHabitacion() != estado) {
+      exigir(!informes.existsByHabitacionIdHabitacionAndEstadoInformeNot(
+          habitacion.getIdHabitacion(), EstadoInforme.APROBADO),
+          "Finaliza el flujo de limpieza antes de cambiar el estado de la habitación");
+    }
   }
 
   private HabitacionResponseDTO respuesta(Habitacion h) {
@@ -229,6 +246,11 @@ public class HabitacionServiceImpl implements HabitacionService {
         h.getCapacidadPersonas(),
         h.getPlazasCama(),
         h.getMaxMenoresSinCama(),
-        h.getTipoHabitacion().getPrecioBase());
+        precioVigente(h),
+        h.getPrecioPorNoche());
+  }
+
+  private BigDecimal precioVigente(Habitacion h) {
+    return h.getPrecioPorNoche() != null ? h.getPrecioPorNoche() : h.getTipoHabitacion().getPrecioBase();
   }
 }

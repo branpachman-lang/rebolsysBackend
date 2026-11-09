@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import pe.com.rebolsysBackend.config.MockMvcReglasNegocio;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest(
@@ -18,7 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
       "apis-peru.token=token-prueba-local",
       "apis-peru.timeout-millis=500",
     })
-@AutoConfigureMockMvc
+@MockMvcReglasNegocio
 @EnabledIfEnvironmentVariable(named = "RUN_APISPERU_SIM_TESTS", matches = "true")
 class ApisPeruSimulacionTest {
 

@@ -10,4 +10,13 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
   Optional<Usuario> bloquear(@org.springframework.data.repository.query.Param("id") Long id);
 
   Optional<Usuario> findByUsername(String username);
+
+  Optional<Usuario> findByUsernameIgnoreCase(String username);
+
+  boolean existsByUsernameIgnoreCase(String username);
+  boolean existsByUsernameIgnoreCaseAndIdUsuarioNot(String username, Long idUsuario);
+
+  Optional<Usuario> findByEmpleadoIdEmpleado(Long idEmpleado);
+
+  boolean existsByEmpleadoIdEmpleado(Long idEmpleado);
 }

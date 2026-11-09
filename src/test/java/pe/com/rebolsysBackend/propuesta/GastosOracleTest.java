@@ -12,7 +12,7 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import pe.com.rebolsysBackend.config.MockMvcReglasNegocio;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +24,7 @@ import pe.com.rebolsysBackend.service.service.GastoService;
 import tools.jackson.databind.ObjectMapper;
 
 @SpringBootTest(properties = {"spring.jpa.show-sql=false", "logging.level.pe.com.rebolsysBackend=INFO"})
-@AutoConfigureMockMvc
+@MockMvcReglasNegocio
 @Transactional
 @EnabledIfEnvironmentVariable(named = "RUN_ORACLE_TESTS", matches = "true")
 class GastosOracleTest {

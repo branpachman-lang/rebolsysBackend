@@ -69,4 +69,7 @@ public class UsuarioCredencial {
 
     @Column(name = "fechaBloqueo", nullable = true, columnDefinition = "TIMESTAMP")
     private LocalDateTime fechaBloqueo;
+
+    @Column(name = "fechaVencimiento", columnDefinition = "TIMESTAMP")
+    private LocalDateTime fechaVencimiento;
 }

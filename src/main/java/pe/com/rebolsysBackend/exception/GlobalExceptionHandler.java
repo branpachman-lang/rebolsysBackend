@@ -12,18 +12,29 @@ import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import pe.com.rebolsysBackend.exception.dto.ErrorResponseDTO;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    @ExceptionHandler({AuthenticationException.class, AccessDeniedException.class})
+    public ResponseEntity<ErrorResponseDTO> handleSecurity(RuntimeException ex, HttpServletRequest request) {
+        var estado = ex instanceof AuthenticationException ? HttpStatus.UNAUTHORIZED : HttpStatus.FORBIDDEN;
+        return ResponseEntity.status(estado).body(new ErrorResponseDTO(
+            LocalDateTime.now(), estado.value(), estado.getReasonPhrase(), ex.getMessage(), request.getRequestURI(), null));
+    }
 
     @ExceptionHandler(ServicioExternoException.class)
     public ResponseEntity<ErrorResponseDTO> handleExternalService(
@@ -244,5 +255,16 @@ public class GlobalExceptionHandler {
             null
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
+
+    @ExceptionHandler({MaxUploadSizeExceededException.class, MissingServletRequestPartException.class})
+    public ResponseEntity<ErrorResponseDTO> handleMultipart(Exception ex, HttpServletRequest request) {
+        boolean excedeLimite = ex instanceof MaxUploadSizeExceededException;
+        var estado = excedeLimite ? HttpStatus.CONTENT_TOO_LARGE : HttpStatus.BAD_REQUEST;
+        var mensaje = excedeLimite ? "El archivo supera el tamaño permitido" : "Falta el archivo adjunto";
+        var error = new ErrorResponseDTO(
+            LocalDateTime.now(), estado.value(), estado.getReasonPhrase(), mensaje, request.getRequestURI(), null
+        );
+        return ResponseEntity.status(estado).body(error);
     }
 }

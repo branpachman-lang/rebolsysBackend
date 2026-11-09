@@ -26,6 +26,7 @@ public class ItemServiceImpl implements ItemService {
   private final HabitacionRepository habitaciones;
   private final MovimientoInventarioRepository movimientos;
   private final ReglasPropuesta reglas;
+  private final InformeRevisionRepository informes;
 
   @Override
   @Transactional
@@ -112,6 +113,9 @@ public class ItemServiceImpl implements ItemService {
                 .bloquear(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("El ítem no existe"));
     if (id != null) entityManager.refresh(i);
+    if (id != null && i.getEstadoItem() != EstadoItem.INACTIVO && r.estadoItem() == EstadoItem.INACTIVO) {
+      SesionOperacionService.exigirPermisoEnPeticion("MOBILIARIO:ELIMINAR");
+    }
     boolean asignado =
         id != null
             && !detalles.findByItemIdItem(id).isEmpty()
@@ -149,11 +153,14 @@ public class ItemServiceImpl implements ItemService {
     }
     exigir(i.getEstadoItem() != EstadoItem.INACTIVO, "Activa el ítem antes de asignarlo");
     var d = asignacionActual(i);
+    var habitacionesAfectadas = new TreeSet<Long>();
+    if (i.getEstadoItem() == EstadoItem.EN_HABITACION && d != null) {
+      habitacionesAfectadas.add(d.getHabitacion().getIdHabitacion());
+    }
+    if (r.idHabitacion() != null) habitacionesAfectadas.add(r.idHabitacion());
+    habitacionesAfectadas.forEach(this::bloquearSinLimpieza);
     if (r.idHabitacion() != null) {
-      var h =
-          habitaciones
-              .findById(r.idHabitacion())
-              .orElseThrow(() -> new RecursoNoEncontradoException("La habitación no existe"));
+      var h = habitaciones.getReferenceById(r.idHabitacion());
       d = new DetalleHabitacion();
       d.setItem(i);
       d.setHabitacion(h);
@@ -212,22 +219,37 @@ public class ItemServiceImpl implements ItemService {
     var actual = asignacionActual(i);
     exigir(i.getEstadoItem() == EstadoItem.EN_HABITACION && actual != null,
         "Asigna el ítem a una habitación antes de registrar su conservación");
+    bloquearSinLimpieza(actual.getHabitacion().getIdHabitacion());
+    actual = asignacionActual(i);
+    registrarConservacion(actual, r.estadoActualItem(), u,
+        r.observacion().trim() + " [" + reglas.firma(r) + "]", clave);
+    return respuesta(i);
+  }
+
+  private void bloquearSinLimpieza(Long idHabitacion) {
+    habitaciones.bloquear(idHabitacion)
+        .orElseThrow(() -> new RecursoNoEncontradoException("La habitación no existe"));
+    exigir(!informes.existsByHabitacionIdHabitacionAndEstadoInformeNot(idHabitacion, EstadoInforme.APROBADO),
+        "El mobiliario de la habitación está en revisión de limpieza");
+  }
+
+  void registrarConservacion(DetalleHabitacion actual, EstadoConservacion estado, Usuario usuario,
+      String observacion, String clave) {
     var d = new DetalleHabitacion();
-    d.setItem(i);
+    d.setItem(actual.getItem());
     d.setHabitacion(actual.getHabitacion());
-    d.setEstadoActualItem(r.estadoActualItem());
+    d.setEstadoActualItem(estado);
     detalles.saveAndFlush(d);
     var m = new MovimientoInventario();
-    m.setItem(i);
+    m.setItem(actual.getItem());
     m.setDetalleHabitacion(d);
-    m.setUsuario(u);
+    m.setUsuario(usuario);
     m.setTipoMovimientoAlmacen(reglas.tipo("EST_ITEM", 0));
     m.setCantidad(1);
     m.setStockResultante(0);
     m.setClaveOperacion(clave);
-    m.setObservacion(r.observacion().trim() + " [" + reglas.firma(r) + "]");
+    m.setObservacion(observacion);
     movimientos.saveAndFlush(m);
-    return respuesta(i);
   }
 
   @Override

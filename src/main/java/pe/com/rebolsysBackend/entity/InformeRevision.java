@@ -2,6 +2,8 @@ package pe.com.rebolsysBackend.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
@@ -15,6 +17,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import pe.com.rebolsysBackend.enums.EstadoInforme;
 
 @Entity
 @Table(name = "informe_revision")
@@ -61,4 +64,8 @@ public class InformeRevision {
 
     @Column(name = "observaciones", nullable = false, length = 1000, columnDefinition = "VARCHAR2(1000)")
     private String observaciones;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estadoInforme", nullable = false, length = 20, columnDefinition = "VARCHAR2(20)")
+    private EstadoInforme estadoInforme = EstadoInforme.APROBADO;
 }

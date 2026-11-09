@@ -36,14 +36,24 @@ public class ProductoServiceImpl implements ProductoService {
   @Transactional
   public ProductoResponseDTO create(ProductoRequestDTO request) {
     validar(request);
+    ReglasPropuesta.exigir(request.getStock()==0 || request.getIdUsuario()!=null,
+        "Selecciona al responsable para registrar las existencias iniciales");
+    var responsable=request.getStock()>0?reglas.bloquearUsuario(request.getIdUsuario()):null;
     var p = new Producto();
     completar(p, request);
-    ReglasPropuesta.exigir(
-        request.getStock() == 0,
-        "Crea el producto sin existencias y registra después un ajuste de stock con su"
-            + " responsable");
-    p.setStock(0);
+    p.setStock(request.getStock());
     productoRepository.saveAndFlush(p);
+    if(p.getStock()>0) {
+      var movimiento=new MovimientoInventario();
+      movimiento.setProducto(p);
+      movimiento.setUsuario(responsable);
+      movimiento.setTipoMovimientoAlmacen(reglas.tipo("AJ_ENT",1));
+      movimiento.setCantidad(p.getStock());
+      movimiento.setStockResultante(p.getStock());
+      movimiento.setObservacion("Existencias iniciales al registrar el producto");
+      movimiento.setClaveOperacion(ReglasPropuesta.hash("alta-producto:"+p.getIdProducto()));
+      movimientos.saveAndFlush(movimiento);
+    }
 
     return convertirResponse(p);
   }
@@ -57,6 +67,9 @@ public class ProductoServiceImpl implements ProductoService {
             .bloquear(id)
             .orElseThrow(() -> new RecursoNoEncontradoException("El producto no existe"));
     entityManager.refresh(p);
+    if (p.getEstadoProducto() != EstadoProducto.INACTIVO && request.getEstadoProducto() == EstadoProducto.INACTIVO) {
+      SesionOperacionService.exigirPermisoEnPeticion("PRODUCTOS:ELIMINAR");
+    }
     int actual = p.getStock();
     ReglasPropuesta.exigir(
         request.getStock() == actual
@@ -139,6 +152,7 @@ public class ProductoServiceImpl implements ProductoService {
 
   private void completar(Producto p, ProductoRequestDTO r) {
     p.setNombreProducto(r.getNombreProducto().trim());
+    p.setDescripcion(r.getDescripcion()==null||r.getDescripcion().isBlank()?null:r.getDescripcion().trim());
     p.setPrecioActual(r.getPrecioActual());
     p.setStockMinimo(r.getStockMinimo());
     p.setEstadoProducto(r.getEstadoProducto());
@@ -220,6 +234,6 @@ public class ProductoServiceImpl implements ProductoService {
         p.getCategoria().getIdCategoria(),
         p.getEstadoProducto(),
         p.getImagenRuta(),
-        p.getCategoria().getNombreCategoria());
+        p.getCategoria().getNombreCategoria(),p.getDescripcion());
   }
 }

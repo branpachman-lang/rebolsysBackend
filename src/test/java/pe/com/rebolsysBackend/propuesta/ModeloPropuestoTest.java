@@ -16,7 +16,7 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 
 class ModeloPropuestoTest {
   @Test
-  void mapearExactamenteLas47TablasY288ColumnasDelDdlPropuestoConV10() throws Exception {
+  void mapearExactamenteLas47TablasY293ColumnasDelDdlPropuestoConV15() throws Exception {
     var registry =
         new StandardServiceRegistryBuilder()
             .applySetting("hibernate.dialect", "org.hibernate.dialect.OracleDialect")
@@ -58,7 +58,7 @@ class ModeloPropuestoTest {
                   .collect(Collectors.toSet()));
       assertThat(esperado).hasSize(47);
       assertThat(real).isEqualTo(esperado);
-      assertThat(real.values().stream().mapToInt(Set::size).sum()).isEqualTo(288);
+      assertThat(real.values().stream().mapToInt(Set::size).sum()).isEqualTo(293);
     } finally {
       StandardServiceRegistryBuilder.destroy(registry);
     }

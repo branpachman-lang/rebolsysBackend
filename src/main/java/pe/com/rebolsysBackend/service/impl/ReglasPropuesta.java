@@ -45,13 +45,7 @@ public class ReglasPropuesta {
   }
 
   public TipoMovimientoAlmacen tipo(String codigo, int signo) {
-    var t =
-        tipos
-            .findByCodigo(codigo)
-            .orElseThrow(
-                () ->
-                    new ReglaNegocioException(
-                        "Falta configurar el movimiento de almacén: " + codigo));
+    var t = tipos.findByCodigo(codigo).orElseThrow(() -> new ReglaNegocioException("Falta configurar el movimiento de almacén: " + codigo));
     exigir(t.getSigno() == signo, "El signo del movimiento no es válido");
     return t;
   }
@@ -61,19 +55,19 @@ public class ReglasPropuesta {
   }
 
   public static String hash(String texto) {
+    return hash(texto.getBytes(StandardCharsets.UTF_8));
+  }
+
+  public static String hash(byte[] contenido) {
     try {
-      return HexFormat.of()
-          .formatHex(
-              MessageDigest.getInstance("SHA-256").digest(texto.getBytes(StandardCharsets.UTF_8)));
+      return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(contenido));
     } catch (NoSuchAlgorithmException ex) {
       throw new IllegalStateException(ex);
     }
   }
-
   public static void exigir(boolean condicion, String mensaje) {
     if (!condicion) throw new ReglaNegocioException(mensaje);
   }
-
   public static String limpiar(String s) {
     return s == null || s.isBlank() ? null : s.trim();
   }
@@ -82,7 +76,6 @@ public class ReglasPropuesta {
     return "%" + (valor == null ? "" : valor.trim().toLowerCase(Locale.ROOT))
         .replace("!", "!!").replace("%", "!%").replace("_", "!_") + "%";
   }
-
   public static java.time.LocalDateTime ahora() {
     return java.time.LocalDateTime.now(java.time.ZoneId.of("America/Lima"));
   }

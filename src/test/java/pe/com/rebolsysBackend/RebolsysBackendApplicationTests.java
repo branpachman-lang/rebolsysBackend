@@ -15,7 +15,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest
+@SpringBootTest(properties = "app.sesion-prueba.habilitada=false")
 @EnabledIfEnvironmentVariable(named = "RUN_ORACLE_TESTS", matches = "true")
 @AutoConfigureMockMvc
 class RebolsysBackendApplicationTests {
@@ -47,18 +47,18 @@ class RebolsysBackendApplicationTests {
   }
 
   @Test
-  void businessRoutesAreAvailableWithoutLogin() throws Exception {
+  void businessRoutesRequireLogin() throws Exception {
     mvc.perform(get("/api/v1/items"))
-        .andExpect(status().isOk());
+        .andExpect(status().isUnauthorized());
   }
 
   @Test
-  void businessRoutesAreAvailableFromAnotherMachineWithoutSession() throws Exception {
+  void remoteBusinessRequestsRequireLogin() throws Exception {
     var result = mvc.perform(get("/api/v1/items").with(r -> {
           r.setRemoteAddr("192.0.2.10");
           return r;
         }))
-        .andExpect(status().isOk()).andReturn();
+        .andExpect(status().isUnauthorized()).andReturn();
     assertThat(result.getRequest().getSession(false)).isNull();
   }
 
@@ -84,9 +84,9 @@ class RebolsysBackendApplicationTests {
   }
 
   @Test
-  void allowedFrontendOriginCanReadBusinessRoutes() throws Exception {
+  void allowedFrontendOriginReceivesAuthenticationFailure() throws Exception {
     mvc.perform(get("/api/v1/items").header("Origin", "http://localhost:4200"))
-        .andExpect(status().isOk())
+        .andExpect(status().isUnauthorized())
         .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:4200"));
   }
 

@@ -29,6 +29,7 @@ public class ProductoRequestDTO {
     private BigDecimal precioActual;
 
     @NotNull(message = "stock es obligatorio")
+    @io.swagger.v3.oas.annotations.media.Schema(description="Existencias iniciales al crear; si son mayores a cero se requiere idUsuario y se registra una entrada de inventario. Al editar se conserva el stock observado.")
     @Digits(integer = 9, fraction = 0, message = "stock admite hasta 9 dígitos enteros y 0 decimales")
     @PositiveOrZero(message = "stock debe ser mayor o igual a 0")
     private Integer stock = 0;
@@ -54,6 +55,19 @@ public class ProductoRequestDTO {
 
     @PositiveOrZero(message = "El stock observado no puede ser negativo")
     private Integer stockAnterior;
+
+    @Size(max = 500, message = "La descripción no debe superar 500 caracteres")
+    private String descripcion;
+
+    @jakarta.validation.constraints.Positive
+    @io.swagger.v3.oas.annotations.media.Schema(description="Responsable obligatorio cuando las existencias iniciales son mayores a cero.")
+    private Long idUsuario;
+
+    public ProductoRequestDTO(String nombreProducto, BigDecimal precioActual, Integer stock,
+        Integer stockMinimo, Long idCategoria, EstadoProducto estadoProducto,
+        String imagenRuta, Integer stockAnterior) {
+        this(nombreProducto,precioActual,stock,stockMinimo,idCategoria,estadoProducto,imagenRuta,stockAnterior,null,null);
+    }
 
     public ProductoRequestDTO(
         String nombreProducto,

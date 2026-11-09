@@ -12,7 +12,7 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import pe.com.rebolsysBackend.config.MockMvcReglasNegocio;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,8 +25,8 @@ import pe.com.rebolsysBackend.service.service.*;
 import tools.jackson.databind.ObjectMapper;
 
 @SpringBootTest(
-    properties = {"spring.jpa.show-sql=false", "logging.level.pe.com.rebolsysBackend=INFO"})
-@AutoConfigureMockMvc
+    properties = {"spring.jpa.show-sql=false", "logging.level.pe.com.rebolsysBackend=INFO","app.sesion-prueba.habilitada=false"})
+@MockMvcReglasNegocio
 @Transactional
 @EnabledIfEnvironmentVariable(named = "RUN_ORACLE_TESTS", matches = "true")
 class PropuestaOracleTest {
@@ -45,6 +45,7 @@ class PropuestaOracleTest {
   @Autowired TipoItemService tiposItem;
   @Autowired CategoriaService categorias;
   @Autowired CuentaReservaService cuentasReserva;
+  @Autowired pe.com.rebolsysBackend.service.impl.AuditoriaOperacionService auditoriaOperacion;
   @Autowired MovimientoInventarioRepository movimientos;
   Long adulto,
       menor,
@@ -969,6 +970,38 @@ class PropuestaOracleTest {
   }
 
   @Test
+  void dosAdultosYUnMenorCompartenDosPlazasSinAumentarCamas() {
+    var tipo=em.find(Cliente.class,adulto).getPerfil().getTipoDocumento();
+    var segundo=persona(tipo,"87654321",LocalDate.of(1992,1,1));
+    var base=reserva("familia-dos-plazas",false).detalles().getFirst();
+    var r=reservas.registrar(new ReservaRegistroRequestDTO("familia-dos-plazas",adulto,usuario,List.of(new ReservaDetalleRegistroDTO(habitacion,base.fechaIngreso(),base.fechaSalida(),base.costoEstadia(),List.of(
+      new ReservaOcupanteRegistroDTO(adulto,null,null,true),
+      new ReservaOcupanteRegistroDTO(segundo,null,null,true),
+      new ReservaOcupanteRegistroDTO(menor,adulto,ParentescoResponsable.MADRE,false))))));
+    assertThat(r.detalles().getFirst().ocupantes()).hasSize(3);
+    assertThat(r.detalles().getFirst().ocupantes().stream().filter(ReservaOcupanteRespuestaDTO::ocupaPlazaCama).count()).isEqualTo(2);
+    assertThat(em.find(Habitacion.class,habitacion).getPlazasCama()).isEqualTo(2);
+  }
+
+  @Test
+  void dosMenoresSinCamaSuperanElCupoAdicional() {
+    var tipo=em.find(Cliente.class,adulto).getPerfil().getTipoDocumento();
+    var segundoMenor=persona(tipo,"87654320",LocalDate.now().minusYears(3));
+    var base=reserva("dos-menores-sin-cama",false).detalles().getFirst();
+    var solicitud=new ReservaRegistroRequestDTO("dos-menores-sin-cama",adulto,usuario,List.of(new ReservaDetalleRegistroDTO(habitacion,base.fechaIngreso(),base.fechaSalida(),base.costoEstadia(),List.of(
+      new ReservaOcupanteRegistroDTO(adulto,null,null,true),
+      new ReservaOcupanteRegistroDTO(menor,adulto,ParentescoResponsable.MADRE,false),
+      new ReservaOcupanteRegistroDTO(segundoMenor,adulto,ParentescoResponsable.MADRE,false)))));
+    assertThatThrownBy(()->reservas.registrar(solicitud)).isInstanceOf(ReglaNegocioException.class).hasMessageContaining("límite de menores");
+  }
+
+  @Test
+  void configuracionNoPermiteMasDeUnMenorAdicional() {
+    assertThatThrownBy(()->habitaciones.update(habitacion,habitacionDTO(em.find(Habitacion.class,habitacion).getNumeroCuarto(),4,2,2)))
+      .isInstanceOf(jakarta.validation.ConstraintViolationException.class).hasMessageContaining("un menor adicional");
+  }
+
+  @Test
   void ocuparVariasHabitacionesNoDuplicaPersonasNiPermiteResponsableEnOtraHabitacion() {
     var h2 = habitaciones.create(habitacionDTO("OTRA_HAB", 3, 2, 1));
     var base = reserva("varias", false).detalles().getFirst();
@@ -1053,6 +1086,59 @@ class PropuestaOracleTest {
     if (existencias > 0) productos.ajustarStock(p.getIdProducto(), new AjusteStockDTO(
         UUID.randomUUID().toString(), usuario, 0, existencias, "Preparación de prueba"));
     return p.getIdProducto();
+  }
+
+  @Test
+  void auditoriaDeCambiosConservaElUsuarioYRegistroAfectado() {
+    auditoriaOperacion.registrar(new SesionActualDTO(usuario,"operador de prueba","PRUEBA",turno,formaPago),"HABITACION",habitacion,"PUT","/api/v1/habitaciones/"+habitacion,"127.0.0.1");
+    var a=em.createQuery("select a from AuditoriaGeneral a where a.usuario.idUsuario=:usuario and a.nombreTabla='HABITACION'",AuditoriaGeneral.class).setParameter("usuario",usuario).getSingleResult();
+    assertThat(a.getIdRegistro()).isEqualTo(habitacion);assertThat(a.getUsuario().getIdUsuario()).isEqualTo(usuario);assertThat(a.getAccion()).isEqualTo(AccionAuditoria.UPDATE);assertThat(a.getDatosNuevos()).contains("PUT /api/v1/habitaciones/");assertThat(a.getFechaHora()).isNotNull();
+  }
+
+  @Test
+  void ventaPagadaConUsuarioYReintentoNoDuplicaCobroNiStock() {
+    stock(10);
+    var req=new VentaRequestDTO("venta-sesion-"+UUID.randomUUID(),usuario,null,"Comprador de prueba",ModalidadCobro.SEPARADA,null,List.of(new VentaLineaRegistroDTO(producto,2,new BigDecimal("3.50"))));
+    var v=ventas.registrarConfirmada(req);var pago=new PagoCuentaDTO("pago-sesion-"+UUID.randomUUID(),usuario,turno,formaPago,new BigDecimal("7.00"),null);
+    var c=cuentasVenta.pagar(v.idVenta(),pago);assertThat(c.saldo()).isEqualByComparingTo("0");assertThat(v.idUsuario()).isEqualTo(usuario);
+    assertThat(ventas.registrarConfirmada(req).idVenta()).isEqualTo(v.idVenta());
+    assertThat(cuentasVenta.pagar(v.idVenta(),pago).pagos()).hasSize(1);assertThat(productos.read(producto).getStock()).isEqualTo(8);
+    assertThat(movimientos.findByProductoIdProductoOrderByIdMovimientoDesc(producto).getFirst().getUsuario().getIdUsuario()).isEqualTo(usuario);
+  }
+
+  @Test
+  void precioModificadoNoConfirmaUnaVentaConOtroImporte() {
+    stock(10);var req=new VentaRequestDTO("precio-sesion-"+UUID.randomUUID(),usuario,null,null,ModalidadCobro.SEPARADA,null,List.of(new VentaLineaRegistroDTO(producto,1,BigDecimal.ONE)));
+    assertThatThrownBy(()->ventas.registrarConfirmada(req)).isInstanceOf(ReglaNegocioException.class).hasMessageContaining("cambió");assertThat(productos.read(producto).getStock()).isEqualTo(10);
+  }
+
+  @Test
+  void altaDeProductoGuardaDescripcionYExistenciasConMovimientoInicial() {
+    var req=new ProductoRequestDTO("Alta inicial "+UUID.randomUUID().toString().substring(0,8),new BigDecimal("3.50"),50,2,categoria,EstadoProducto.ACTIVO);
+    req.setIdUsuario(usuario);req.setDescripcion("  Agua sin gas de 500 ml  ");
+    var p=productos.create(req);
+    assertThat(p.getStock()).isEqualTo(50);assertThat(p.getDescripcion()).isEqualTo("Agua sin gas de 500 ml");
+    var historial=productos.movimientos(p.getIdProducto());assertThat(historial).hasSize(1);
+    assertThat(historial.getFirst().cantidad()).isEqualTo(50);assertThat(historial.getFirst().stockResultante()).isEqualTo(50);
+    assertThat(historial.getFirst().idUsuario()).isEqualTo(usuario);assertThat(historial.getFirst().observacion()).isEqualTo("Existencias iniciales al registrar el producto");
+    assertThat(productos.read(p.getIdProducto()).getDescripcion()).isEqualTo(p.getDescripcion());
+  }
+
+  @Test
+  void altaConExistenciasExigeResponsableYDescripcionAcotada() {
+    var req=new ProductoRequestDTO("Alta inválida",BigDecimal.ONE,50,0,categoria,EstadoProducto.ACTIVO);
+    assertThatThrownBy(()->productos.create(req)).isInstanceOf(ReglaNegocioException.class).hasMessageContaining("responsable");
+    req.setIdUsuario(usuario);req.setDescripcion("x".repeat(501));
+    assertThatThrownBy(()->productos.create(req)).isInstanceOf(jakarta.validation.ConstraintViolationException.class).hasMessageContaining("descripción");
+  }
+
+  @Test
+  void editarDescripcionConservaStockYElMotivoDeAjustes() {
+    var req=new ProductoRequestDTO("Editar descripción "+UUID.randomUUID().toString().substring(0,8),BigDecimal.ONE,10,0,categoria,EstadoProducto.ACTIVO);
+    req.setIdUsuario(usuario);var p=productos.create(req);req.setDescripcion("Producto con descripción");
+    productos.update(p.getIdProducto(),req);assertThat(productos.read(p.getIdProducto()).getStock()).isEqualTo(10);assertThat(productos.movimientos(p.getIdProducto())).hasSize(1);
+    productos.ajustarStock(p.getIdProducto(),new AjusteStockDTO(UUID.randomUUID().toString(),usuario,10,8,"Dos unidades dañadas"));
+    var ultimo=productos.movimientos(p.getIdProducto()).getFirst();assertThat(ultimo.observacion()).isEqualTo("Dos unidades dañadas");assertThat(ultimo.stockResultante()).isEqualTo(8);
   }
 
   VentaRequestDTO carrito(String clave, Long segundo, int primeraCantidad, int segundaCantidad) {
@@ -1439,6 +1525,33 @@ class PropuestaOracleTest {
     mvc.perform(post("/api/v1/items").contentType(MediaType.APPLICATION_JSON)
         .content("{\"nombreItem\":\"Cama\",\"idTipoItem\":" + tipoItem + ",\"estadoItem\":\"ACTIVO\"}"))
         .andExpect(status().isCreated()).andExpect(jsonPath("$.estadoItem").value("Activo"));
+  }
+
+  @Test
+  void tarifaPorHabitacionPersisteYSeConservaConClientesAnteriores() throws Exception {
+    var original = habitaciones.read(habitacion);
+    var propia = new HabitacionRequestDTO(original.numeroCuarto(), original.idTipoHabitacion(),
+        original.estadoHabitacion(), original.capacidadPersonas(), original.plazasCama(),
+        original.maxMenoresSinCama(), new BigDecimal("40.00"));
+    mvc.perform(put("/api/v1/habitaciones/" + habitacion).contentType(MediaType.APPLICATION_JSON)
+        .content(json.writeValueAsString(propia)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.precioPorNoche").value(40))
+        .andExpect(jsonPath("$.precioBase").value(40));
+    em.flush(); em.clear();
+    assertThat(em.find(Habitacion.class, habitacion).getPrecioPorNoche()).isEqualByComparingTo("40.00");
+    assertThat(tiposHabitacion.read(tipoHabitacion).precioBase()).isEqualByComparingTo(original.precioBase());
+    var anterior = new java.util.LinkedHashMap<String, Object>();
+    anterior.put("numeroCuarto", original.numeroCuarto()); anterior.put("idTipoHabitacion", original.idTipoHabitacion());
+    anterior.put("estadoHabitacion", original.estadoHabitacion()); anterior.put("capacidadPersonas", original.capacidadPersonas());
+    anterior.put("plazasCama", original.plazasCama()); anterior.put("maxMenoresSinCama", original.maxMenoresSinCama());
+    mvc.perform(put("/api/v1/habitaciones/" + habitacion).contentType(MediaType.APPLICATION_JSON)
+        .content(json.writeValueAsString(anterior)))
+        .andExpect(status().isOk()).andExpect(jsonPath("$.precioPorNoche").value(40));
+    em.flush(); em.clear();
+    assertThat(habitaciones.estado(LocalDate.now(), LocalDate.now().plusDays(1)).stream()
+        .filter(h -> h.idHabitacion().equals(habitacion)).findFirst().orElseThrow().precio())
+        .isEqualByComparingTo("40.00");
   }
 
 }
