@@ -1,0 +1,195 @@
+{
+  "info": {
+    "name": "REBOLSYS - Verificación de limpieza (solo lectura)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api/v1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Reservas después de limpieza",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/reservas"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "const data=pm.response.json();",
+              "pm.test(\"Sin registros de pruebas\",()=>pm.expect(Array.isArray(data)?data.length:data.totalElementos).to.eql(0));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ventas después de limpieza",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/ventas"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "const data=pm.response.json();",
+              "pm.test(\"Sin registros de pruebas\",()=>pm.expect(Array.isArray(data)?data.length:data.totalElementos).to.eql(0));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Productos después de limpieza",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/productos"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "const data=pm.response.json();",
+              "pm.test(\"Sin registros de pruebas\",()=>pm.expect(Array.isArray(data)?data.length:data.totalElementos).to.eql(0));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Historial de gastos después de limpieza",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/gastos/historial"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "const data=pm.response.json();",
+              "pm.test(\"Gastos de prueba retirados\",()=>pm.expect(data.gastos.totalElementos).to.eql(0));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Habitaciones reales conservadas",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/habitaciones/configuracion"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "const data=pm.response.json();",
+              "pm.test(\"20 habitaciones sin demos\",()=>pm.expect(data.length).to.eql(20));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Camas reales conservadas",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/items"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "const data=pm.response.json();",
+              "pm.test(\"26 camas asignadas\",()=>{pm.expect(data.length).to.eql(26);pm.expect(data.every(i=>i.nombreTipo===\"Cama\"&&i.idHabitacion!==null)).to.eql(true);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Catálogos y operador conservados",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/recepcion/catalogos"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "const data=pm.response.json();",
+              "pm.test(\"Operador local y turno conservados\",()=>{pm.expect(data.usuarios.some(u=>u.id===130)).to.eql(true);pm.expect(data.turnosAbiertos.some(t=>t.idTurno===101&&t.idUsuario===130)).to.eql(true);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Configuraciones accesibles",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/configuraciones/catalogos"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "const data=pm.response.json();",
+              "pm.test(\"Tipos y categorías vigentes\",()=>{pm.expect(data.tiposHabitacion.length).to.eql(9);pm.expect(data.tiposItem.length).to.eql(3);pm.expect(data.categorias.some(c=>c.nombreCategoria===\"General\")).to.eql(true);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Facturación configurada sin secretos",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/facturacion/configuracion"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "const data=pm.response.json();",
+              "pm.test(\"Beta preparada\",()=>{pm.expect(data.ambiente).to.eql(\"BETA\");pm.expect(data.habilitada).to.eql(true);pm.expect(data.configuracionPendiente).to.eql([]);});",
+              "pm.test(\"Sin token en respuesta\",()=>pm.expect(Object.keys(data).some(k=>/token|password|secret/i.test(k))).to.eql(false));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

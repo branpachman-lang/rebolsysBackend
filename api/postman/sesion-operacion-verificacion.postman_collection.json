@@ -1,0 +1,113 @@
+{
+  "info": {
+    "name": "REBOLSYS - Sesión y validaciones sin crear operaciones",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "Usuario actual de prueba",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/sesion/actual",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "const s=pm.response.json();pm.test(\"Usuario y turno locales\",()=>{pm.expect(s.idUsuario).to.eql(130);pm.expect(s.usuario).to.eql(\"operacion_local\");pm.expect(s.modo).to.eql(\"PRUEBA\");pm.expect(s.idTurno).to.eql(101);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rechazar otra identidad antes de una venta",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/ventas/confirmadas",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"idUsuario\":999999,\"claveRegistro\":\"validacion-sesion-no-crear\",\"modalidadCobro\":\"SEPARADA\",\"detalles\":[]}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Otro usuario rechazado\",()=>pm.response.to.have.status(409));",
+              "pm.test(\"Mensaje de sesión\",()=>pm.expect(pm.response.json().message).to.include(\"sesión actual\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Usuario automático antes de validar líneas vacías",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/ventas/confirmadas",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"claveRegistro\":\"validacion-sesion-no-crear\",\"modalidadCobro\":\"SEPARADA\",\"detalles\":[]}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Contenido inválido rechazado\",()=>pm.response.to.have.status(400));",
+              "pm.test(\"La validación ya no reclama usuario nulo\",()=>{const e=pm.response.json().validationErrors;pm.expect(e).not.to.have.property(\"idUsuario\");pm.expect(e).to.have.property(\"detalles\");});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Contrato de sesión y venta",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/v3/api-docs",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "const s=pm.response.json();pm.test(\"Sesión publicada\",()=>pm.expect(s.paths).to.have.property(\"/api/v1/sesion/actual\"));",
+              "pm.test(\"Precio esperado disponible\",()=>pm.expect(s.components.schemas.VentaLineaRegistroDTO.properties).to.have.property(\"precioEsperado\"));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

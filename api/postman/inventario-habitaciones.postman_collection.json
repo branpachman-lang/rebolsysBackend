@@ -1,0 +1,82 @@
+{
+  "info": {
+    "name": "REBOLSYS - Inventario y tarifas de habitaciones",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api/v1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Configuración de las 20 habitaciones",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/habitaciones/configuracion"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const expected=[{\"numero\":\"201\",\"tipo\":\"Matrimonial con baño\",\"banoPrivado\":true,\"camas\":1,\"medidaCama\":\"2 plazas\",\"plazasPorCama\":2,\"precioPorNoche\":100},{\"numero\":\"202\",\"tipo\":\"Matrimonial doble con baño\",\"banoPrivado\":true,\"camas\":2,\"medidaCama\":\"2 plazas\",\"plazasPorCama\":2,\"precioPorNoche\":120},{\"numero\":\"203\",\"tipo\":\"Matrimonial doble con baño\",\"banoPrivado\":true,\"camas\":2,\"medidaCama\":\"2 plazas\",\"plazasPorCama\":2,\"precioPorNoche\":120},{\"numero\":\"301\",\"tipo\":\"Matrimonial con baño\",\"banoPrivado\":true,\"camas\":1,\"medidaCama\":\"2 plazas\",\"plazasPorCama\":2,\"precioPorNoche\":100},{\"numero\":\"302\",\"tipo\":\"Doble sin baño\",\"banoPrivado\":false,\"camas\":2,\"medidaCama\":\"1.5 plazas\",\"plazasPorCama\":1,\"precioPorNoche\":80},{\"numero\":\"303\",\"tipo\":\"Matrimonial con baño\",\"banoPrivado\":true,\"camas\":3,\"medidaCama\":\"2 plazas\",\"plazasPorCama\":2,\"precioPorNoche\":150},{\"numero\":\"304\",\"tipo\":\"Doble sin baño\",\"banoPrivado\":false,\"camas\":2,\"medidaCama\":\"1.5 plazas\",\"plazasPorCama\":1,\"precioPorNoche\":80},{\"numero\":\"401\",\"tipo\":\"Matrimonial con baño\",\"banoPrivado\":true,\"camas\":1,\"medidaCama\":\"2 plazas\",\"plazasPorCama\":2,\"precioPorNoche\":100},{\"numero\":\"402\",\"tipo\":\"Simple con baño\",\"banoPrivado\":true,\"camas\":1,\"medidaCama\":\"1.5 plazas\",\"plazasPorCama\":1,\"precioPorNoche\":50},{\"numero\":\"403\",\"tipo\":\"Matrimonial sin baño\",\"banoPrivado\":false,\"camas\":1,\"medidaCama\":\"2 plazas\",\"plazasPorCama\":2,\"precioPorNoche\":100},{\"numero\":\"404\",\"tipo\":\"Simple sin baño\",\"banoPrivado\":false,\"camas\":1,\"medidaCama\":\"1.5 plazas\",\"plazasPorCama\":1,\"precioPorNoche\":30},{\"numero\":\"405\",\"tipo\":\"Simple con baño\",\"banoPrivado\":true,\"camas\":1,\"medidaCama\":\"1.5 plazas\",\"plazasPorCama\":1,\"precioPorNoche\":50},{\"numero\":\"406\",\"tipo\":\"Simple sin baño\",\"banoPrivado\":false,\"camas\":1,\"medidaCama\":\"1.5 plazas\",\"plazasPorCama\":1,\"precioPorNoche\":30},{\"numero\":\"501\",\"tipo\":\"Simple sin baño\",\"banoPrivado\":false,\"camas\":1,\"medidaCama\":\"1.5 plazas\",\"plazasPorCama\":1,\"precioPorNoche\":30},{\"numero\":\"502\",\"tipo\":\"Matrimonial sin baño\",\"banoPrivado\":false,\"camas\":1,\"medidaCama\":\"2 plazas\",\"plazasPorCama\":2,\"precioPorNoche\":80},{\"numero\":\"503\",\"tipo\":\"Matrimonial sin baño\",\"banoPrivado\":false,\"camas\":1,\"medidaCama\":\"2 plazas\",\"plazasPorCama\":2,\"precioPorNoche\":80},{\"numero\":\"504\",\"tipo\":\"Matrimonial sin baño\",\"banoPrivado\":false,\"camas\":1,\"medidaCama\":\"2 plazas\",\"plazasPorCama\":2,\"precioPorNoche\":80},{\"numero\":\"505\",\"tipo\":\"Simple sin baño\",\"banoPrivado\":false,\"camas\":1,\"medidaCama\":\"1.5 plazas\",\"plazasPorCama\":1,\"precioPorNoche\":30},{\"numero\":\"506\",\"tipo\":\"Simple con baño\",\"banoPrivado\":true,\"camas\":1,\"medidaCama\":\"1.5 plazas\",\"plazasPorCama\":1,\"precioPorNoche\":40},{\"numero\":\"507\",\"tipo\":\"Simple sin baño\",\"banoPrivado\":false,\"camas\":1,\"medidaCama\":\"1.5 plazas\",\"plazasPorCama\":1,\"precioPorNoche\":30}];",
+              "const all=pm.response.json(); const rooms=all.filter(h=>expected.some(e=>e.numero===h.numeroCuarto));",
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "pm.test(\"Las 20 habitaciones existen sin números duplicados\",()=>{pm.expect(rooms.length).to.eql(20);pm.expect(new Set(rooms.map(h=>h.numeroCuarto)).size).to.eql(20);});",
+              "for(const piso of [2,3,4,5])pm.test(\"Piso \"+piso+\": cantidad correcta\",()=>pm.expect(rooms.filter(h=>h.numeroCuarto.startsWith(String(piso))).length).to.eql(expected.filter(h=>h.numero.startsWith(String(piso))).length));",
+              "pm.test(\"Tipos, camas y capacidad coinciden con la imagen\",()=>{for(const e of expected){const h=rooms.find(h=>h.numeroCuarto===e.numero);pm.expect(h.nombreTipo).to.eql(e.tipo);pm.expect(h.plazasCama).to.eql(e.camas*e.plazasPorCama);pm.expect(h.capacidadPersonas).to.eql(h.plazasCama+1);pm.expect(h.maxMenoresSinCama).to.eql(1);}});",
+              "pm.collectionVariables.set(\"habitacionesImportadas\",JSON.stringify(rooms));",
+              "for(const e of expected)pm.test(\"Tarifa habitación \"+e.numero+\" = S/ \"+e.precioPorNoche,()=>{const h=rooms.find(h=>h.numeroCuarto===e.numero);pm.expect(h.precioPorNoche).to.eql(e.precioPorNoche);pm.expect(h.precioBase).to.eql(e.precioPorNoche);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Camas asignadas",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/items"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const expected=[{\"numero\":\"201\",\"tipo\":\"Matrimonial con baño\",\"banoPrivado\":true,\"camas\":1,\"medidaCama\":\"2 plazas\",\"plazasPorCama\":2,\"precioPorNoche\":100},{\"numero\":\"202\",\"tipo\":\"Matrimonial doble con baño\",\"banoPrivado\":true,\"camas\":2,\"medidaCama\":\"2 plazas\",\"plazasPorCama\":2,\"precioPorNoche\":120},{\"numero\":\"203\",\"tipo\":\"Matrimonial doble con baño\",\"banoPrivado\":true,\"camas\":2,\"medidaCama\":\"2 plazas\",\"plazasPorCama\":2,\"precioPorNoche\":120},{\"numero\":\"301\",\"tipo\":\"Matrimonial con baño\",\"banoPrivado\":true,\"camas\":1,\"medidaCama\":\"2 plazas\",\"plazasPorCama\":2,\"precioPorNoche\":100},{\"numero\":\"302\",\"tipo\":\"Doble sin baño\",\"banoPrivado\":false,\"camas\":2,\"medidaCama\":\"1.5 plazas\",\"plazasPorCama\":1,\"precioPorNoche\":80},{\"numero\":\"303\",\"tipo\":\"Matrimonial con baño\",\"banoPrivado\":true,\"camas\":3,\"medidaCama\":\"2 plazas\",\"plazasPorCama\":2,\"precioPorNoche\":150},{\"numero\":\"304\",\"tipo\":\"Doble sin baño\",\"banoPrivado\":false,\"camas\":2,\"medidaCama\":\"1.5 plazas\",\"plazasPorCama\":1,\"precioPorNoche\":80},{\"numero\":\"401\",\"tipo\":\"Matrimonial con baño\",\"banoPrivado\":true,\"camas\":1,\"medidaCama\":\"2 plazas\",\"plazasPorCama\":2,\"precioPorNoche\":100},{\"numero\":\"402\",\"tipo\":\"Simple con baño\",\"banoPrivado\":true,\"camas\":1,\"medidaCama\":\"1.5 plazas\",\"plazasPorCama\":1,\"precioPorNoche\":50},{\"numero\":\"403\",\"tipo\":\"Matrimonial sin baño\",\"banoPrivado\":false,\"camas\":1,\"medidaCama\":\"2 plazas\",\"plazasPorCama\":2,\"precioPorNoche\":100},{\"numero\":\"404\",\"tipo\":\"Simple sin baño\",\"banoPrivado\":false,\"camas\":1,\"medidaCama\":\"1.5 plazas\",\"plazasPorCama\":1,\"precioPorNoche\":30},{\"numero\":\"405\",\"tipo\":\"Simple con baño\",\"banoPrivado\":true,\"camas\":1,\"medidaCama\":\"1.5 plazas\",\"plazasPorCama\":1,\"precioPorNoche\":50},{\"numero\":\"406\",\"tipo\":\"Simple sin baño\",\"banoPrivado\":false,\"camas\":1,\"medidaCama\":\"1.5 plazas\",\"plazasPorCama\":1,\"precioPorNoche\":30},{\"numero\":\"501\",\"tipo\":\"Simple sin baño\",\"banoPrivado\":false,\"camas\":1,\"medidaCama\":\"1.5 plazas\",\"plazasPorCama\":1,\"precioPorNoche\":30},{\"numero\":\"502\",\"tipo\":\"Matrimonial sin baño\",\"banoPrivado\":false,\"camas\":1,\"medidaCama\":\"2 plazas\",\"plazasPorCama\":2,\"precioPorNoche\":80},{\"numero\":\"503\",\"tipo\":\"Matrimonial sin baño\",\"banoPrivado\":false,\"camas\":1,\"medidaCama\":\"2 plazas\",\"plazasPorCama\":2,\"precioPorNoche\":80},{\"numero\":\"504\",\"tipo\":\"Matrimonial sin baño\",\"banoPrivado\":false,\"camas\":1,\"medidaCama\":\"2 plazas\",\"plazasPorCama\":2,\"precioPorNoche\":80},{\"numero\":\"505\",\"tipo\":\"Simple sin baño\",\"banoPrivado\":false,\"camas\":1,\"medidaCama\":\"1.5 plazas\",\"plazasPorCama\":1,\"precioPorNoche\":30},{\"numero\":\"506\",\"tipo\":\"Simple con baño\",\"banoPrivado\":true,\"camas\":1,\"medidaCama\":\"1.5 plazas\",\"plazasPorCama\":1,\"precioPorNoche\":40},{\"numero\":\"507\",\"tipo\":\"Simple sin baño\",\"banoPrivado\":false,\"camas\":1,\"medidaCama\":\"1.5 plazas\",\"plazasPorCama\":1,\"precioPorNoche\":30}];",
+              "const rooms=JSON.parse(pm.collectionVariables.get(\"habitacionesImportadas\"));const items=pm.response.json().filter(i=>rooms.some(h=>h.idHabitacion===i.idHabitacion)&&i.nombreTipo===\"Cama\");",
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "pm.test(\"26 camas físicas asignadas\",()=>pm.expect(items.length).to.eql(26));",
+              "pm.test(\"Cada habitación tiene sus camas con la medida indicada\",()=>{for(const e of expected){const id=rooms.find(h=>h.numeroCuarto===e.numero).idHabitacion;const camas=items.filter(i=>i.idHabitacion===id);pm.expect(camas.length).to.eql(e.camas);for(const cama of camas)pm.expect(cama.nombreItem).to.include(e.medidaCama);}});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Estado de habitaciones para el calendario",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/habitaciones?desde=2026-11-03&hasta=2026-11-10"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const expected=JSON.parse(pm.collectionVariables.get(\"habitacionesImportadas\"));const rooms=pm.response.json().filter(h=>expected.some(e=>e.idHabitacion===h.idHabitacion));",
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "pm.test(\"Las 20 habitaciones aparecen en el calendario\",()=>pm.expect(rooms.length).to.eql(20));",
+              "pm.test(\"El calendario usa la tarifa propia de cada habitación\",()=>{for(const h of rooms)pm.expect(h.precio).to.eql(expected.find(e=>e.idHabitacion===h.idHabitacion).precioPorNoche);});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

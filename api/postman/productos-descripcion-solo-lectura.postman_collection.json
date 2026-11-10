@@ -1,0 +1,95 @@
+{
+  "info": {
+    "name": "REBOLSYS - Productos con descripción (solo lectura)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "Listado con descripción",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/productos"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "const data=pm.response.json();",
+              "pm.test(\"Productos exponen descripción opcional\",()=>{pm.expect(Array.isArray(data.contenido)).to.eql(true);for(const p of data.contenido)pm.expect(p).to.have.property(\"descripcion\");});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Catálogo de venta",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/productos/catalogo"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "const data=pm.response.json();",
+              "pm.test(\"El catálogo conserva descripción y stock\",()=>{pm.expect(Array.isArray(data)).to.eql(true);for(const p of data){pm.expect(p).to.have.property(\"descripcion\");pm.expect(p.stock).to.be.at.least(0);}});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categorías disponibles",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/categorias"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "const data=pm.response.json();",
+              "pm.test(\"Lista de categorías\",()=>pm.expect(Array.isArray(data)).to.eql(true));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Contrato ejecutado",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/v3/api-docs"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "const data=pm.response.json();",
+              "pm.test(\"Descripción limitada a 500 caracteres\",()=>pm.expect(data.components.schemas.ProductoRequestDTO.properties.descripcion.maxLength).to.eql(500));",
+              "pm.test(\"Operador de stock inicial en contrato\",()=>pm.expect(data.components.schemas.ProductoRequestDTO.properties).to.have.property(\"idUsuario\"));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

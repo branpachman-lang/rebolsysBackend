@@ -1,0 +1,94 @@
+{
+  "info": {
+    "name": "REBOLSYS - Carga de productos y política de menores (solo lectura)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "Catálogo de productos",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/productos/catalogo"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "const data=pm.response.json();",
+              "pm.test(\"Lista de productos\",()=>pm.expect(Array.isArray(data)).to.eql(true));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reservas por la ruta vigente",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/reservas?pagina=0&tamanio=100"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "const data=pm.response.json();",
+              "pm.test(\"Contrato paginado\",()=>{pm.expect(Array.isArray(data.contenido)).to.eql(true);pm.expect(typeof data.ultima).to.eql(\"boolean\");});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categorías del catálogo",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/categorias"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "const data=pm.response.json();",
+              "pm.test(\"Categorías disponibles\",()=>pm.expect(Array.isArray(data)).to.eql(true));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Límite de menores en contrato ejecutado",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/v3/api-docs"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\",()=>pm.response.to.have.status(200));",
+              "const data=pm.response.json();",
+              "pm.test(\"Máximo uno en configuración\",()=>pm.expect(data.components.schemas.HabitacionRequestDTO.properties.maxMenoresSinCama.maximum).to.eql(1));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

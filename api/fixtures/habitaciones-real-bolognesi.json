@@ -1,0 +1,30 @@
+{
+  "version": "inventario-real-bolognesi-2026",
+  "origen": "Listado de habitaciones proporcionado por el usuario el 2026-11-03",
+  "revision": "tarifas-y-menor-adicional-confirmados-2026-11-03",
+  "tarifasPendientes": false,
+  "impuestoIncluido": true,
+  "maxMenoresSinCamaInicial": 1,
+  "habitaciones": [
+    {"numero":"201","tipo":"Matrimonial con baño","banoPrivado":true,"camas":1,"medidaCama":"2 plazas","plazasPorCama":2,"precioPorNoche":100},
+    {"numero":"202","tipo":"Matrimonial doble con baño","banoPrivado":true,"camas":2,"medidaCama":"2 plazas","plazasPorCama":2,"precioPorNoche":120},
+    {"numero":"203","tipo":"Matrimonial doble con baño","banoPrivado":true,"camas":2,"medidaCama":"2 plazas","plazasPorCama":2,"precioPorNoche":120},
+    {"numero":"301","tipo":"Matrimonial con baño","banoPrivado":true,"camas":1,"medidaCama":"2 plazas","plazasPorCama":2,"precioPorNoche":100},
+    {"numero":"302","tipo":"Doble sin baño","banoPrivado":false,"camas":2,"medidaCama":"1.5 plazas","plazasPorCama":1,"precioPorNoche":80},
+    {"numero":"303","tipo":"Matrimonial con baño","banoPrivado":true,"camas":3,"medidaCama":"2 plazas","plazasPorCama":2,"precioPorNoche":150},
+    {"numero":"304","tipo":"Doble sin baño","banoPrivado":false,"camas":2,"medidaCama":"1.5 plazas","plazasPorCama":1,"precioPorNoche":80},
+    {"numero":"401","tipo":"Matrimonial con baño","banoPrivado":true,"camas":1,"medidaCama":"2 plazas","plazasPorCama":2,"precioPorNoche":100},
+    {"numero":"402","tipo":"Simple con baño","banoPrivado":true,"camas":1,"medidaCama":"1.5 plazas","plazasPorCama":1,"precioPorNoche":50},
+    {"numero":"403","tipo":"Matrimonial sin baño","banoPrivado":false,"camas":1,"medidaCama":"2 plazas","plazasPorCama":2,"precioPorNoche":100},
+    {"numero":"404","tipo":"Simple sin baño","banoPrivado":false,"camas":1,"medidaCama":"1.5 plazas","plazasPorCama":1,"precioPorNoche":30},
+    {"numero":"405","tipo":"Simple con baño","banoPrivado":true,"camas":1,"medidaCama":"1.5 plazas","plazasPorCama":1,"precioPorNoche":50},
+    {"numero":"406","tipo":"Simple sin baño","banoPrivado":false,"camas":1,"medidaCama":"1.5 plazas","plazasPorCama":1,"precioPorNoche":30},
+    {"numero":"501","tipo":"Simple sin baño","banoPrivado":false,"camas":1,"medidaCama":"1.5 plazas","plazasPorCama":1,"precioPorNoche":30},
+    {"numero":"502","tipo":"Matrimonial sin baño","banoPrivado":false,"camas":1,"medidaCama":"2 plazas","plazasPorCama":2,"precioPorNoche":80},
+    {"numero":"503","tipo":"Matrimonial sin baño","banoPrivado":false,"camas":1,"medidaCama":"2 plazas","plazasPorCama":2,"precioPorNoche":80},
+    {"numero":"504","tipo":"Matrimonial sin baño","banoPrivado":false,"camas":1,"medidaCama":"2 plazas","plazasPorCama":2,"precioPorNoche":80},
+    {"numero":"505","tipo":"Simple sin baño","banoPrivado":false,"camas":1,"medidaCama":"1.5 plazas","plazasPorCama":1,"precioPorNoche":30},
+    {"numero":"506","tipo":"Simple con baño","banoPrivado":true,"camas":1,"medidaCama":"1.5 plazas","plazasPorCama":1,"precioPorNoche":40},
+    {"numero":"507","tipo":"Simple sin baño","banoPrivado":false,"camas":1,"medidaCama":"1.5 plazas","plazasPorCama":1,"precioPorNoche":30}
+  ]
+}
