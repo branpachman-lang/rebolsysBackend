@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.time.*;
 import java.util.*;
 import lombok.*;
+import pe.com.rebolsysBackend.entity.converter.CondicionItemConverter;
 import pe.com.rebolsysBackend.enums.*;
 
 @Entity
@@ -30,8 +31,12 @@ public class MovimientoInventario {
   private DetalleVenta detalleVenta;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = true)
-  @JoinColumn(name = "idDetalleHabitacion", nullable = true, columnDefinition = "NUMBER")
-  private DetalleHabitacion detalleHabitacion;
+  @JoinColumn(name = "idHabitacion", columnDefinition = "NUMBER")
+  private Habitacion habitacion;
+
+  @Convert(converter = CondicionItemConverter.class)
+  @Column(name = "condicionItem", columnDefinition = "VARCHAR2(30)")
+  private EstadoConservacion condicionItem;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "idTipoMovimientoAlmacen", nullable = false, columnDefinition = "NUMBER")
@@ -40,7 +45,7 @@ public class MovimientoInventario {
   @Column(name = "cantidad", columnDefinition = "NUMBER(9,0)", nullable = false)
   private Integer cantidad;
 
-  @Column(name = "stockResultante", columnDefinition = "NUMBER(9,0)", nullable = false)
+  @Column(name = "stockResultante", columnDefinition = "NUMBER(9,0)")
   private Integer stockResultante;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)

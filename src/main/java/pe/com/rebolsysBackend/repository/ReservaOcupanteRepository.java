@@ -17,7 +17,7 @@ public interface ReservaOcupanteRepository extends JpaRepository<ReservaOcupante
   List<ReservaOcupante> activosHabitacion(@Param("id") Long id);
 
   @Query(
-      "select count(o) from ReservaOcupante o where o.cliente.idCliente=:cliente and"
+      "select count(o) from ReservaOcupante o where o.huesped.perfil.idPerfil=:cliente and"
           + " ((o.detalleReserva.estadoDetalle=pe.com.rebolsysBackend.enums.EstadoReserva.CONFIRMADA"
           + " and o.detalleReserva.fechaIngreso<:salida and o.detalleReserva.fechaSalida>:ingreso)"
           + " or (o.detalleReserva.estadoDetalle=pe.com.rebolsysBackend.enums.EstadoReserva.EN_CURSO"

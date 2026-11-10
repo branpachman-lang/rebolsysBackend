@@ -2,8 +2,7 @@ package pe.com.rebolsysBackend.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.persistence.Convert;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
@@ -20,12 +19,13 @@ import lombok.Setter;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import pe.com.rebolsysBackend.enums.EstadoConservacion;
+import pe.com.rebolsysBackend.entity.converter.CondicionItemConverter;
 
 @Entity
 @Table(
     name = "detalle_informe",
     uniqueConstraints = {
-        @UniqueConstraint(name = "di_informe_item_unq", columnNames = { "idInforme", "idDetalleHabitacion" }),
+        @UniqueConstraint(name = "di_informe_item_unq", columnNames = { "idInforme", "idItem" }),
     }
 )
 @Getter
@@ -50,15 +50,18 @@ public class DetalleInforme {
     private InformeRevision informeRevision;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(
-        name = "idDetalleHabitacion",
-        columnDefinition = "NUMBER",
-        nullable = false,
-        foreignKey = @ForeignKey(name = "di_detalle_habitacion_fk")
-    )
-    private DetalleHabitacion detalleHabitacion;
+    @JoinColumn(name = "idItem", nullable = false, columnDefinition = "NUMBER")
+    private Item item;
 
-    @Enumerated(EnumType.STRING)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "idHabitacion", nullable = false, columnDefinition = "NUMBER")
+    private Habitacion habitacion;
+
+    @Convert(converter = CondicionItemConverter.class)
+    @Column(name = "condicionAnterior", columnDefinition = "VARCHAR2(30)")
+    private EstadoConservacion condicionAnterior;
+
+    @Convert(converter = CondicionItemConverter.class)
     @Column(name = "estadoEncontrado", nullable = false, length = 30, columnDefinition = "VARCHAR2(30)")
     private EstadoConservacion estadoEncontrado;
 
@@ -68,6 +71,6 @@ public class DetalleInforme {
     @Column(name = "evidenciaSha256", nullable = true, length = 64, columnDefinition = "CHAR(64)")
     private String evidenciaSha256;
 
-    @Column(name = "observaciones", length = 1000, columnDefinition = "VARCHAR2(1000)")
+    @Column(name = "observacion", length = 1000, columnDefinition = "VARCHAR2(1000)")
     private String observaciones;
 }

@@ -25,7 +25,7 @@ public final class LimpiezaDTO {
   public record Evidencia(@NotBlank @Size(max = 300) String evidenciaRuta,
       @NotNull @Pattern(regexp = "[a-fA-F0-9]{64}") String evidenciaSha256) {}
 
-  public record ItemInforme(@NotNull @Positive Long idDetalleHabitacion, @NotNull EstadoConservacion estadoEncontrado,
+  public record ItemInforme(@NotNull @Positive Long idItem, @NotNull EstadoConservacion estadoEncontrado,
       @Size(max = 1000) String observaciones, @Valid Evidencia evidencia) {}
 
   public record EnviarInforme(@Size(max = 1000) String observaciones,
@@ -45,7 +45,7 @@ public final class LimpiezaDTO {
       String tipoHabitacion, LocalDateTime fechaSalida, EstadoHabitacionLimpieza estado,
       Responsable responsable, boolean puedeIniciarLimpieza, boolean puedeRetomarBorrador) {}
 
-  public record ItemHabitacion(Long idDetalleHabitacion, Long idItem, String item, String estado) {}
+  public record ItemHabitacion(Long idItem, String item, String estado) {}
 
   public record HabitacionDetalle(HabitacionResumen habitacion, List<ItemHabitacion> items,
       String estadoInforme, InformeDetalle ultimoInforme, String estadoTickets, List<TicketResumen> tickets) {}
@@ -56,7 +56,7 @@ public final class LimpiezaDTO {
       LocalDateTime fechaEnvio, EstadoInforme estado, Responsable responsable, boolean tieneIncidencias,
       long incidenciasPendientes, boolean tieneTickets, boolean puedeAprobar, boolean puedeEditar, boolean puedeEliminar) {}
 
-  public record DetalleItem(Long idDetalleInforme, Long idDetalleHabitacion, Long idItem, String item,
+  public record DetalleItem(Long idDetalleInforme, Long idItem, String item,
       EstadoConservacion estadoEncontrado, EstadoConservacion estadoActualItem, String observaciones,
       Evidencia evidencia, Long idTicket, boolean puedeCrearTicket) {}
 

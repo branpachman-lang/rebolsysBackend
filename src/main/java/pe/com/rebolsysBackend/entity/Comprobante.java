@@ -47,11 +47,11 @@ public class Comprobante {
 
   @ManyToOne(fetch = FetchType.LAZY, optional = true)
   @JoinColumn(
-      name = "idClienteReceptor",
+      name = "idPerfilReceptor",
       columnDefinition = "NUMBER",
       nullable = true,
       foreignKey = @ForeignKey(name = "comprobante_cliente_fk"))
-  private Cliente cliente;
+  private Perfil cliente;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(

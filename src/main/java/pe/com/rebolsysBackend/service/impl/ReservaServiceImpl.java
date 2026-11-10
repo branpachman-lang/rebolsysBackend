@@ -24,7 +24,7 @@ public class ReservaServiceImpl implements ReservaService {
     private final DetalleReservaRepository detalles;
     private final ReservaOcupanteRepository ocupantes;
     private final HabitacionRepository habitaciones;
-    private final ClienteRepository clientes;
+    private final PerfilRepository clientes;
     private final PersonaNaturalRepository naturales;
     private final PersonaJuridicaRepository juridicas;
     private final ListaNegraRepository listaNegra;
@@ -61,7 +61,7 @@ public class ReservaServiceImpl implements ReservaService {
                 .sorted()
                 .toList();
         for (Long id : clientesIds)
-            clientes.bloquear(id).orElseThrow(() -> new RecursoNoEncontradoException("El ocupante no existe"));
+            clientes.bloquearCliente(id).orElseThrow(() -> new RecursoNoEncontradoException("El ocupante no existe"));
         var reserva = new Reserva();
         reserva.setCliente(titular);
         reserva.setUsuario(usuario);
@@ -91,23 +91,23 @@ public class ReservaServiceImpl implements ReservaService {
         return respuesta(reserva);
     }
 
-    private Cliente cliente(Long id) {
-        var c = clientes.findById(id).orElseThrow(() -> new RecursoNoEncontradoException("El cliente no existe"));
-        exigir(!listaNegra.existsByPerfilIdPerfil(c.getPerfil().getIdPerfil()), "La persona está registrada en la lista negra");
+    private Perfil cliente(Long id) {
+        var c = clientes.findByIdPerfilAndEsCliente(id, 1).orElseThrow(() -> new RecursoNoEncontradoException("El cliente no existe"));
+        exigir(!listaNegra.existsByPerfilIdPerfil(c.getIdPerfil()), "La persona está registrada en la lista negra");
         return c;
     }
 
-    private void validarTitular(Cliente c, LocalDate ingreso) {
-        if (naturales.existsById(c.getPerfil().getIdPerfil()))
+    private void validarTitular(Perfil c, LocalDate ingreso) {
+        if (naturales.existsById(c.getIdPerfil()))
             exigir(edad(c, ingreso) >= 18, "El titular de la reserva debe ser mayor de edad");
         else
             exigir(
-                    juridicas.existsById(c.getPerfil().getIdPerfil()),
+                    juridicas.existsById(c.getIdPerfil()),
                     "El titular debe tener identidad registrada");
     }
 
-    private int edad(Cliente c, LocalDate fecha) {
-        var n = naturales.findById(c.getPerfil().getIdPerfil()).orElseThrow(() -> new ReglaNegocioException("Los ocupantes deben ser personas naturales"));
+    private int edad(Perfil c, LocalDate fecha) {
+        var n = naturales.findById(c.getIdPerfil()).orElseThrow(() -> new ReglaNegocioException("Los ocupantes deben ser personas naturales"));
         exigir(
                 n.getFechaNacimiento() != null && !n.getFechaNacimiento().isAfter(fecha),
                 "Se requiere una fecha de nacimiento válida del ocupante");
@@ -168,7 +168,7 @@ public class ReservaServiceImpl implements ReservaService {
                         .toList()) {
             var o = new ReservaOcupante();
             o.setDetalleReserva(d);
-            o.setCliente(cliente(r.idCliente()));
+            o.setHuesped(personas.obtenerOCrearHuesped(cliente(r.idCliente())));
             o.setOcupaPlazaCama(r.ocupaPlazaCama() ? 1 : 0);
             if (r.idClienteResponsable() != null) {
                 o.setIdOcupanteResponsable(porCliente.get(r.idClienteResponsable()).getIdReservaOcupante());
@@ -227,8 +227,8 @@ public class ReservaServiceImpl implements ReservaService {
                 exigir(!registrados.isEmpty(), "Completa los ocupantes antes del ingreso");
                 Map<Long, Long> clientesPorOcupante = new HashMap<>();
                 registrados.forEach(
-                        o -> clientesPorOcupante.put(o.getIdReservaOcupante(), o.getCliente().getIdCliente()));
-                var lista = registrados.stream().map(o -> new ReservaOcupanteRegistroDTO(o.getCliente().getIdCliente(),
+                        o -> clientesPorOcupante.put(o.getIdReservaOcupante(), o.getHuesped().getPerfil().getIdPerfil()));
+                var lista = registrados.stream().map(o -> new ReservaOcupanteRegistroDTO(o.getHuesped().getPerfil().getIdPerfil(),
                                                         clientesPorOcupante.get(o.getIdOcupanteResponsable()),
                                                         o.getParentescoResponsable(),
                                                         o.getOcupaPlazaCama() == 1)).toList();
@@ -297,8 +297,7 @@ public class ReservaServiceImpl implements ReservaService {
                         .distinct()
                         .sorted()
                         .toList())
-            clientes
-                    .bloquear(clienteId)
+            clientes.bloquearCliente(clienteId)
                     .orElseThrow(() -> new RecursoNoEncontradoException("El ocupante no existe"));
         validarOcupantes(
                 new ReservaDetalleRegistroDTO(
@@ -318,9 +317,9 @@ public class ReservaServiceImpl implements ReservaService {
     private ReservaRespuestaDTO respuesta(Reserva r) {
         return new ReservaRespuestaDTO(
                 r.getIdReserva(),
-                r.getCliente().getIdCliente(),
+                r.getCliente().getIdPerfil(),
                 r.getUsuario().getIdUsuario(),
-                personas.nombre(r.getCliente().getPerfil()),
+                personas.nombre(r.getCliente()),
                 r.getFechaRegistro(),
                 r.getClaveRegistro(),
                 r.getDetalles().stream().map(this::respuestaDetalle).toList());
@@ -344,8 +343,8 @@ public class ReservaServiceImpl implements ReservaService {
                                 o ->
                                         new ReservaOcupanteRespuestaDTO(
                                                 o.getIdReservaOcupante(),
-                                                o.getCliente().getIdCliente(),
-                                                personas.nombre(o.getCliente().getPerfil()),
+                                                o.getHuesped().getPerfil().getIdPerfil(),
+                                                personas.nombre(o.getHuesped().getPerfil()),
                                                 o.getIdOcupanteResponsable(),
                                                 o.getParentescoResponsable(),
                                                 o.getOcupaPlazaCama() == 1))

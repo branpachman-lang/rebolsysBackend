@@ -13,7 +13,7 @@ import pe.com.rebolsysBackend.entity.InformeRevision;
 import pe.com.rebolsysBackend.enums.EstadoInforme;
 
 public interface InformeRevisionRepository extends JpaRepository<InformeRevision, Long> {
-  boolean existsByHabitacionIdHabitacionAndEstadoInformeNot(Long idHabitacion, EstadoInforme estado);
+  boolean existsByHabitacionIdHabitacionAndEstadoInformeIn(Long idHabitacion, Collection<EstadoInforme> estados);
 
   boolean existsByHabitacionIdHabitacion(Long idHabitacion);
 

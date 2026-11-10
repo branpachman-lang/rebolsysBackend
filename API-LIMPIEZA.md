@@ -39,14 +39,14 @@ Los filtros de fecha usan `AAAA-MM-DD` y hora de Lima. Los informes y tickets ad
 
 ## Envío y resolución
 
-El borrador entrega `idInformeRevision` e `idDetalleHabitacion` para cada ítem. Para enviar, usar un cuerpo como este y sustituir `evidencia` por la respuesta de `POST /evidencias`.
+El borrador entrega `idInformeRevision` e `idItem` para cada ítem. Para enviar, usar un cuerpo como este y sustituir `evidencia` por la respuesta de `POST /evidencias`.
 
 ```json
 {
   "observaciones": "Revisión después de la salida",
   "items": [
     {
-      "idDetalleHabitacion": 12,
+      "idItem": 12,
       "estadoEncontrado": "DANADO",
       "observaciones": "La pata de la mesa está suelta",
       "evidencia": {
@@ -54,7 +54,7 @@ El borrador entrega `idInformeRevision` e `idDetalleHabitacion` para cada ítem.
         "evidenciaSha256": "<sha256>"
       }
     },
-    {"idDetalleHabitacion": 13, "estadoEncontrado": "BUENO"}
+    {"idItem": 13, "estadoEncontrado": "BUENO"}
   ]
 }
 ```

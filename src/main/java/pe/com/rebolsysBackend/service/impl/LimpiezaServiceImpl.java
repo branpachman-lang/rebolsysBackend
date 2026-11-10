@@ -32,7 +32,7 @@ public class LimpiezaServiceImpl implements LimpiezaService {
 
   private final HabitacionRepository habitaciones;
   private final DetalleReservaRepository estancias;
-  private final DetalleHabitacionRepository mobiliario;
+  private final ItemRepository mobiliario;
   private final InformeRevisionRepository informes;
   private final DetalleInformeRepository detalles;
   private final TicketMantenimientoRepository tickets;
@@ -135,7 +135,7 @@ public class LimpiezaServiceImpl implements LimpiezaService {
     exigir(informe.getUsuario().getIdUsuario().equals(usuario.getIdUsuario()),
         "Otro usuario inició la limpieza de la habitación");
     h.setEstadoHabitacion(EstadoHabitacion.LIMPIEZA);
-    var items = mobiliario.actuales(idHabitacion).stream().map(d -> itemHabitacion(d, null)).toList();
+    var items = mobiliario.actualesHabitacion(idHabitacion).stream().map(d -> itemHabitacion(d, null)).toList();
     return new Borrador(informe.getIdInformeRevision(), resumenHabitacion(h, informe, estancia, actual),
         items);
   }
@@ -156,16 +156,18 @@ public class LimpiezaServiceImpl implements LimpiezaService {
     var usuario = usuarioActual();
     var informe = bloquearInforme(idInforme);
     validarBorrador(informe, usuario);
-    var items = mobiliario.actuales(informe.getHabitacion().getIdHabitacion());
+    var items = mobiliario.actualesHabitacion(informe.getHabitacion().getIdHabitacion());
     var entradas = indexarItems(datos.items());
-    exigir(entradas.keySet().equals(items.stream().map(DetalleHabitacion::getIdDetalleHabitacion).collect(toSet())),
+    exigir(entradas.keySet().equals(items.stream().map(Item::getIdItem).collect(toSet())),
         "Se debe registrar exactamente una vez cada ítem actual de la habitación");
     var lineas = new ArrayList<DetalleInforme>();
     for (var item : items) {
       var linea = new DetalleInforme();
       linea.setInformeRevision(informe);
-      linea.setDetalleHabitacion(item);
-      guardarItem(linea, entradas.get(item.getIdDetalleHabitacion()));
+      linea.setItem(item);
+      linea.setHabitacion(informe.getHabitacion());
+      linea.setCondicionAnterior(item.getCondicionItem());
+      guardarItem(linea, entradas.get(item.getIdItem()));
       lineas.add(linea);
     }
     informe.setObservaciones(Objects.requireNonNullElse(limpiar(datos.observaciones()), "Sin observaciones"));
@@ -207,10 +209,10 @@ public class LimpiezaServiceImpl implements LimpiezaService {
     var asociados = ticketsPorDetalle(List.of(id));
     var entradas = indexarItems(datos.items());
     exigir(!entradas.isEmpty(), "Indica al menos un ítem para editar");
-    var idsInforme = lineas.stream().map(d -> d.getDetalleHabitacion().getIdDetalleHabitacion()).collect(toSet());
+    var idsInforme = lineas.stream().map(d -> d.getItem().getIdItem()).collect(toSet());
     exigir(idsInforme.containsAll(entradas.keySet()), "Solo se pueden editar ítems del informe");
     for (var linea : lineas) {
-      var entrada = entradas.get(linea.getDetalleHabitacion().getIdDetalleHabitacion());
+      var entrada = entradas.get(linea.getItem().getIdItem());
       if (entrada == null) continue;
       exigir(!asociados.containsKey(linea.getIdDetalleInforme()) || linea.getEstadoEncontrado() == entrada.estadoEncontrado(),
           "Elimina el ticket asociado antes de modificar el estado encontrado del ítem");
@@ -244,16 +246,17 @@ public class LimpiezaServiceImpl implements LimpiezaService {
     exigir(lineas.stream().noneMatch(d -> pendiente(d, asociados.get(d.getIdDetalleInforme()))),
         "Se debe resolver cada incidencia con un ticket antes de aprobar el informe");
     var habitacion = informe.getHabitacion();
-    var actuales = mobiliario.actuales(habitacion.getIdHabitacion()).stream()
-        .collect(toMap(d -> d.getItem().getIdItem(), d -> d));
-    exigir(actuales.keySet().equals(lineas.stream().map(d -> d.getDetalleHabitacion().getItem().getIdItem()).collect(toSet())),
+    var actuales = mobiliario.actualesHabitacion(habitacion.getIdHabitacion()).stream()
+        .collect(toMap(Item::getIdItem, d -> d));
+    exigir(actuales.keySet().equals(lineas.stream().map(d -> d.getItem().getIdItem()).collect(toSet())),
         "El mobiliario actual no coincide con el informe");
     for (var linea : lineas) {
-      var actual = actuales.get(linea.getDetalleHabitacion().getItem().getIdItem());
+      var actual = actuales.get(linea.getItem().getIdItem());
       cambiarConservacion(actual, BUENO, usuario, "Aprobación de informe INF-" + id,
           "informe:" + linea.getIdDetalleInforme());
     }
     informe.setEstadoInforme(APROBADO);
+    informe.setUsuarioAprobador(usuario);
     habitacion.setEstadoHabitacion(EstadoHabitacion.DISPONIBLE);
     return detalleInforme(informe, lineas, asociados);
   }
@@ -320,21 +323,21 @@ public class LimpiezaServiceImpl implements LimpiezaService {
 
   private void revertirTicket(TicketMantenimiento ticket, Usuario usuario) {
     var linea = ticket.getDetalleInforme();
-    cambiarConservacion(itemActual(linea), linea.getDetalleHabitacion().getEstadoActualItem(), usuario,
+    cambiarConservacion(itemActual(linea), linea.getCondicionAnterior(), usuario,
         "Eliminación de ticket TKT-" + ticket.getIdTicket(), "eliminar-ticket:" + ticket.getIdTicket());
   }
 
-  private void cambiarConservacion(DetalleHabitacion item, EstadoConservacion estado, Usuario usuario,
+  private void cambiarConservacion(Item item, EstadoConservacion estado, Usuario usuario,
       String observacion, String clave) {
-    if (item.getEstadoActualItem() != estado) {
+    exigir(estado != null, "Falta la condición anterior del ítem en el informe");
+    if (item.getCondicionItem() != estado) {
       inventario.registrarConservacion(item, estado, usuario, observacion, hash("limpieza:" + clave));
     }
   }
 
-  private DetalleHabitacion itemActual(DetalleInforme linea) {
-    var original = linea.getDetalleHabitacion();
-    return mobiliario.actuales(original.getHabitacion().getIdHabitacion()).stream()
-        .filter(d -> d.getItem().getIdItem().equals(original.getItem().getIdItem()))
+  private Item itemActual(DetalleInforme linea) {
+    return mobiliario.actualesHabitacion(linea.getHabitacion().getIdHabitacion()).stream()
+        .filter(item -> item.getIdItem().equals(linea.getItem().getIdItem()))
         .findFirst().orElseThrow(() -> noExiste("El ítem actual de la habitación"));
   }
 
@@ -343,7 +346,9 @@ public class LimpiezaServiceImpl implements LimpiezaService {
     exigir(datos.estadoEncontrado() == BUENO || evidencia != null, "La incidencia requiere evidencia fotográfica");
     if (evidencia != null) evidencias.verificar(evidencia);
     detalle.setEstadoEncontrado(datos.estadoEncontrado());
-    detalle.setObservaciones(limpiar(datos.observaciones()));
+    var observacion = limpiar(datos.observaciones());
+    detalle.setObservaciones(observacion == null && datos.estadoEncontrado() != BUENO
+        ? "Incidencia registrada con evidencia" : observacion);
     detalle.setEvidenciaRuta(evidencia == null ? null : evidencia.evidenciaRuta().strip());
     detalle.setEvidenciaSha256(evidencia == null ? null : evidencia.evidenciaSha256().toLowerCase(Locale.ROOT));
   }
@@ -359,7 +364,7 @@ public class LimpiezaServiceImpl implements LimpiezaService {
   private Map<Long, ItemInforme> indexarItems(List<ItemInforme> items) {
     var entradas = new HashMap<Long, ItemInforme>();
     for (var item : items) {
-      exigir(entradas.putIfAbsent(item.idDetalleHabitacion(), item) == null,
+      exigir(entradas.putIfAbsent(item.idItem(), item) == null,
           "No se puede registrar el mismo ítem más de una vez");
     }
     return entradas;
@@ -436,12 +441,12 @@ public class LimpiezaServiceImpl implements LimpiezaService {
   }
 
   private List<ItemHabitacion> itemsHabitacion(Long id, boolean ocultar) {
-    return mobiliario.actuales(id).stream()
-        .map(d -> itemHabitacion(d, ocultar ? SIN_REGISTRAR : d.getEstadoActualItem().name())).toList();
+    return mobiliario.actualesHabitacion(id).stream()
+        .map(d -> itemHabitacion(d, ocultar ? SIN_REGISTRAR : d.getCondicionItem().name())).toList();
   }
 
-  private ItemHabitacion itemHabitacion(DetalleHabitacion d, String estado) {
-    return new ItemHabitacion(d.getIdDetalleHabitacion(), d.getItem().getIdItem(), d.getItem().getNombreItem(), estado);
+  private ItemHabitacion itemHabitacion(Item d, String estado) {
+    return new ItemHabitacion(d.getIdItem(), d.getNombreItem(), estado);
   }
 
   private List<DetalleInforme> detallesInforme(Long id) {
@@ -463,9 +468,9 @@ public class LimpiezaServiceImpl implements LimpiezaService {
     var resumen = resumenInforme(informe, lineas, asociados);
     var items = lineas.stream().map(d -> {
       var ticket = asociados.get(d.getIdDetalleInforme());
-      var item = d.getDetalleHabitacion();
-      return new DetalleItem(d.getIdDetalleInforme(), item.getIdDetalleHabitacion(), item.getItem().getIdItem(),
-          item.getItem().getNombreItem(), d.getEstadoEncontrado(), resuelto(ticket) ? BUENO : d.getEstadoEncontrado(),
+      var item = d.getItem();
+      return new DetalleItem(d.getIdDetalleInforme(), item.getIdItem(),
+          item.getNombreItem(), d.getEstadoEncontrado(), resuelto(ticket) ? BUENO : d.getEstadoEncontrado(),
           d.getObservaciones(), evidencia(d.getEvidenciaRuta(), d.getEvidenciaSha256()),
           ticket == null ? null : ticket.getIdTicket(), resumen.puedeEditar() && ticket == null && pendiente(d, null));
     }).toList();
@@ -499,7 +504,7 @@ public class LimpiezaServiceImpl implements LimpiezaService {
     var detalle = ticket.getDetalleInforme();
     var informe = detalle.getInformeRevision();
     var habitacion = informe.getHabitacion();
-    var item = detalle.getDetalleHabitacion().getItem();
+    var item = detalle.getItem();
     boolean editable = informe.getEstadoInforme() == POR_APROBAR;
     var id = ticket.getIdTicket();
     return new TicketResumen(id, "TKT-" + id, informe.getIdInformeRevision(), detalle.getIdDetalleInforme(),

@@ -29,7 +29,7 @@ public class CuentaCobroServiceImpl implements CuentaCobroService {
   private final FormaPagoRepository formas;
   private final TipoMovimientoCajaRepository movimientos;
   private final FlujoCajaRepository caja;
-  private final ClienteRepository clientes;
+  private final PerfilRepository clientes;
   private final TipoComprobanteRepository tipos;
   private final SerieComprobanteRepository series;
   private final ClienteService personas;
@@ -92,14 +92,14 @@ public class CuentaCobroServiceImpl implements CuentaCobroService {
     var c = bloquear(cuenta);
     if (c.getEstadoComprobante() == EstadoComprobante.EMITIDO) {
       exigir(c.getTipoComprobante().getCodigo().equals(request.tipo())
-          && c.getCliente() != null && c.getCliente().getIdCliente().equals(request.idClienteReceptor()),
+          && c.getCliente() != null && c.getCliente().getIdPerfil().equals(request.idClienteReceptor()),
           "El comprobante ya fue emitido con otro tipo o receptor");
       return c;
     }
     exigir(c.getEstadoComprobante() == EstadoComprobante.BORRADOR, "El documento no está en borrador");
-    var receptor = clientes.findById(request.idClienteReceptor())
+    var receptor = clientes.findByIdPerfilAndEsCliente(request.idClienteReceptor(), 1)
         .orElseThrow(() -> new RecursoNoEncontradoException("El receptor no existe"));
-    var perfil = receptor.getPerfil();
+    var perfil = receptor;
     if ("FACTURA".equals(request.tipo()))
       exigir("6".equals(perfil.getTipoDocumento().getCodigoSunat())
           && perfil.getNumeroDocumento().matches("[0-9]{11}"),
@@ -153,7 +153,7 @@ public class CuentaCobroServiceImpl implements CuentaCobroService {
     return new CuentaDocumentoDTO(c.getIdComprobante(), reserva, reserva == null ? null : "R" + reserva,
         c.getVenta() == null ? null : c.getVenta().getIdVenta(), c.getTipoComprobante().getCodigo(),
         c.getEstadoComprobante(), c.getSerie(), c.getNumeroComprobante(),
-        c.getCliente() == null ? null : c.getCliente().getIdCliente(), c.getReceptorNombre(),
+        c.getCliente() == null ? null : c.getCliente().getIdPerfil(), c.getReceptorNombre(),
         c.getReceptorNumeroDoc(), c.getFechaEmision(), c.getTotalPagar(), pagado,
         c.getTotalPagar().subtract(pagado), ls, ps);
   }

@@ -23,7 +23,7 @@ class ResumenLimpiezaTest {
 
   @BeforeEach void preparar() {
     servicio = new LimpiezaServiceImpl(mock(HabitacionRepository.class), mock(DetalleReservaRepository.class),
-        mock(DetalleHabitacionRepository.class), informes, mock(DetalleInformeRepository.class), tickets, turnos,
+        mock(ItemRepository.class), informes, mock(DetalleInformeRepository.class), tickets, turnos,
         sesion, reglas, mock(ItemServiceImpl.class), mock(EvidenciaLimpiezaService.class));
   }
 

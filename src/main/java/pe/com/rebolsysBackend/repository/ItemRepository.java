@@ -10,7 +10,9 @@ import pe.com.rebolsysBackend.entity.*;
 public interface ItemRepository extends JpaRepository<Item, Long> {
   boolean existsByTipoItemIdTipoItem(Long id);
 
-  @EntityGraph(attributePaths = "tipoItem")
+  boolean existsByHabitacionIdHabitacion(Long id);
+
+  @EntityGraph(attributePaths = {"tipoItem", "habitacion"})
   @Query("""
       select i from Item i where
       (lower(i.nombreItem) like :buscar escape '!' or lower(i.tipoItem.nombreItem) like :buscar escape '!')
@@ -19,13 +21,8 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
       and (:sinAsignar is null
         or (:sinAsignar=true and i.estadoItem<>pe.com.rebolsysBackend.enums.EstadoItem.EN_HABITACION)
         or (:sinAsignar=false and i.estadoItem=pe.com.rebolsysBackend.enums.EstadoItem.EN_HABITACION))
-      and (:habitacion is null or (i.estadoItem=pe.com.rebolsysBackend.enums.EstadoItem.EN_HABITACION
-        and exists (select m.idMovimiento from MovimientoInventario m where m.item=i
-          and m.idMovimiento=(select max(x.idMovimiento) from MovimientoInventario x where x.item=i)
-          and m.detalleHabitacion.habitacion.idHabitacion=:habitacion)))
-      and (:conservacion is null or exists (select m.idMovimiento from MovimientoInventario m where m.item=i
-        and m.idMovimiento=(select max(x.idMovimiento) from MovimientoInventario x where x.item=i)
-        and m.detalleHabitacion.estadoActualItem=:conservacion))
+      and (:habitacion is null or i.habitacion.idHabitacion=:habitacion)
+      and (:conservacion is null or i.condicionItem=:conservacion)
       """)
   org.springframework.data.domain.Page<Item> buscarConfiguracion(
       @Param("buscar") String buscar, @Param("tipo") Long tipo,
@@ -37,9 +34,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
   @EntityGraph(attributePaths = "tipoItem")
   @Query("""
       select i from Item i where i.estadoItem=pe.com.rebolsysBackend.enums.EstadoItem.EN_HABITACION
-      and exists (select m.idMovimiento from MovimientoInventario m where m.item=i
-        and m.idMovimiento=(select max(x.idMovimiento) from MovimientoInventario x where x.item=i)
-        and m.detalleHabitacion.habitacion.idHabitacion=:habitacion)
+      and i.habitacion.idHabitacion=:habitacion
       order by i.nombreItem, i.idItem
       """)
   List<Item> actualesHabitacion(@Param("habitacion") Long habitacion);

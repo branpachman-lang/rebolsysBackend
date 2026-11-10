@@ -18,8 +18,8 @@ public class Venta {
   private Long idVenta;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = true)
-  @JoinColumn(name = "idClienteComprador", nullable = true, columnDefinition = "NUMBER")
-  private Cliente clienteComprador;
+  @JoinColumn(name = "idPerfilComprador", nullable = true, columnDefinition = "NUMBER")
+  private Perfil clienteComprador;
 
   @Column(name = "compradorNombreLibre", columnDefinition = "VARCHAR2(250)", nullable = true)
   private String compradorNombreLibre;

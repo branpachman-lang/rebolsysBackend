@@ -26,7 +26,8 @@ public class HabitacionServiceImpl implements HabitacionService {
   private final ReservaOcupanteRepository ocupantes;
   private final ClienteService clientes;
   private final ReglasPropuesta reglas;
-  private final DetalleHabitacionRepository mobiliario;
+  private final ItemRepository mobiliario;
+  private final MovimientoInventarioRepository movimientos;
   private final ItemService items;
   private final InformeRevisionRepository informes;
 
@@ -62,7 +63,7 @@ public class HabitacionServiceImpl implements HabitacionService {
         .orElseThrow(() -> new RecursoNoEncontradoException("La habitación no existe"));
     exigir(detalles.findByHabitacionIdHabitacion(id).isEmpty(),
         "No se puede eliminar una habitación con historial de reservas");
-    exigir(mobiliario.findByHabitacionIdHabitacion(id).isEmpty(),
+    exigir(!mobiliario.existsByHabitacionIdHabitacion(id) && !movimientos.existsByHabitacionIdHabitacion(id),
         "No se puede eliminar una habitación con historial de mobiliario");
     exigir(!informes.existsByHabitacionIdHabitacion(id),
         "No se puede eliminar una habitación con historial de limpieza");
@@ -101,7 +102,7 @@ public class HabitacionServiceImpl implements HabitacionService {
                           d ->
                               new HabitacionReservaResponseDTO(
                                   "R" + d.getReserva().getIdReserva(),
-                                  clientes.nombre(d.getReserva().getCliente().getPerfil()),
+                                  clientes.nombre(d.getReserva().getCliente()),
                                   d.getFechaIngreso(),
                                   d.getFechaSalida(),
                                   d.getEstadoDetalle().name()))
@@ -230,8 +231,8 @@ public class HabitacionServiceImpl implements HabitacionService {
 
   private void validarEstadoLimpieza(Habitacion habitacion, EstadoHabitacion estado) {
     if (habitacion.getEstadoHabitacion() != estado) {
-      exigir(!informes.existsByHabitacionIdHabitacionAndEstadoInformeNot(
-          habitacion.getIdHabitacion(), EstadoInforme.APROBADO),
+      exigir(!informes.existsByHabitacionIdHabitacionAndEstadoInformeIn(
+          habitacion.getIdHabitacion(), List.of(EstadoInforme.BORRADOR, EstadoInforme.POR_APROBAR)),
           "Finaliza el flujo de limpieza antes de cambiar el estado de la habitación");
     }
   }

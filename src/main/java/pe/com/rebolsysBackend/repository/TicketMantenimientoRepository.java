@@ -13,8 +13,8 @@ import pe.com.rebolsysBackend.entity.TicketMantenimiento;
 import pe.com.rebolsysBackend.enums.TipoAccionMantenimiento;
 
 public interface TicketMantenimientoRepository extends JpaRepository<TicketMantenimiento, Long> {
-  @EntityGraph(attributePaths = {"detalleInforme", "detalleInforme.detalleHabitacion",
-      "detalleInforme.detalleHabitacion.item"})
+  @EntityGraph(attributePaths = {"detalleInforme", "detalleInforme.habitacion",
+      "detalleInforme.item"})
   List<TicketMantenimiento> findByDetalleInformeInformeRevisionIdInformeRevisionInOrderByIdTicket(Collection<Long> ids);
 
   Optional<TicketMantenimiento> findByDetalleInformeIdDetalleInforme(Long idDetalleInforme);
@@ -24,8 +24,8 @@ public interface TicketMantenimientoRepository extends JpaRepository<TicketMante
       """)
   Optional<Long> informeDe(Long id);
 
-  @EntityGraph(attributePaths = {"detalleInforme", "detalleInforme.detalleHabitacion",
-      "detalleInforme.detalleHabitacion.item", "detalleInforme.informeRevision",
+  @EntityGraph(attributePaths = {"detalleInforme", "detalleInforme.habitacion",
+      "detalleInforme.item", "detalleInforme.informeRevision",
       "detalleInforme.informeRevision.habitacion"})
   @Query("""
       select t from TicketMantenimiento t where

@@ -7,6 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import pe.com.rebolsysBackend.entity.DetalleInforme;
 
 public interface DetalleInformeRepository extends JpaRepository<DetalleInforme, Long> {
-  @EntityGraph(attributePaths = {"detalleHabitacion", "detalleHabitacion.item"})
+  @EntityGraph(attributePaths = {"item", "habitacion"})
   List<DetalleInforme> findByInformeRevisionIdInformeRevisionInOrderByIdDetalleInforme(Collection<Long> ids);
 }

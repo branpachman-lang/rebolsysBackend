@@ -2,7 +2,7 @@ package pe.com.rebolsysBackend.service.service;
 
 import pe.com.rebolsysBackend.dto.ClienteRegistroRequestDTO;
 import pe.com.rebolsysBackend.dto.ClienteResumenResponseDTO;
-import pe.com.rebolsysBackend.entity.Cliente;
+import pe.com.rebolsysBackend.entity.Huesped;
 import pe.com.rebolsysBackend.entity.Perfil;
 
 public interface ClienteService {
@@ -14,7 +14,9 @@ public interface ClienteService {
 
   Perfil guardarPersona(ClienteRegistroRequestDTO request);
 
-  Cliente guardarCliente(ClienteRegistroRequestDTO request);
+  Perfil guardarCliente(ClienteRegistroRequestDTO request);
+
+  Huesped obtenerOCrearHuesped(Perfil perfil);
 
   String nombre(Perfil perfil);
 

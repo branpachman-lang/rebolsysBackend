@@ -57,7 +57,7 @@ class FlujoLimpiezaTest {
   @MockitoBean ProveedorFacturacionClient facturacion;
   private Long habitacion;
   private Long item;
-  private Long asignacion;
+  private Long usuarioId;
 
   @BeforeEach
   void preparar() {
@@ -72,6 +72,7 @@ class FlujoLimpiezaTest {
       em.persist(empleado);
       var usuario = new Usuario(null, empleado, "prueba_limpieza", EstadoUsuario.ACTIVO);
       em.persist(usuario);
+      usuarioId = usuario.getIdUsuario();
       var turno = new TurnoCaja();
       turno.setUsuario(usuario);
       turno.setFechaApertura(ReglasPropuesta.ahora().minusHours(1));
@@ -98,10 +99,11 @@ class FlujoLimpiezaTest {
       em.persist(mueble);
       em.persist(new TipoMovimientoAlmacen(null, "ASIG_ITEM", "Asignación", 0));
       em.persist(new TipoMovimientoAlmacen(null, "EST_ITEM", "Conservación", 0));
+      em.persist(new TipoMovimientoAlmacen(null, "RET_ITEM", "Retiro", 0));
       habitacion = cuarto.getIdHabitacion();
       item = mueble.getIdItem();
-      asignacion = items.asignar(item, new ItemAsignacionDTO("asignacion-prueba", usuario.getIdUsuario(),
-          habitacion, EstadoConservacion.DANADO, "Inventario anterior")).idDetalleHabitacion();
+      items.asignar(item, new ItemAsignacionDTO("asignacion-prueba", usuarioId,
+          habitacion, EstadoConservacion.DANADO, "Inventario anterior"));
     });
   }
 
@@ -133,7 +135,7 @@ class FlujoLimpiezaTest {
         .content("{\"estadoHabitacion\":\"DISPONIBLE\"}")).andExpect(status().isConflict());
     mvc.perform(post(enviar).contentType(MediaType.APPLICATION_JSON).content("{\"items\":[]}"))
         .andExpect(status().isConflict());
-    var faltante = Map.of("idDetalleHabitacion", asignacion, "estadoEncontrado", "DANADO");
+    var faltante = Map.of("idItem", item, "estadoEncontrado", "DANADO");
     mvc.perform(post(enviar).contentType(MediaType.APPLICATION_JSON)
         .content(json.writeValueAsBytes(Map.of("items", List.of(faltante)))))
         .andExpect(status().isConflict());
@@ -145,7 +147,7 @@ class FlujoLimpiezaTest {
         .andExpect(status().isCreated()));
     mvc.perform(get(foto.path("evidenciaRuta").asText())).andExpect(status().isOk())
         .andExpect(content().bytes(bytes.toByteArray()));
-    var reporte = Map.of("items", List.of(Map.of("idDetalleHabitacion", asignacion, "estadoEncontrado", "DANADO",
+    var reporte = Map.of("items", List.of(Map.of("idItem", item, "estadoEncontrado", "DANADO",
         "observaciones", "Pata suelta", "evidencia", foto)));
     var enviado = respuesta(mvc.perform(post(enviar).contentType(MediaType.APPLICATION_JSON)
         .content(json.writeValueAsBytes(reporte))).andExpect(status().isOk())
@@ -205,14 +207,41 @@ class FlujoLimpiezaTest {
     assertThat(auditoria).containsExactly(AccionAuditoria.INSERT, AccionAuditoria.UPDATE);
 
     verificarEliminacionYAprobacionSinIncidencias(cuarto, estadoFisico, foto);
+    verificarHistorialTrasRetiro(informe);
+  }
+
+  private void verificarHistorialTrasRetiro(String informe) throws Exception {
+    Long destino = tx.execute(s -> {
+      var cuarto = new Habitacion();
+      cuarto.setTipoHabitacion(em.find(Habitacion.class, habitacion).getTipoHabitacion());
+      cuarto.setNumeroCuarto("302");
+      cuarto.setCapacidadPersonas(1);
+      cuarto.setPlazasCama(1);
+      cuarto.setEstadoHabitacion(EstadoHabitacion.DISPONIBLE);
+      em.persist(cuarto);
+      return cuarto.getIdHabitacion();
+    });
+    items.asignar(item, new ItemAsignacionDTO("traslado-prueba", usuarioId, destino,
+        EstadoConservacion.BUENO, "Traslado a otra habitación"));
+    items.asignar(item, new ItemAsignacionDTO("retiro-prueba", usuarioId, null,
+        EstadoConservacion.DANADO, "Retiro del mueble"));
+
+    var historial = items.historial(item);
+    assertThat(historial.get(0).accion()).isEqualTo("RETIRO");
+    assertThat(historial.get(0).idHabitacionOrigen()).isEqualTo(destino);
+    assertThat(historial.get(1).accion()).isEqualTo("TRASLADO");
+    assertThat(historial.get(1).idHabitacionOrigen()).isEqualTo(habitacion);
+    assertThat(historial.get(1).idHabitacionDestino()).isEqualTo(destino);
+    mvc.perform(get(informe)).andExpect(status().isOk())
+        .andExpect(jsonPath("$.informe.idHabitacion").value(habitacion))
+        .andExpect(jsonPath("$.items[0].idItem").value(item))
+        .andExpect(jsonPath("$.items[0].estadoEncontrado").value("DANADO"));
   }
 
   private void registrarSalida(Habitacion cuarto, Perfil perfil, Usuario usuario) {
-    var cliente = new Cliente();
-    cliente.setPerfil(perfil);
-    em.persist(cliente);
+    perfil.setEsCliente(1);
     var reserva = new Reserva();
-    reserva.setCliente(cliente);
+    reserva.setCliente(perfil);
     reserva.setUsuario(usuario);
     reserva.setClaveRegistro("reserva-limpieza");
     reserva.setFirmaSolicitud("firma-limpieza");
@@ -220,6 +249,7 @@ class FlujoLimpiezaTest {
     estancia.setHabitacion(cuarto);
     estancia.setFechaIngreso(LocalDateTime.of(2025, 10, 27, 12, 0));
     estancia.setFechaSalida(LocalDateTime.of(2025, 10, 28, 10, 0));
+    estancia.setFechaIngresoReal(LocalDateTime.of(2025, 10, 27, 12, 0));
     estancia.setFechaSalidaReal(LocalDateTime.of(2025, 10, 28, 8, 30));
     estancia.setEstadoDetalle(EstadoReserva.FINALIZADA);
     estancia.setCostoEstadia(BigDecimal.ZERO);
@@ -233,8 +263,8 @@ class FlujoLimpiezaTest {
         .content("{\"estadoHabitacion\":\"LIMPIEZA\"}")).andExpect(status().isOk());
     var borrador = respuesta(mvc.perform(post(cuarto + "/iniciar")).andExpect(status().isOk()));
     long id = borrador.path("idInformeRevision").asLong();
-    long asignacionActual = borrador.path("items").get(0).path("idDetalleHabitacion").asLong();
-    var itemsConIncidencia = List.of(Map.of("idDetalleHabitacion", asignacionActual, "estadoEncontrado", "FALTANTE",
+    long asignacionActual = borrador.path("items").get(0).path("idItem").asLong();
+    var itemsConIncidencia = List.of(Map.of("idItem", asignacionActual, "estadoEncontrado", "FALTANTE",
         "evidencia", foto));
     var enviado = respuesta(mvc.perform(post(API + "/borradores/" + id + "/enviar").contentType(MediaType.APPLICATION_JSON)
         .content(json.writeValueAsBytes(Map.of("items", itemsConIncidencia)))).andExpect(status().isOk()));
@@ -251,7 +281,7 @@ class FlujoLimpiezaTest {
 
     var siguiente = respuesta(mvc.perform(post(cuarto + "/iniciar")).andExpect(status().isOk()));
     long nuevoId = siguiente.path("idInformeRevision").asLong();
-    var sinIncidencia = List.of(Map.of("idDetalleHabitacion", asignacionActual, "estadoEncontrado", "BUENO"));
+    var sinIncidencia = List.of(Map.of("idItem", asignacionActual, "estadoEncontrado", "BUENO"));
     mvc.perform(post(API + "/borradores/" + nuevoId + "/enviar").contentType(MediaType.APPLICATION_JSON)
         .content(json.writeValueAsBytes(Map.of("items", sinIncidencia))))
         .andExpect(status().isOk()).andExpect(jsonPath("$.informe.puedeAprobar").value(true));

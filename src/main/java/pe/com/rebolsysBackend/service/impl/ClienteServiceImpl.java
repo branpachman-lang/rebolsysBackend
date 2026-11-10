@@ -5,14 +5,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.com.rebolsysBackend.dto.ClienteRegistroRequestDTO;
 import pe.com.rebolsysBackend.dto.ClienteResumenResponseDTO;
-import pe.com.rebolsysBackend.entity.Cliente;
+import pe.com.rebolsysBackend.entity.Huesped;
 import pe.com.rebolsysBackend.entity.Perfil;
 import pe.com.rebolsysBackend.entity.PersonaJuridica;
 import pe.com.rebolsysBackend.entity.PersonaNatural;
 import pe.com.rebolsysBackend.entity.TipoDocumento;
 import pe.com.rebolsysBackend.exception.RecursoNoEncontradoException;
 import pe.com.rebolsysBackend.exception.ReglaNegocioException;
-import pe.com.rebolsysBackend.repository.ClienteRepository;
+import pe.com.rebolsysBackend.repository.HuespedRepository;
 import pe.com.rebolsysBackend.repository.PerfilRepository;
 import pe.com.rebolsysBackend.repository.PersonaJuridicaRepository;
 import pe.com.rebolsysBackend.repository.PersonaNaturalRepository;
@@ -27,7 +27,7 @@ public class ClienteServiceImpl implements ClienteService {
   private final PersonaJuridicaRepository juridicas;
   private final PersonaNaturalRepository naturales;
   private final PerfilRepository perfiles;
-  private final ClienteRepository clientes;
+  private final HuespedRepository huespedes;
   private final ReglasPropuesta reglas;
 
   @Override
@@ -41,7 +41,7 @@ public class ClienteServiceImpl implements ClienteService {
                     new RecursoNoEncontradoException(
                         "No hay un cliente registrado con ese documento. Completa sus datos."));
     return new ClienteResumenResponseDTO(
-        clientes.findByPerfilIdPerfil(perfil.getIdPerfil()).map(Cliente::getIdCliente).orElse(null),
+        perfil.getEsCliente() == 1 ? perfil.getIdPerfil() : null,
         datos(perfil));
   }
 
@@ -115,16 +115,25 @@ public class ClienteServiceImpl implements ClienteService {
 
   @Override
   @Transactional
-  public Cliente guardarCliente(ClienteRegistroRequestDTO datos) {
+  public Perfil guardarCliente(ClienteRegistroRequestDTO datos) {
     Perfil perfil = guardarPersona(datos);
-    return clientes
-        .findByPerfilIdPerfil(perfil.getIdPerfil())
-        .orElseGet(
-            () -> {
-              var cliente = new Cliente();
-              cliente.setPerfil(perfil);
-              return clientes.save(cliente);
-            });
+    perfil.setEsCliente(1);
+    return perfil;
+  }
+
+  @Override
+  @Transactional
+  public Huesped obtenerOCrearHuesped(Perfil perfil) {
+    var cliente = perfiles.bloquearCliente(perfil.getIdPerfil())
+        .orElseThrow(() -> new RecursoNoEncontradoException("El cliente no existe"));
+    if (!naturales.existsById(cliente.getIdPerfil())) {
+      throw new ReglaNegocioException("Solo una persona natural puede ser huésped");
+    }
+    return huespedes.findByPerfilIdPerfil(cliente.getIdPerfil()).orElseGet(() -> {
+      var huesped = new Huesped();
+      huesped.setPerfil(cliente);
+      return huespedes.save(huesped);
+    });
   }
 
   @Override
@@ -182,11 +191,11 @@ public class ClienteServiceImpl implements ClienteService {
   @Transactional(readOnly = true)
   public pe.com.rebolsysBackend.dto.ClienteDetalleDTO obtener(Long id) {
     var c =
-        clientes
-            .findById(id)
+        perfiles
+            .findByIdPerfilAndEsCliente(id, 1)
             .orElseThrow(() -> new RecursoNoEncontradoException("El cliente no existe"));
     return new pe.com.rebolsysBackend.dto.ClienteDetalleDTO(
-        c.getIdCliente(), datos(c.getPerfil()), c.getRestriccionesMedicas());
+        c.getIdPerfil(), datos(c), huespedes.findByPerfilIdPerfil(id).map(Huesped::getRestriccionesMedicas).orElse(null));
   }
 
   @Override
@@ -194,17 +203,19 @@ public class ClienteServiceImpl implements ClienteService {
   public pe.com.rebolsysBackend.dto.ClienteDetalleDTO guardar(
       Long id, pe.com.rebolsysBackend.dto.ClienteGuardarDTO r) {
     reglas.validar(r);
-    Cliente c;
+    Perfil c;
     if (id == null) c = guardarCliente(r.persona());
     else {
       c =
-          clientes
-              .bloquear(id)
+          perfiles
+              .bloquearCliente(id)
               .orElseThrow(() -> new RecursoNoEncontradoException("El cliente no existe"));
-      actualizarPersona(c.getPerfil().getIdPerfil(), r.persona());
+      actualizarPersona(c.getIdPerfil(), r.persona());
     }
-    c.setRestriccionesMedicas(limpiar(r.restriccionesMedicas()));
-    clientes.saveAndFlush(c);
-    return obtener(c.getIdCliente());
+    var restricciones = limpiar(r.restriccionesMedicas());
+    if (restricciones != null || huespedes.findByPerfilIdPerfil(c.getIdPerfil()).isPresent()) {
+      obtenerOCrearHuesped(c).setRestriccionesMedicas(restricciones);
+    }
+    return obtener(c.getIdPerfil());
   }
 }

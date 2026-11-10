@@ -58,7 +58,7 @@ public class CuentaVentaServiceImpl implements CuentaVentaService {
             .multiply(BigDecimal.valueOf(d.getCantidad())).setScale(2, RoundingMode.HALF_UP).add(d.getIgv()))).toList();
     var total = lineas.stream().map(CuentaLineaDTO::total).reduce(BigDecimal.ZERO, BigDecimal::add);
     return new CuentaDocumentoDTO(null, reserva, reserva == null ? null : "R" + reserva, id, "CUENTA",
-            EstadoComprobante.BORRADOR, "CTA", null, v.getClienteComprador() == null ? null : v.getClienteComprador().getIdCliente(),
+            EstadoComprobante.BORRADOR, "CTA", null, v.getClienteComprador() == null ? null : v.getClienteComprador().getIdPerfil(),
             null, null, null, total, BigDecimal.ZERO, total, lineas, List.of());
   }
 

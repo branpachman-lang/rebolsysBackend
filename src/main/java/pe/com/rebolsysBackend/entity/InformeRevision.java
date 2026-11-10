@@ -59,6 +59,10 @@ public class InformeRevision {
     )
     private Usuario usuario;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "idUsuarioAprobador", columnDefinition = "NUMBER")
+    private Usuario usuarioAprobador;
+
     @Column(name = "fechaHora", nullable = false, columnDefinition = "TIMESTAMP")
     private LocalDateTime fechaHora;
 

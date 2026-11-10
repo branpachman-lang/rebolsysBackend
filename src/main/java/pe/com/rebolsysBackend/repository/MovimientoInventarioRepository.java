@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.*;
 import pe.com.rebolsysBackend.entity.*;
 
 public interface MovimientoInventarioRepository extends JpaRepository<MovimientoInventario, Long> {
+  boolean existsByHabitacionIdHabitacion(Long id);
   Optional<MovimientoInventario> findByClaveOperacion(String clave);
 
   List<MovimientoInventario> findByProductoIdProductoOrderByIdMovimientoDesc(Long id);

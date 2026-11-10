@@ -27,8 +27,8 @@ public interface DetalleReservaRepository extends JpaRepository<DetalleReserva, 
       @Param("excluir") Long excluir);
 
   @Query(
-      "select d from DetalleReserva d join fetch d.reserva r join fetch r.cliente c join fetch"
-          + " c.perfil where (d.estadoDetalle=pe.com.rebolsysBackend.enums.EstadoReserva.CONFIRMADA"
+      "select d from DetalleReserva d join fetch d.reserva r join fetch r.cliente"
+          + " where (d.estadoDetalle=pe.com.rebolsysBackend.enums.EstadoReserva.CONFIRMADA"
           + " and d.fechaIngreso<:salida and d.fechaSalida>:ingreso) or"
           + " (d.estadoDetalle=pe.com.rebolsysBackend.enums.EstadoReserva.EN_CURSO and"
           + " d.fechaIngreso<:salida)")

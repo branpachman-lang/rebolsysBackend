@@ -22,7 +22,7 @@ public class VentaServiceImpl implements VentaService {
   private final jakarta.persistence.EntityManager entityManager;
   private final VentaRepository ventas;
   private final ProductoRepository productos;
-  private final ClienteRepository clientes;
+  private final PerfilRepository clientes;
   private final DetalleReservaRepository reservas;
   private final MovimientoInventarioRepository movimientos;
   private final ComprobanteRepository comprobantes;
@@ -58,7 +58,7 @@ public class VentaServiceImpl implements VentaService {
     if (r.idClienteComprador() != null)
       v.setClienteComprador(
           clientes
-              .findById(r.idClienteComprador())
+              .findByIdPerfilAndEsCliente(r.idClienteComprador(), 1)
               .orElseThrow(() -> new RecursoNoEncontradoException("El comprador no existe")));
     if (r.idDetalleReserva() != null) {
       var d =
@@ -136,7 +136,7 @@ public class VentaServiceImpl implements VentaService {
         "Selecciona un comprador registrado o un nombre libre");
     cuentaReserva.validarVenta(v);
     var nuevas = construirLineas(v, r.detalles());
-    var comprador = r.idClienteComprador() == null ? null : clientes.findById(r.idClienteComprador())
+    var comprador = r.idClienteComprador() == null ? null : clientes.findByIdPerfilAndEsCliente(r.idClienteComprador(), 1)
         .orElseThrow(() -> new RecursoNoEncontradoException("El comprador no existe"));
     v.setClienteComprador(comprador);
     v.setCompradorNombreLibre(limpiar(r.compradorNombreLibre()));
@@ -329,7 +329,7 @@ public class VentaServiceImpl implements VentaService {
             .toList();
     return new VentaResponseDTO(
         v.getIdVenta(),
-        v.getClienteComprador() == null ? null : v.getClienteComprador().getIdCliente(),
+        v.getClienteComprador() == null ? null : v.getClienteComprador().getIdPerfil(),
         v.getCompradorNombreLibre(),
         v.getDetalleReserva() == null ? null : v.getDetalleReserva().getIdDetalleReserva(),
         v.getUsuario().getIdUsuario(),

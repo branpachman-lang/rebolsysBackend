@@ -266,10 +266,8 @@ class ConcurrenciaOracleTest {
                 n.setApellidos("Prueba");
                 n.setFechaNacimiento(LocalDate.of(1990, 1, 1));
                 em.persist(n);
-                var c = new Cliente();
-                c.setPerfil(p);
-                em.persist(c);
-                cs.add(c.getIdCliente());
+                p.setEsCliente(1);
+                cs.add(p.getIdPerfil());
                 var e = new Empleado();
                 e.setPersonaNatural(n);
                 e.setFechaContratacion(LocalDate.now());
@@ -502,7 +500,8 @@ class ConcurrenciaOracleTest {
               em.flush();
               for (Long id : d.empleados()) em.remove(em.find(Empleado.class, id));
               em.flush();
-              for (Long id : d.clientes()) em.remove(em.find(Cliente.class, id));
+              em.createQuery("delete from Huesped h where h.perfil.idPerfil in :ids")
+                  .setParameter("ids", d.perfiles()).executeUpdate();
               em.flush();
               for (Long id : d.perfiles()) em.remove(em.find(PersonaNatural.class, id));
               em.flush();

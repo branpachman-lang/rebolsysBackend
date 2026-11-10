@@ -61,7 +61,7 @@ public class CuentaReservaServiceImpl implements CuentaReservaService {
               EstadoComprobante.BORRADOR,
               "CTA",
               null,
-              r.getCliente().getIdCliente(),
+              r.getCliente().getIdPerfil(),
               null,
               null,
               null,

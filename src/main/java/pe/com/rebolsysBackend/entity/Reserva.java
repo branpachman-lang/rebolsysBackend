@@ -18,8 +18,8 @@ public class Reserva {
   private Long idReserva;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(name = "idCliente", nullable = false, columnDefinition = "NUMBER")
-  private Cliente cliente;
+  @JoinColumn(name = "idPerfil", nullable = false, columnDefinition = "NUMBER")
+  private Perfil cliente;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "idUsuario", nullable = false, columnDefinition = "NUMBER")

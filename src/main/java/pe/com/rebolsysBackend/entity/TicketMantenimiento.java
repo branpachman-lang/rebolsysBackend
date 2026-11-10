@@ -1,6 +1,7 @@
 package pe.com.rebolsysBackend.entity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -22,6 +23,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import pe.com.rebolsysBackend.entity.converter.EstadoTicketConverter;
 import pe.com.rebolsysBackend.enums.EstadoTicket;
 import pe.com.rebolsysBackend.enums.TipoAccionMantenimiento;
 
@@ -63,7 +65,7 @@ public class TicketMantenimiento {
     @Column(name = "tipoAccion", nullable = false, length = 30, columnDefinition = "VARCHAR2(30)")
     private TipoAccionMantenimiento tipoAccion;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = EstadoTicketConverter.class)
     @Column(name = "estadoTicket", nullable = false, length = 30, columnDefinition = "VARCHAR2(30)")
     private EstadoTicket estadoTicket;
 

@@ -1,6 +1,7 @@
 package pe.com.rebolsysBackend.entity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -18,6 +19,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import pe.com.rebolsysBackend.entity.converter.EstadoHabitacionConverter;
 import pe.com.rebolsysBackend.enums.EstadoHabitacion;
 
 @Entity
@@ -48,7 +50,7 @@ public class Habitacion {
     )
     private TipoHabitacion tipoHabitacion;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = EstadoHabitacionConverter.class)
     @Column(name = "estadoHabitacion", nullable = false, length = 30, columnDefinition = "VARCHAR2(30)")
     private EstadoHabitacion estadoHabitacion;
 

@@ -73,9 +73,9 @@ class PropuestaOracleTest {
     em.persist(td);
     adulto = persona(td, "98765432", LocalDate.of(1990, 1, 1));
     menor = persona(td, "12345678", LocalDate.now().minusYears(4));
-    var cliente = em.find(Cliente.class, adulto);
+    var cliente = em.find(Perfil.class, adulto);
     var empleado = new Empleado();
-    empleado.setPersonaNatural(em.find(PersonaNatural.class, cliente.getPerfil().getIdPerfil()));
+    empleado.setPersonaNatural(em.find(PersonaNatural.class, cliente.getIdPerfil()));
     empleado.setFechaContratacion(LocalDate.now());
     em.persist(empleado);
     var u = new Usuario();
@@ -223,10 +223,8 @@ class PropuestaOracleTest {
     n.setApellidos(documento);
     n.setFechaNacimiento(nacimiento);
     em.persist(n);
-    var c = new Cliente();
-    c.setPerfil(p);
-    em.persist(c);
-    return c.getIdCliente();
+    p.setEsCliente(1);
+    return p.getIdPerfil();
   }
 
   HabitacionRequestDTO habitacionDTO(String numero, int capacidad, int camas, int sinCama) {
@@ -553,12 +551,8 @@ class PropuestaOracleTest {
             i.idItem(),
             new ItemAsignacionDTO(
                 "trasladar", usuario, h2.idHabitacion(), EstadoConservacion.BUENO, "Reubicación"));
-    assertThat(trasladado.idDetalleHabitacion()).isNotEqualTo(asignado.idDetalleHabitacion());
-    assertThat(
-            em.find(DetalleHabitacion.class, asignado.idDetalleHabitacion())
-                .getHabitacion()
-                .getIdHabitacion())
-        .isEqualTo(habitacion);
+    assertThat(trasladado.idHabitacion()).isEqualTo(h2.idHabitacion());
+    assertThat(items.historial(i.idItem())).anyMatch(evento -> habitacion.equals(evento.idHabitacionDestino()));
     var retirado =
         items.asignar(
             i.idItem(),
@@ -880,22 +874,20 @@ class PropuestaOracleTest {
     pj.setPerfil(perfil);
     pj.setRazonSocial("Empresa de pruebas");
     em.persist(pj);
-    var empresa = new Cliente();
-    empresa.setPerfil(perfil);
-    em.persist(empresa);
+    perfil.setEsCliente(1);
     var b = reserva("empresa", false);
     var r =
         reservas.registrar(
             new ReservaRegistroRequestDTO(
-                b.claveRegistro(), empresa.getIdCliente(), usuario, b.detalles()));
+                b.claveRegistro(), perfil.getIdPerfil(), usuario, b.detalles()));
     var doc =
         cuentasReserva.emitir(
             r.idReserva(),
             new ReservaComprobanteRegistroDTO(
-                usuario, turno, "FACTURA", empresa.getIdCliente(), null));
+                usuario, turno, "FACTURA", perfil.getIdPerfil(), null));
     assertThat(doc.tipo()).isEqualTo("FACTURA");
     assertThat(doc.serie()).isEqualTo("FINT");
-    assertThat(doc.idClienteReceptor()).isEqualTo(empresa.getIdCliente());
+    assertThat(doc.idClienteReceptor()).isEqualTo(perfil.getIdPerfil());
     assertThat(r.detalles().getFirst().ocupantes().getFirst().idCliente()).isEqualTo(adulto);
   }
 
@@ -960,8 +952,8 @@ class PropuestaOracleTest {
 
   @Test
   void desdeSieteAniosSeNecesitaPlazaDeCama() {
-    var c = em.find(Cliente.class, menor);
-    em.find(PersonaNatural.class, c.getPerfil().getIdPerfil())
+    var c = em.find(Perfil.class, menor);
+    em.find(PersonaNatural.class, c.getIdPerfil())
         .setFechaNacimiento(LocalDate.now().minusYears(7));
     em.flush();
     assertThatThrownBy(() -> reservas.registrar(reserva("menor-con-cama", true)))
@@ -971,7 +963,7 @@ class PropuestaOracleTest {
 
   @Test
   void dosAdultosYUnMenorCompartenDosPlazasSinAumentarCamas() {
-    var tipo=em.find(Cliente.class,adulto).getPerfil().getTipoDocumento();
+    var tipo=em.find(Perfil.class,adulto).getTipoDocumento();
     var segundo=persona(tipo,"87654321",LocalDate.of(1992,1,1));
     var base=reserva("familia-dos-plazas",false).detalles().getFirst();
     var r=reservas.registrar(new ReservaRegistroRequestDTO("familia-dos-plazas",adulto,usuario,List.of(new ReservaDetalleRegistroDTO(habitacion,base.fechaIngreso(),base.fechaSalida(),base.costoEstadia(),List.of(
@@ -985,7 +977,7 @@ class PropuestaOracleTest {
 
   @Test
   void dosMenoresSinCamaSuperanElCupoAdicional() {
-    var tipo=em.find(Cliente.class,adulto).getPerfil().getTipoDocumento();
+    var tipo=em.find(Perfil.class,adulto).getTipoDocumento();
     var segundoMenor=persona(tipo,"87654320",LocalDate.now().minusYears(3));
     var base=reserva("dos-menores-sin-cama",false).detalles().getFirst();
     var solicitud=new ReservaRegistroRequestDTO("dos-menores-sin-cama",adulto,usuario,List.of(new ReservaDetalleRegistroDTO(habitacion,base.fechaIngreso(),base.fechaSalida(),base.costoEstadia(),List.of(
@@ -1411,13 +1403,12 @@ class PropuestaOracleTest {
   @Test
   void conservacionRetiroYTrasladoMantienenTodasLasFichasAnteriores() {
     var i = items.create(new ItemRequestDTO("TV", tipoItem, EstadoItem.ACTIVO));
-    var primero = items.asignar(i.idItem(), new ItemAsignacionDTO("asignar", usuario, habitacion, EstadoConservacion.BUENO, "Instalar"));
+    items.asignar(i.idItem(), new ItemAsignacionDTO("asignar", usuario, habitacion, EstadoConservacion.BUENO, "Instalar"));
     var cambio = new ItemConservacionDTO("conservar", usuario, EstadoConservacion.DANADO, "Pantalla dañada");
     items.conservacion(i.idItem(), cambio);
     items.conservacion(i.idItem(), cambio);
     assertThat(items.movimientos(i.idItem())).hasSize(2);
-    assertThat(em.find(DetalleHabitacion.class, primero.idDetalleHabitacion()).getEstadoActualItem())
-        .isEqualTo(EstadoConservacion.BUENO);
+    assertThat(items.historial(i.idItem())).anyMatch(evento -> evento.estadoConservacion() == EstadoConservacion.BUENO);
     var h2 = habitaciones.create(habitacionDTO("NUEVOTV", 2, 2, 0));
     items.asignar(i.idItem(), new ItemAsignacionDTO("trasladar", usuario, h2.idHabitacion(), EstadoConservacion.DANADO, "Taller"));
     var retirada = items.asignar(i.idItem(), new ItemAsignacionDTO("retirar", usuario, null, EstadoConservacion.EN_REPARACION, "Enviar reparación"));

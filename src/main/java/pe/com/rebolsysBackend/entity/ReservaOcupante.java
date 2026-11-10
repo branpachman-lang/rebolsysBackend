@@ -7,14 +7,14 @@ import lombok.*;
 import pe.com.rebolsysBackend.enums.*;
 
 @Entity
-@Table(name = "reserva_ocupante")
+@Table(name = "reserva_huesped")
 @Getter
 @Setter
 @NoArgsConstructor
 public class ReservaOcupante {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "idReservaOcupante", columnDefinition = "NUMBER")
+  @Column(name = "idReservaHuesped", columnDefinition = "NUMBER")
   private Long idReservaOcupante;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -22,10 +22,10 @@ public class ReservaOcupante {
   private DetalleReserva detalleReserva;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(name = "idCliente", nullable = false, columnDefinition = "NUMBER")
-  private Cliente cliente;
+  @JoinColumn(name = "idHuesped", nullable = false, columnDefinition = "NUMBER")
+  private Huesped huesped;
 
-  @Column(name = "idOcupanteResponsable", columnDefinition = "NUMBER", nullable = true)
+  @Column(name = "idReservaHuespedResponsable", columnDefinition = "NUMBER", nullable = true)
   private Long idOcupanteResponsable;
 
   @Enumerated(EnumType.STRING)

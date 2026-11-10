@@ -48,15 +48,15 @@ class FacturacionElectronicaOracleTest {
     var td=new TipoDocumento();td.setNombreDocumento("CPE_"+sufijo);td.setCodigoSunat("1");em.persist(td);
     var p=new Perfil();p.setTipoDocumento(td);p.setNumeroDocumento("11111111");em.persist(p);
     var n=new PersonaNatural();n.setPerfil(p);n.setNombres("PERSONA FICTICIA");n.setApellidos("PRUEBA");n.setFechaNacimiento(LocalDate.of(1990,1,1));em.persist(n);
-    var c=new Cliente();c.setPerfil(p);em.persist(c);
+    p.setEsCliente(1);
     var empleado=new Empleado();empleado.setPersonaNatural(n);empleado.setFechaContratacion(LocalDate.now());em.persist(empleado);
     var u=new Usuario();u.setEmpleado(empleado);u.setUsername("cpe_"+sufijo);u.setEstadoUsuario(EstadoUsuario.ACTIVO);em.persist(u);usuario=u.getIdUsuario();
     var t=new TurnoCaja();t.setUsuario(u);t.setEstadoSesion(1);em.persist(t);
-    var reserva=new Reserva();reserva.setCliente(c);reserva.setUsuario(u);reserva.setClaveRegistro(UUID.randomUUID().toString());reserva.setFirmaSolicitud("0".repeat(64));em.persist(reserva);
+    var reserva=new Reserva();reserva.setCliente(p);reserva.setUsuario(u);reserva.setClaveRegistro(UUID.randomUUID().toString());reserva.setFirmaSolicitud("0".repeat(64));em.persist(reserva);
     var tipo=em.createQuery("from TipoComprobante where codigo='BOLETA'",TipoComprobante.class).getSingleResult();
     var id=new SerieComprobanteId(tipo.getIdTipoComprobante(),"BTST");
     if (em.find(SerieComprobante.class,id)==null) {var serie=new SerieComprobante();serie.setId(id);serie.setTipoComprobante(tipo);em.persist(serie);}
-    cuenta=new Comprobante();cuenta.setReserva(reserva);cuenta.setCliente(c);cuenta.setTipoComprobante(tipo);cuenta.setSerie("BTST");cuenta.setTurnoCaja(t);
+    cuenta=new Comprobante();cuenta.setReserva(reserva);cuenta.setCliente(p);cuenta.setTipoComprobante(tipo);cuenta.setSerie("BTST");cuenta.setTurnoCaja(t);
     cuenta.setSubtotal(new BigDecimal("118"));cuenta.setIgv(BigDecimal.ZERO);cuenta.setTotalPagar(new BigDecimal("118"));cuenta.setEstadoComprobante(EstadoComprobante.BORRADOR);em.persist(cuenta);
     cuenta.setNumeroComprobante(cuenta.getIdComprobante().toString());cuenta.setFechaEmision(LocalDateTime.now());cuenta.setEstadoComprobante(EstadoComprobante.EMITIDO);
     cuenta.setReceptorNombre("PERSONA FICTICIA");cuenta.setReceptorTipoDoc("1");cuenta.setReceptorNumeroDoc("11111111");

@@ -50,25 +50,21 @@ habitación; solo menores de siete años pueden alojarse sin cama dentro del lí
 
 ## Base de datos y arranque
 
-Las tarifas de las 20 habitaciones reales están registradas según la imagen del
-usuario, con impuesto incluido. La V11 añade `precioPorNoche` opcional a HABITACION
-para permitir precios distintos dentro del mismo tipo; las habitaciones anteriores
-sin tarifa propia siguen usando la del tipo. Ejecutar
-[V11](src/main/resources/db/iteration/V11__tarifa_por_habitacion.sql) antes de arrancar
-esta versión sobre una base existente. No modifica el costo de reservas guardadas.
-El [inventario y sus tarifas](api/fixtures/README.md) documenta los 26 muebles de cama
-y las correcciones de la 303, 401 y 504.
+Esta versión usa el esquema Oracle **REBOLSYSDBV2**. Para preparar una instancia
+vacía, ejecuta estos archivos en orden desde una sesión de ese esquema.
 
-El esquema Oracle de esta versión es **PropuestaHospedajeRB**. El DDL propuesto ya
-fue ejecutado. Hibernate usa `validate`; Flyway está deshabilitado y no se insertan
-datos al iniciar. La referencia es
-[DDL_REBOLSYS_PROPUESTO.sql](src/main/resources/db/schema/DDL_REBOLSYS_PROPUESTO.sql).
-Las migraciones y el DDL consolidado anteriores se conservan como historial y no
-corresponden a esta versión; no ejecutarlos en el esquema de la propuesta.
+1. [DDL_REBOLSYS_V2.sql](src/main/resources/db/schema/DDL_REBOLSYS_V2.sql) crea las tablas base.
+2. [V16](src/main/resources/db/iteration/V16__mobiliario_sin_detalle_habitacion.sql) adapta las claves históricas y agrega las columnas y la tabla de emisión que requiere la aplicación.
+3. [DATOS_INICIALES_REBOLSYS_V2.sql](src/main/resources/db/schema/DATOS_INICIALES_REBOLSYS_V2.sql) carga catálogos y la cuenta `gerencia_local`. Confirma la carga con `COMMIT`.
+
+Hibernate valida el esquema al arrancar y Flyway está deshabilitado. El DDL anterior
+y sus scripts de demostración se conservan como historial.
 
 La conexión local está en `.local/application-local-private.properties`, excluido
 de Git. También se admiten `DB_URL`, `DB_USERNAME` y `DB_PASSWORD` del entorno.
-La contraseña proporcionada está configurada solo en el archivo privado.
+Para habilitar el primer acceso de gerencia, configura `REBOLSYS_GERENTE_USUARIO`
+con `gerencia_local` y asigna una clave temporal privada en
+`REBOLSYS_GERENTE_PASSWORD_TEMPORAL` antes de iniciar la API.
 
 ```powershell
 .\mvnw.cmd spring-boot:run
@@ -76,15 +72,9 @@ La contraseña proporcionada está configurada solo en el archivo privado.
 
 API: http://localhost:8080/api/v1 · Swagger: http://localhost:8080/swagger-ui.html
 
-El 1 de noviembre de 2026 se preparó el esquema local con catálogos, el operador
-`operacion_local`, un turno abierto y registros de demostración de los siete
-casos. Para preparar otro esquema de desarrollo, el archivo opcional
-[DATOS_INICIALES_PROPUESTA.sql](src/main/resources/db/schema/DATOS_INICIALES_PROPUESTA.sql)
-carga catálogos, un operador de desarrollo y un turno abierto. No se ejecuta
-automáticamente: revisar los registros y confirmar con COMMIT si se desea usarlos.
-Es reutilizable y no reemplaza datos existentes. Habitaciones, clientes, productos
-y mobiliario se registran mediante la API. La cuenta Oracle de conexión y el
-operador del negocio son registros diferentes.
+Habitaciones, clientes, productos y mobiliario se registran desde la aplicación.
+Las tarifas por habitación y el inventario documentado están en
+[los datos de referencia](api/fixtures/README.md).
 
 ## Contrato y ejemplos
 

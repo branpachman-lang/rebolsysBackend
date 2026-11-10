@@ -4036,7 +4036,8 @@
               "enum": [
                 "BORRADOR",
                 "POR_APROBAR",
-                "APROBADO"
+                "APROBADO",
+                "INVALIDADO"
               ]
             }
           },
@@ -5459,10 +5460,6 @@
               "Inactivo",
               "En habitacion"
             ]
-          },
-          "idDetalleHabitacion": {
-            "type": "integer",
-            "format": "int64"
           },
           "idHabitacion": {
             "type": "integer",
@@ -7428,7 +7425,8 @@
             "enum": [
               "BORRADOR",
               "POR_APROBAR",
-              "APROBADO"
+              "APROBADO",
+              "INVALIDADO"
             ]
           },
           "responsable": {
@@ -7471,10 +7469,6 @@
         "type": "object",
         "properties": {
           "idDetalleInforme": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "idDetalleHabitacion": {
             "type": "integer",
             "format": "int64"
           },
@@ -7581,10 +7575,6 @@
       "ItemHabitacion": {
         "type": "object",
         "properties": {
-          "idDetalleHabitacion": {
-            "type": "integer",
-            "format": "int64"
-          },
           "idItem": {
             "type": "integer",
             "format": "int64"
@@ -7619,11 +7609,11 @@
       "ItemInforme": {
         "required": [
           "estadoEncontrado",
-          "idDetalleHabitacion"
+          "idItem"
         ],
         "type": "object",
         "properties": {
-          "idDetalleHabitacion": {
+          "idItem": {
             "minimum": 0,
             "exclusiveMinimum": true,
             "type": "integer",

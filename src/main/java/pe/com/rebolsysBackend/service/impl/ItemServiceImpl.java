@@ -22,7 +22,6 @@ public class ItemServiceImpl implements ItemService {
   private final jakarta.persistence.EntityManager entityManager;
   private final ItemRepository items;
   private final TipoItemRepository tipos;
-  private final DetalleHabitacionRepository detalles;
   private final HabitacionRepository habitaciones;
   private final MovimientoInventarioRepository movimientos;
   private final ReglasPropuesta reglas;
@@ -116,10 +115,7 @@ public class ItemServiceImpl implements ItemService {
     if (id != null && i.getEstadoItem() != EstadoItem.INACTIVO && r.estadoItem() == EstadoItem.INACTIVO) {
       SesionOperacionService.exigirPermisoEnPeticion("MOBILIARIO:ELIMINAR");
     }
-    boolean asignado =
-        id != null
-            && !detalles.findByItemIdItem(id).isEmpty()
-            && i.getEstadoItem() == EstadoItem.EN_HABITACION;
+    boolean asignado = i.getHabitacion() != null;
     exigir(
         (r.estadoItem() == EstadoItem.EN_HABITACION) == asignado,
         "Asigna o retira el ítem desde la operación de asignación");
@@ -137,54 +133,34 @@ public class ItemServiceImpl implements ItemService {
   public ItemResponseDTO asignar(Long id, ItemAsignacionDTO r) {
     reglas.validar(r);
     var u = reglas.usuario(r.idUsuario());
-    var i =
-        items.bloquear(id).orElseThrow(() -> new RecursoNoEncontradoException("El ítem no existe"));
-    entityManager.refresh(i);
+    var i = bloquearUbicacion(id, r.idHabitacion());
     String clave = hash("item:" + r.claveOperacion());
     var previo = movimientos.findByClaveOperacion(clave);
     if (previo.isPresent()) {
       var m = previo.get();
-      exigir(
-          m.getItem() != null
-              && m.getItem().getIdItem().equals(id)
-              && m.getObservacion().endsWith("[" + reglas.firma(r) + "]"),
+      exigir(m.getItem() != null && m.getItem().getIdItem().equals(id)
+          && m.getObservacion().endsWith("[" + reglas.firma(r) + "]"),
           "La clave de operación corresponde a otra asignación");
       return respuesta(i);
     }
     exigir(i.getEstadoItem() != EstadoItem.INACTIVO, "Activa el ítem antes de asignarlo");
-    var d = asignacionActual(i);
-    var habitacionesAfectadas = new TreeSet<Long>();
-    if (i.getEstadoItem() == EstadoItem.EN_HABITACION && d != null) {
-      habitacionesAfectadas.add(d.getHabitacion().getIdHabitacion());
-    }
-    if (r.idHabitacion() != null) habitacionesAfectadas.add(r.idHabitacion());
-    habitacionesAfectadas.forEach(this::bloquearSinLimpieza);
-    if (r.idHabitacion() != null) {
-      var h = habitaciones.getReferenceById(r.idHabitacion());
-      d = new DetalleHabitacion();
-      d.setItem(i);
-      d.setHabitacion(h);
-      d.setEstadoActualItem(r.estadoActualItem());
-      detalles.saveAndFlush(d);
-      i.setEstadoItem(EstadoItem.EN_HABITACION);
-    } else {
-      exigir(
-          i.getEstadoItem() == EstadoItem.EN_HABITACION && d != null,
-          "El ítem no está asignado a una habitación");
-      var retiro = new DetalleHabitacion();
-      retiro.setItem(i);
-      retiro.setHabitacion(d.getHabitacion());
-      retiro.setEstadoActualItem(r.estadoActualItem());
-      d = detalles.saveAndFlush(retiro);
-      i.setEstadoItem(EstadoItem.ACTIVO);
-    }
+    var origen = i.getHabitacion();
+    var destino = r.idHabitacion() == null ? null : habitaciones.getReferenceById(r.idHabitacion());
+    exigir(origen != null || destino != null, "El ítem no está asignado a una habitación");
+    if (origen != null) validarSinLimpieza(origen.getIdHabitacion());
+    if (destino != null && !Objects.equals(idHabitacion(origen), destino.getIdHabitacion()))
+      validarSinLimpieza(destino.getIdHabitacion());
+    i.setHabitacion(destino);
+    i.setEstadoItem(destino == null ? EstadoItem.ACTIVO : EstadoItem.EN_HABITACION);
+    i.setCondicionItem(r.estadoActualItem());
+
     var m = new MovimientoInventario();
     m.setItem(i);
-    m.setDetalleHabitacion(d);
+    m.setHabitacion(destino == null ? origen : destino);
+    m.setCondicionItem(i.getCondicionItem());
     m.setUsuario(u);
-    m.setTipoMovimientoAlmacen(reglas.tipo(r.idHabitacion() == null ? "RET_ITEM" : "ASIG_ITEM", 0));
+    m.setTipoMovimientoAlmacen(reglas.tipo(destino == null ? "RET_ITEM" : "ASIG_ITEM", 0));
     m.setCantidad(1);
-    m.setStockResultante(r.idHabitacion() == null ? 1 : 0);
     m.setClaveOperacion(clave);
     m.setObservacion(
         (r.idHabitacion() == null ? "Retirar" : "Asignar a " + r.idHabitacion())
@@ -204,9 +180,7 @@ public class ItemServiceImpl implements ItemService {
   public ItemResponseDTO conservacion(Long id, ItemConservacionDTO r) {
     reglas.validar(r);
     var u = reglas.usuario(r.idUsuario());
-    var i = items.bloquear(id)
-        .orElseThrow(() -> new RecursoNoEncontradoException("El ítem no existe"));
-    entityManager.refresh(i);
+    var i = bloquearUbicacion(id, null);
     String clave = hash("estado-item:" + r.claveOperacion());
     var previo = movimientos.findByClaveOperacion(clave);
     if (previo.isPresent()) {
@@ -216,37 +190,50 @@ public class ItemServiceImpl implements ItemService {
           "La clave de operación corresponde a otro cambio de conservación");
       return respuesta(i);
     }
-    var actual = asignacionActual(i);
-    exigir(i.getEstadoItem() == EstadoItem.EN_HABITACION && actual != null,
-        "Asigna el ítem a una habitación antes de registrar su conservación");
-    bloquearSinLimpieza(actual.getHabitacion().getIdHabitacion());
-    actual = asignacionActual(i);
-    registrarConservacion(actual, r.estadoActualItem(), u,
+    exigir(i.getHabitacion() != null, "Asigna el ítem a una habitación antes de registrar su conservación");
+    validarSinLimpieza(i.getHabitacion().getIdHabitacion());
+    registrarConservacion(i, r.estadoActualItem(), u,
         r.observacion().trim() + " [" + reglas.firma(r) + "]", clave);
     return respuesta(i);
   }
 
-  private void bloquearSinLimpieza(Long idHabitacion) {
-    habitaciones.bloquear(idHabitacion)
-        .orElseThrow(() -> new RecursoNoEncontradoException("La habitación no existe"));
-    exigir(!informes.existsByHabitacionIdHabitacionAndEstadoInformeNot(idHabitacion, EstadoInforme.APROBADO),
+  private Item bloquearUbicacion(Long id, Long destino) {
+    var item = items.findById(id).orElseThrow(() -> new RecursoNoEncontradoException("El ítem no existe"));
+    Long origen = idHabitacion(item.getHabitacion());
+    var cuartos = new TreeSet<Long>();
+    if (origen != null) cuartos.add(origen);
+    if (destino != null) cuartos.add(destino);
+    // Limpieza también bloquea primero la habitación y luego modifica sus ítems.
+    for (Long cuarto : cuartos) {
+      habitaciones.bloquear(cuarto).orElseThrow(() -> new RecursoNoEncontradoException("La habitación no existe"));
+    }
+    var bloqueado = items.bloquear(id).orElseThrow(() -> new RecursoNoEncontradoException("El ítem no existe"));
+    entityManager.refresh(bloqueado);
+    exigir(Objects.equals(origen, idHabitacion(bloqueado.getHabitacion())),
+        "La ubicación del ítem cambió durante la operación. Actualiza y reintenta");
+    return bloqueado;
+  }
+
+  private static Long idHabitacion(Habitacion h) {
+    return h == null ? null : h.getIdHabitacion();
+  }
+
+  private void validarSinLimpieza(Long idHabitacion) {
+    exigir(!informes.existsByHabitacionIdHabitacionAndEstadoInformeIn(
+        idHabitacion, List.of(EstadoInforme.BORRADOR, EstadoInforme.POR_APROBAR)),
         "El mobiliario de la habitación está en revisión de limpieza");
   }
 
-  void registrarConservacion(DetalleHabitacion actual, EstadoConservacion estado, Usuario usuario,
+  void registrarConservacion(Item item, EstadoConservacion estado, Usuario usuario,
       String observacion, String clave) {
-    var d = new DetalleHabitacion();
-    d.setItem(actual.getItem());
-    d.setHabitacion(actual.getHabitacion());
-    d.setEstadoActualItem(estado);
-    detalles.saveAndFlush(d);
+    item.setCondicionItem(estado);
     var m = new MovimientoInventario();
-    m.setItem(actual.getItem());
-    m.setDetalleHabitacion(d);
+    m.setItem(item);
+    m.setHabitacion(item.getHabitacion());
+    m.setCondicionItem(estado);
     m.setUsuario(usuario);
     m.setTipoMovimientoAlmacen(reglas.tipo("EST_ITEM", 0));
     m.setCantidad(1);
-    m.setStockResultante(0);
     m.setClaveOperacion(clave);
     m.setObservacion(observacion);
     movimientos.saveAndFlush(m);
@@ -271,15 +258,15 @@ public class ItemServiceImpl implements ItemService {
           m.getUsuario().getUsername(), m.getFechaMovimiento(),
           origen == null ? null : origen.getIdHabitacion(), origen == null ? null : origen.getNumeroCuarto(),
           destino == null ? null : destino.getIdHabitacion(), destino == null ? null : destino.getNumeroCuarto(),
-          m.getDetalleHabitacion() == null ? null : m.getDetalleHabitacion().getEstadoActualItem(),
+          m.getCondicionItem(),
           observacionPublica(m)));
     }
     return resultado;
   }
 
   private static Habitacion destino(MovimientoInventario m) {
-    return "RET_ITEM".equals(m.getTipoMovimientoAlmacen().getCodigo()) || m.getDetalleHabitacion() == null
-        ? null : m.getDetalleHabitacion().getHabitacion();
+    return "RET_ITEM".equals(m.getTipoMovimientoAlmacen().getCodigo())
+        ? null : m.getHabitacion();
   }
 
   private static String observacionPublica(MovimientoInventario m) {
@@ -310,25 +297,10 @@ public class ItemServiceImpl implements ItemService {
         observacionPublica(m));
   }
 
-  private DetalleHabitacion asignacionActual(Item i) {
-    return movimientos
-        .findFirstByItemIdItemOrderByIdMovimientoDesc(i.getIdItem())
-        .map(MovimientoInventario::getDetalleHabitacion)
-        .orElse(null);
-  }
-
   private ItemResponseDTO respuesta(Item i) {
-    var ultimo = asignacionActual(i);
-    var d = i.getEstadoItem() == EstadoItem.EN_HABITACION ? ultimo : null;
-    return new ItemResponseDTO(
-        i.getIdItem(),
-        i.getNombreItem(),
-        i.getTipoItem().getIdTipoItem(),
-        i.getEstadoItem(),
-        d == null ? null : d.getIdDetalleHabitacion(),
-        d == null ? null : d.getHabitacion().getIdHabitacion(),
-        ultimo == null ? null : ultimo.getEstadoActualItem(),
-        i.getTipoItem().getNombreItem(),
-        d == null ? null : d.getHabitacion().getNumeroCuarto());
+    var h = i.getHabitacion();
+    return new ItemResponseDTO(i.getIdItem(), i.getNombreItem(), i.getTipoItem().getIdTipoItem(),
+        i.getEstadoItem(), idHabitacion(h), i.getCondicionItem(), i.getTipoItem().getNombreItem(),
+        h == null ? null : h.getNumeroCuarto());
   }
 }

@@ -10,7 +10,6 @@ public record ItemResponseDTO(
     String nombreItem,
     Long idTipoItem,
     EstadoItem estadoItem,
-    Long idDetalleHabitacion,
     Long idHabitacion,
     EstadoConservacion estadoActualItem,
     String nombreTipo,

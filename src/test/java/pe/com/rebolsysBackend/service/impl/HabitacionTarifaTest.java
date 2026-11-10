@@ -26,7 +26,7 @@ class HabitacionTarifaTest {
   private final HabitacionServiceImpl servicio = new HabitacionServiceImpl(
       mock(EntityManager.class), habitaciones, tipos, detalles, ocupantes,
       mock(ClienteService.class), mock(ReglasPropuesta.class),
-      mock(DetalleHabitacionRepository.class), mock(ItemService.class), mock(InformeRevisionRepository.class));
+      mock(ItemRepository.class), mock(MovimientoInventarioRepository.class), mock(ItemService.class), mock(InformeRevisionRepository.class));
   private TipoHabitacion tipo;
   private Habitacion habitacion;
 

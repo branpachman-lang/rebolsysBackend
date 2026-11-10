@@ -16,7 +16,7 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 
 class ModeloPropuestoTest {
   @Test
-  void mapearExactamenteLas47TablasY293ColumnasDelDdlPropuestoConV15() throws Exception {
+  void mapearTablasYColumnasDelEsquemaV2() throws Exception {
     var registry =
         new StandardServiceRegistryBuilder()
             .applySetting("hibernate.dialect", "org.hibernate.dialect.OracleDialect")
@@ -31,11 +31,12 @@ class ModeloPropuestoTest {
         sources.addAnnotatedClass(Class.forName(candidate.getBeanClassName()));
       var metadata = (MetadataImplementor) sources.buildMetadata();
       metadata.validate();
-      String sql =
-          Files.readString(Path.of("src/main/resources/db/schema/DDL_REBOLSYS_PROPUESTO.sql"))
-              .replace("\"", "");
+      var db = Path.of("src/main/resources/db");
+      String complemento = Files.readString(db.resolve("iteration/V16__mobiliario_sin_detalle_habitacion.sql"));
+      String sql = (Files.readString(db.resolve("schema/DDL_REBOLSYS_V2.sql")) + "\n" + complemento)
+          .replace("\"", "");
       var tables =
-          Pattern.compile("CREATE TABLE\\s+(\\w+)\\s*\\(([\\s\\S]*?)\\);", Pattern.CASE_INSENSITIVE)
+          Pattern.compile("CREATE TABLE\\s+(\\w+)\\s*\\(([\\s\\S]*?)\\)(?:;|\\]';)", Pattern.CASE_INSENSITIVE)
               .matcher(sql);
       Map<String, Set<String>> esperado = new HashMap<>();
       while (tables.find()) {
@@ -48,6 +49,10 @@ class ModeloPropuestoTest {
         while (columns.find()) nombres.add(columns.group(1).toUpperCase(Locale.ROOT));
         esperado.put(tables.group(1).toUpperCase(Locale.ROOT), nombres);
       }
+      var columnasAgregadas = Pattern.compile("agregar_columna\\('([A-Z_]+)', '([A-Z]+)'").matcher(complemento);
+      while (columnasAgregadas.find()) {
+        esperado.get(columnasAgregadas.group(1)).add(columnasAgregadas.group(2));
+      }
       Map<String, Set<String>> real = new HashMap<>();
       for (var ns : metadata.getDatabase().getNamespaces())
         for (var table : ns.getTables())
@@ -56,9 +61,8 @@ class ModeloPropuestoTest {
               table.getColumns().stream()
                   .map(c -> c.getName().toUpperCase(Locale.ROOT))
                   .collect(Collectors.toSet()));
-      assertThat(esperado).hasSize(47);
+      assertThat(esperado).hasSize(46);
       assertThat(real).isEqualTo(esperado);
-      assertThat(real.values().stream().mapToInt(Set::size).sum()).isEqualTo(293);
     } finally {
       StandardServiceRegistryBuilder.destroy(registry);
     }
