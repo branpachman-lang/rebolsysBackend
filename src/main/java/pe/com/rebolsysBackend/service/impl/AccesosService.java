@@ -21,6 +21,10 @@ import pe.com.rebolsysBackend.exception.RecursoNoEncontradoException;
 public class AccesosService {
   public static final String GERENTE = "GERENTE";
   public static final String RECEPCIONISTA = "RECEPCIONISTA";
+  public static final String LIMPIEZA = "LIMPIEZA";
+  public static final String MANTENIMIENTO = "MANTENIMIENTO";
+  private static final Set<String> OFICIALES = Set.of(GERENTE, RECEPCIONISTA, LIMPIEZA, MANTENIMIENTO);
+  private static final Set<String> OPERATIVOS = Set.of(RECEPCIONISTA, LIMPIEZA, MANTENIMIENTO);
   private final ApplicationContext contexto;
   private final EntityManager em;
   private final JdbcTemplate jdbc;
@@ -49,13 +53,14 @@ public class AccesosService {
         select r.idRol, r.nombreRol from usuario_rol ur join rol r on r.idRol=ur.idRol
         where ur.idUsuario=? order by r.nombreRol
         """, (rs, n) -> new Rol(rs.getLong(1), rs.getString(2)), usuario);
-    var externos = roles.stream().filter(r -> !r.getNombreRol().startsWith("@")).toList();
+    var externos = roles.stream().filter(r -> OFICIALES.contains(r.getNombreRol())).toList();
     var efectivos = jdbc.queryForList("""
         select distinct m.nombreModulo || ':' || p.accion as codigo
         from usuario_rol ur join rol_permiso rp on rp.idRol=ur.idRol
         join permiso p on p.idPermiso=rp.idPermiso join modulo m on m.idModulo=p.idModulo
-        where ur.idUsuario=? order by codigo
-        """, String.class, usuario);
+        join rol r on r.idRol=ur.idRol
+        where ur.idUsuario=? and (r.nombreRol in (?, ?, ?) or r.nombreRol=?) order by codigo
+        """, String.class, usuario, RECEPCIONISTA, LIMPIEZA, MANTENIMIENTO, rolPrivado(usuario));
     var privados = roles.stream().filter(r -> r.getNombreRol().equals(rolPrivado(usuario))).findFirst();
     var nombres = externos.stream().map(Rol::getNombreRol).toList();
     return new PerfilAcceso(externos.stream().map(Rol::getIdRol).toList(), nombres,
@@ -64,8 +69,12 @@ public class AccesosService {
   }
 
   public List<Rol> roles() {
-    return em.createQuery("select r from Rol r where r.nombreRol not like '@%' escape '!' order by r.nombreRol", Rol.class)
-        .getResultList();
+    return em.createQuery("select r from Rol r where r.nombreRol in :oficiales order by r.nombreRol", Rol.class)
+        .setParameter("oficiales", OFICIALES).getResultList();
+  }
+
+  public boolean rolOperativo(Rol rol) {
+    return OPERATIVOS.contains(rol.getNombreRol());
   }
 
   public List<String> permisosRol(Long rol) {
@@ -85,12 +94,6 @@ public class AccesosService {
 
   public long usuariosAsignados(Long rol) {
     return jdbc.queryForObject("select count(*) from usuario_rol where idRol=?", Long.class, rol);
-  }
-
-  public void eliminarRol(Rol rol) {
-    exigir(usuariosAsignados(rol.getIdRol()) == 0, "Retira el rol de los usuarios asignados antes de eliminarlo");
-    jdbc.update("delete from rol_permiso where idRol=?", rol.getIdRol());
-    em.remove(rol);
   }
 
   public Rol buscarRol(String nombre) {
@@ -114,7 +117,7 @@ public class AccesosService {
     validar(individuales);
     for (Long id : idsRoles) {
       var rol = em.find(Rol.class, id);
-      exigir(rol != null && !rol.getNombreRol().equals(GERENTE) && !rol.getNombreRol().startsWith("@"),
+      exigir(rol != null && rolOperativo(rol),
           "El rol seleccionado no se puede asignar");
     }
     var interno = buscarRol(rolPrivado(usuario));

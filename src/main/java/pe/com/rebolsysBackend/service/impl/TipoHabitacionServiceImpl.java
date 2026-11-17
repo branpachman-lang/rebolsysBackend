@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.com.rebolsysBackend.dto.*;
+import pe.com.rebolsysBackend.dto.SistemaDTO.ParametrosComerciales;
 import pe.com.rebolsysBackend.entity.TipoHabitacion;
 import pe.com.rebolsysBackend.exception.RecursoNoEncontradoException;
 import pe.com.rebolsysBackend.repository.*;
@@ -34,10 +35,20 @@ public class TipoHabitacionServiceImpl implements TipoHabitacionService {
   public TipoHabitacionResponseDTO update(Long id, TipoHabitacionRequestDTO r) {
     reglas.validar(r);
     var t = bloquear(id);
-    exigir(!habitaciones.existsByTipoHabitacionIdTipoHabitacionAndCapacidadPersonasGreaterThan(id, r.capacidadMax()),
-        "Hay habitaciones cuya capacidad supera el nuevo máximo del tipo");
+    validarCapacidad(id, r.capacidadMax());
     completar(t, r);
     return respuesta(tipos.saveAndFlush(t));
+  }
+
+  @Override
+  @Transactional
+  public TipoHabitacionResponseDTO actualizarParametros(Long id, ParametrosComerciales datos) {
+    reglas.validar(datos);
+    var tipo = bloquear(id);
+    validarCapacidad(id, datos.capacidadMax());
+    tipo.setCapacidadMax(datos.capacidadMax());
+    tipo.setPrecioBase(datos.precioBase());
+    return respuesta(tipos.saveAndFlush(tipo));
   }
 
   @Override
@@ -72,6 +83,11 @@ public class TipoHabitacionServiceImpl implements TipoHabitacionService {
     t.setNombreTipo(r.nombreTipo().trim());
     t.setCapacidadMax(r.capacidadMax());
     t.setPrecioBase(r.precioBase());
+  }
+
+  private void validarCapacidad(Long id, int capacidad) {
+    exigir(!habitaciones.existsByTipoHabitacionIdTipoHabitacionAndCapacidadPersonasGreaterThan(id, capacidad),
+        "Hay habitaciones cuya capacidad supera el nuevo máximo del tipo");
   }
 
   private TipoHabitacionResponseDTO respuesta(TipoHabitacion t) {

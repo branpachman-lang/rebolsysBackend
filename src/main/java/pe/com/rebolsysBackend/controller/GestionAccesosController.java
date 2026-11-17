@@ -79,16 +79,8 @@ public class GestionAccesosController {
   @Acceso("ROLES:VER")
   public List<RolVista> roles() { return gestion.roles(); }
 
-  @PostMapping("/roles")
-  @ResponseStatus(HttpStatus.CREATED)
-  public RolVista crearRol(@Valid @RequestBody GuardarRol datos) { return gestion.guardarRol(null, datos); }
-
   @PutMapping("/roles/{id}")
-  public RolVista editarRol(@PathVariable @Positive Long id, @Valid @RequestBody GuardarRol datos) {
-    return gestion.guardarRol(id, datos);
+  public RolVista editarRol(@PathVariable @Positive Long id, @Valid @RequestBody PermisosRol datos) {
+    return gestion.editarRol(id, datos);
   }
-
-  @DeleteMapping("/roles/{id}")
-  @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void eliminarRol(@PathVariable @Positive Long id) { gestion.eliminarRol(id); }
 }

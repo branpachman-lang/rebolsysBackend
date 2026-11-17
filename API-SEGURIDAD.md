@@ -61,10 +61,10 @@ Las rutas de esta tabla empiezan con `/api/v1/seguridad`.
 | `PUT /usuarios/{id}/estado` | Cambia el estado de una cuenta. La desactivación revoca la contraseña y las sesiones. Después de reactivar, generar una nueva contraseña temporal. |
 | `POST /usuarios/{id}/credencial-temporal` | Emite otra contraseña temporal para una cuenta activa y revoca la anterior. |
 | `GET /funcionalidades` | Catálogo de acciones asignables por módulo. |
-| `GET /roles`, `POST /roles`, `PUT /roles/{id}` | Consultar, crear y editar roles reutilizables. |
-| `DELETE /roles/{id}` | Elimina un rol reutilizable sin usuarios asignados. El rol `GERENTE` está protegido. |
+| `GET /roles` | Consulta los roles oficiales del hospedaje. |
+| `PUT /roles/{id}` | Actualiza los `permisos` de Recepcionista, Limpieza o Mantenimiento. |
 
-El rol `GERENTE` reserva la creación de cuentas, la emisión de credenciales y la asignación de accesos. La lectura de usuarios y roles y el alta de empleados se pueden delegar. Los permisos efectivos son la unión de roles y permisos individuales. Oracle guarda estos últimos en un rol interno por usuario. Para una cuenta de solo lectura, seleccionar `RESERVAS:VER`, `HABITACIONES:VER`, `PRODUCTOS:VER` o `MOBILIARIO:VER` y evitar roles que incluyan escrituras. Las solicitudes administrativas exitosas quedan en `AUDITORIA_GENERAL`.
+Los roles oficiales son `RECEPCIONISTA`, `LIMPIEZA`, `MANTENIMIENTO` y `GERENTE`. Gerencia gestiona las cuentas y sus accesos, Configuración del sistema y Reportes. La lectura de usuarios y roles y el alta de empleados se pueden delegar. Los permisos efectivos son la unión de los roles oficiales asignados y los permisos individuales. Oracle guarda estos últimos en un registro interno por usuario. Las solicitudes administrativas exitosas quedan en `AUDITORIA_GENERAL`.
 
 ## Recuperación por correo
 

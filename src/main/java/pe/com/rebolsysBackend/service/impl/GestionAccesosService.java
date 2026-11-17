@@ -161,30 +161,13 @@ public class GestionAccesosService {
   }
 
   @Transactional
-  public RolVista guardarRol(Long id, GuardarRol datos) {
+  public RolVista editarRol(Long id, PermisosRol datos) {
     accesos.bloquearGerencia();
-    var nombre = datos.nombre().toUpperCase(Locale.ROOT);
-    exigir(!nombre.equals(AccesosService.GERENTE), "El rol GERENTE está reservado");
-    var existente = accesos.buscarRol(nombre);
-    exigir(existente == null || existente.getIdRol().equals(id), "Ya existe un rol con ese nombre");
-    var rol = id == null ? accesos.crearRol(nombre) : rolAdministrable(id);
-    rol.setNombreRol(nombre);
-    accesos.permisos(rol.getIdRol(), datos.permisos());
-    return rolVista(rol);
-  }
-
-  @Transactional
-  public void eliminarRol(Long id) {
-    accesos.bloquearGerencia();
-    accesos.eliminarRol(rolAdministrable(id));
-  }
-
-  private Rol rolAdministrable(Long id) {
     var rol = em.find(Rol.class, id);
     if (rol == null) throw new RecursoNoEncontradoException("El rol no existe");
-    exigir(!rol.getNombreRol().equals(AccesosService.GERENTE) && !rol.getNombreRol().startsWith("@"),
-        "El rol está protegido");
-    return rol;
+    exigir(accesos.rolOperativo(rol), "Solo se pueden editar los permisos de los roles operativos oficiales");
+    accesos.permisos(rol.getIdRol(), datos.permisos());
+    return rolVista(rol);
   }
 
   private Empleado buscarEmpleado(Long id) {

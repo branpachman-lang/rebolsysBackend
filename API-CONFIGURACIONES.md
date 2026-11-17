@@ -221,3 +221,16 @@ autenticación ni emisión electrónica, que siguen fuera de esta etapa.
 
 Las ejecuciones y sus informes son locales. La versión instalada del CLI de
 Postman permite ejecutar las colecciones, pero no admite el comando `status`.
+
+## Configuración del sistema y reportes
+
+El rol `GERENTE` habilita **Configuraciones → Sistema** y **Reportes** en una sesión activa.
+
+- `GET /api/v1/configuraciones/sistema/hospedaje` consulta el nombre, RUC, dirección y ruta del logotipo. `PUT` guarda los datos generales.
+- `PUT /api/v1/configuraciones/sistema/hospedaje/logo` recibe el campo multipart `archivo` en JPEG o PNG de hasta 5 MB. Configurar `APP_HOSPEDAJE_DIRECTORIO_LOGOTIPOS` para cambiar el directorio predeterminado `.local/logotipos`. La marca se usa en reportes y comprobantes impresos desde REBOLSYS.
+- `GET` y `PUT /api/v1/configuraciones/sistema/seguridad` consultan y guardan la inactividad en minutos y el máximo de intentos fallidos. La inactividad se aplica al abrir la siguiente sesión. El máximo admite de 1 a 5 intentos y el bloqueo dura 15 minutos.
+- `GET /api/v1/configuraciones/sistema/comerciales` lista los tipos de habitación. `PUT /api/v1/configuraciones/sistema/comerciales/{id}` actualiza `capacidadMax` y `precioBase`. La tarifa propia de una habitación tiene prioridad.
+- `GET /api/v1/reportes/{reporte}` consulta `incidencias`, `financiero`, `cierres-caja`, `inventario/productos` o `inventario/mobiliario`. Los reportes con fecha aceptan `desde` y `hasta` inclusivas en hora de Lima. Los listados aceptan `pagina` desde cero y `tamanio` de 1 a 100, con 20 filas por defecto.
+- `GET /api/v1/reportes/incidencias/{idInforme}` abre el informe de limpieza para consulta desde Reportes.
+
+El financiero consolida pagos verificados e ingresos y egresos manuales. Los consumos cobrados en la cuenta principal cuentan como cobros de reserva. El cierre lee los importes guardados en el arqueo del turno.

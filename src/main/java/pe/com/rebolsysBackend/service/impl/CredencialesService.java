@@ -29,6 +29,7 @@ public class CredencialesService {
   private final PasswordEncoder encoder;
   private final AccesosService accesos;
   private final TurnoCajaRepository turnos;
+  private final PoliticaSeguridadService politica;
 
   public record Principal(Long idUsuario, String firmaCredencial) implements java.io.Serializable {}
 
@@ -56,8 +57,9 @@ public class CredencialesService {
       c.setIntentosFallidos(0);
     }
     if (!coincide(contrasena, c.getValorHash())) {
-      c.setIntentosFallidos(Math.min(5, c.getIntentosFallidos() + 1));
-      if (c.getIntentosFallidos() == 5) c.setFechaBloqueo(fecha.plusMinutes(15));
+      int maximo = politica.maximoIntentos();
+      c.setIntentosFallidos(Math.min(maximo, c.getIntentosFallidos() + 1));
+      if (c.getIntentosFallidos() == maximo) c.setFechaBloqueo(fecha.plusMinutes(15));
       throw invalida();
     }
     if (vencida(c, fecha)) throw invalida();

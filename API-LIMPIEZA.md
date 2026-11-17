@@ -10,6 +10,8 @@ El flujo usa el movimiento de inventario `EST_ITEM`. Si falta en el catálogo, e
 
 Las fotos se guardan en `.local/evidencias-limpieza` por defecto. Para elegir un directorio persistente, configurar `APP_LIMPIEZA_DIRECTORIO_EVIDENCIAS`. Oracle guarda la ruta y el SHA-256 mediante los campos existentes.
 
+Para habilitar la atención y aprobación en `REBOLSYSDBV2`, ejecutar [DATOS_APROBACION_MANTENIMIENTO_V2.sql](src/main/resources/db/schema/DATOS_APROBACION_MANTENIMIENTO_V2.sql) y confirmar con `COMMIT`. Luego asignar `MANTENIMIENTO` al usuario responsable desde Seguridad.
+
 ## Rutas
 
 Todas las rutas de la tabla empiezan con `/api/v1/limpieza`.
@@ -25,13 +27,13 @@ Todas las rutas de la tabla empiezan con `/api/v1/limpieza`.
 | `GET /informes` | Filtra por `nombre`, `estado`, `fechaEmision` y `numeroHabitacion`. |
 | `GET /informes/{id}` | Muestra el estado encontrado y el estado efectivo de cada ítem, sus evidencias y sus tickets. |
 | `PATCH /informes/{id}` | Corrige los ítems indicados mientras el informe está `POR_APROBAR`. |
-| `DELETE /informes/{id}` | Elimina un informe `POR_APROBAR` y sus tickets. Revierte los cambios de conservación de esos tickets y deja la habitación `POR_LIMPIAR`. |
-| `POST /informes/{id}/aprobar` | Aprueba el informe si todas las incidencias se resolvieron y deja la habitación `DISPONIBLE`. |
-| `POST /informes/{id}/items/{idDetalleInforme}/ticket` | Crea un ticket resuelto para el ítem y actualiza su conservación a `BUENO`. |
+| `DELETE /informes/{id}` | Elimina un informe `POR_APROBAR` y deja la habitación `POR_LIMPIAR`. Si el informe tiene tickets, exige también el rol `MANTENIMIENTO` y el permiso `LIMPIEZA:ELIMINAR_TICKET` para revertir sus cambios de conservación. |
+| `POST /informes/{id}/aprobar` | Requiere el rol `MANTENIMIENTO` y el permiso `LIMPIEZA:APROBAR_INFORME`. Si todas las incidencias se resolvieron, aprueba el informe y deja la habitación `DISPONIBLE`. |
+| `POST /informes/{id}/items/{idDetalleInforme}/ticket` | Mantenimiento registra una reparación o reposición con foto. Se crea un ticket resuelto y la condición del ítem pasa a `BUENO`. |
 | `GET /tickets` | Filtra por `nombre`, `numeroHabitacion`, `tipoAccion` y `fechaEmision`. |
 | `GET /tickets/{id}` | Muestra todos los campos del ticket y sus asociaciones. |
-| `PUT /tickets/{id}` | Sustituye acción, observación técnica y costo mientras el informe asociado está `POR_APROBAR`. |
-| `DELETE /tickets/{id}` | Elimina un ticket de un informe `POR_APROBAR`, reabre su incidencia y restaura la conservación anterior. |
+| `PUT /tickets/{id}` | Mantenimiento corrige la acción, la observación técnica y el costo mientras el informe está `POR_APROBAR`. |
+| `DELETE /tickets/{id}` | Mantenimiento elimina un ticket de un informe `POR_APROBAR`, reabre la incidencia y restaura la condición anterior. |
 | `POST /evidencias` | Carga un JPEG o PNG de hasta 5 MB y 20 megapíxeles. Recibe `multipart/form-data` con el campo `archivo`. |
 | `GET /evidencias/{nombre}` | Descarga la foto. La ruta completa viene en la respuesta de carga. |
 
@@ -62,6 +64,8 @@ El borrador entrega `idInformeRevision` e `idItem` para cada ítem. Para enviar,
 `BUENO` corresponde a Óptimo. `DANADO`, `FALTANTE` y `EN_REPARACION` requieren foto. `PATCH /informes/{id}` acepta el mismo arreglo `items` con las filas a corregir. Para cambiar el estado encontrado de una fila con ticket, primero se elimina ese ticket.
 
 El detalle del informe entrega el `idDetalleInforme` para la ruta de creación de tickets. El cuerpo de creación contiene `accion` y la foto cargada como `evidencia`.
+
+Crear, editar y eliminar tickets exige el rol `MANTENIMIENTO` y el permiso correspondiente del módulo `LIMPIEZA`. El personal de mantenimiento puede abrir **Tickets → Ver informes por atender** para registrar una atención.
 
 ```json
 {

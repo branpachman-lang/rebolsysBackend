@@ -45,7 +45,8 @@ import tools.jackson.databind.ObjectMapper;
     "spring.datasource.username=sa", "spring.datasource.password=", "spring.datasource.driver-class-name=org.h2.Driver",
     "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect", "spring.jpa.hibernate.ddl-auto=create-drop",
     "springdoc.api-docs.version=OPENAPI_3_0",
-    "app.sesion-prueba.habilitada=false", "app.caja.directorio-evidencias=target/evidencias-caja-test"
+    "app.sesion-prueba.habilitada=false", "app.caja.directorio-evidencias=target/evidencias-caja-test",
+    "app.hospedaje.directorio-logotipos=target/logotipos-test"
 })
 @ActiveProfiles("seguridad-test")
 @AutoConfigureMockMvc
@@ -57,6 +58,7 @@ class AccesoHttpTest {
   @Autowired EntityManager em;
   @Autowired TransactionTemplate tx;
   @Autowired CredencialesService credenciales;
+  @Autowired AccesosService accesos;
   @Autowired RequestMappingHandlerMapping requestMappingHandlerMapping;
   @MockitoBean(name = "apisPeruRestClient") RestClient consultaDocumentos;
   @MockitoBean ProveedorFacturacionClient facturacion;
@@ -127,18 +129,31 @@ class AccesoHttpTest {
         .andExpect(status().isOk()).andExpect(jsonPath("$.informe.estado").value("POR_APROBAR"));
     mvc.perform(get(cuarto).session(gerente)).andExpect(status().isOk())
         .andExpect(jsonPath("$.estadoInforme").value("POR_APROBAR"));
-    peticion(post(API + "/limpieza/informes/" + informe + "/aprobar"), gerente, null).andExpect(status().isOk());
+    String aprobarInforme = API + "/limpieza/informes/" + informe + "/aprobar";
+    peticion(post(aprobarInforme), gerente, null).andExpect(status().isForbidden());
 
-    var rol = cuerpo(peticion(post(API + "/seguridad/roles"), gerente,
-        Map.of("nombre", "recepcionista", "permisos", List.of("RESERVAS:VER", "LIMPIEZA:INICIAR", "CAJA:VER", "GASTOS:CREAR")))
-        .andExpect(status().isCreated())).path("idRol").asLong();
+    var roles = tx.execute(s -> {
+      var ids = new java.util.HashMap<String, Long>();
+      for (String nombre : List.of("RECEPCIONISTA", "LIMPIEZA", "MANTENIMIENTO", "ROL_ANTERIOR")) {
+        var registro = new Rol(null, nombre);
+        em.persist(registro);
+        ids.put(nombre, registro.getIdRol());
+      }
+      return ids;
+    });
+    long recepcionista = roles.get("RECEPCIONISTA");
+    peticion(post(API + "/seguridad/roles"), gerente, Map.of("nombre", "AUDITOR", "permisos", List.of()))
+        .andExpect(status().isMethodNotAllowed());
+    peticion(put(API + "/seguridad/roles/" + recepcionista), gerente,
+        Map.of("permisos", List.of("RESERVAS:VER", "LIMPIEZA:INICIAR", "CAJA:VER", "GASTOS:CREAR")))
+        .andExpect(status().isOk()).andExpect(jsonPath("$.nombre").value("RECEPCIONISTA"));
     var empleado = cuerpo(peticion(post(API + "/seguridad/empleados"), gerente, Map.of(
         "idTipoDocumento", tipo, "numeroDocumento", "00000002", "nombres", "Operadora",
         "apellidos", "Prueba", "correo", "operadora@example.test", "fechaContratacion", "2025-01-01"))
         .andExpect(status().isCreated())).path("idEmpleado").asLong();
     var nuevo = cuerpo(peticion(post(API + "/seguridad/usuarios"), gerente, Map.of(
         "idEmpleado", empleado, "usuario", "operadora@example.test",
-        "accesos", Map.of("roles", List.of(rol), "permisos", List.of("HABITACIONES:VER"))))
+        "accesos", Map.of("roles", List.of(recepcionista), "permisos", List.of("HABITACIONES:VER"))))
         .andExpect(status().isCreated()).andExpect(header().string("Cache-Control", "no-store")));
     long id = nuevo.path("cuenta").path("idUsuario").asLong();
     String clave = nuevo.path("credencial").path("contrasenaTemporal").asText();
@@ -149,12 +164,15 @@ class AccesoHttpTest {
     assertThat(guardado).startsWith("$2").doesNotContain(clave);
     String rutaEmpleado = API + "/seguridad/empleados/" + empleado;
     String rutaUsuario = API + "/seguridad/usuarios/" + id;
-    String rutaRol = API + "/seguridad/roles/" + rol;
+    String rutaRol = API + "/seguridad/roles/" + recepcionista;
     var datosEmpleado = Map.of("nombres", "Operadora", "apellidos", "Actualizada", "fechaContratacion", "2025-01-02");
     peticion(put(rutaEmpleado), gerente, datosEmpleado).andExpect(status().isOk())
         .andExpect(jsonPath("$.apellidos").value("Actualizada"))
         .andExpect(jsonPath("$.numeroDocumento").value("00000002"));
-    peticion(delete(rutaRol), gerente, null).andExpect(status().isConflict());
+    peticion(delete(rutaRol), gerente, null).andExpect(status().isMethodNotAllowed());
+    peticion(put(rutaUsuario + "/accesos"), gerente,
+        Map.of("roles", List.of(roles.get("ROL_ANTERIOR")), "permisos", List.of()))
+        .andExpect(status().isConflict());
 
     var primera = sesion(peticion(post(API + "/sesion/iniciar"), null, Map.of("usuario", "OPERADORA@EXAMPLE.TEST", "contrasena", clave))
         .andExpect(status().isOk()).andExpect(jsonPath("$.permisos").isEmpty()));
@@ -168,6 +186,19 @@ class AccesoHttpTest {
     var operadora = sesion(peticion(post(API + "/sesion/iniciar"), null,
         Map.of("usuario", "operadora@example.test", "contrasena", "Clave elegida por operadora"))
         .andExpect(status().isOk()).andExpect(jsonPath("$.idTurno").value(turnoRecepcion)));
+    tx.executeWithoutResult(s -> {
+      accesos.permisos(roles.get("ROL_ANTERIOR"), java.util.Set.of("PRODUCTOS:VER"));
+      accesos.vincular(id, roles.get("ROL_ANTERIOR"));
+    });
+    mvc.perform(get(API + "/productos").session(operadora)).andExpect(status().isForbidden());
+    long mantenimiento = roles.get("MANTENIMIENTO");
+    peticion(put(API + "/seguridad/roles/" + mantenimiento), gerente,
+        Map.of("permisos", List.of("LIMPIEZA:APROBAR_INFORME"))).andExpect(status().isOk());
+    peticion(put(rutaUsuario + "/accesos"), gerente,
+        Map.of("roles", List.of(recepcionista, mantenimiento), "permisos", List.of("HABITACIONES:VER")))
+        .andExpect(status().isOk());
+    peticion(post(aprobarInforme), operadora, null).andExpect(status().isOk())
+        .andExpect(jsonPath("$.informe.estado").value("APROBADO"));
     peticion(post(cuarto + "/iniciar"), operadora, null).andExpect(status().isConflict());
     mvc.perform(get(API + "/reservas").session(operadora)).andExpect(status().isOk());
     mvc.perform(get(API + "/habitaciones/configuracion").session(operadora)).andExpect(status().isOk());
@@ -179,13 +210,18 @@ class AccesoHttpTest {
     peticion(put(API + "/seguridad/usuarios/" + id + "/accesos"), operadora,
         Map.of("roles", List.of(), "permisos", List.of("RESERVAS:CREAR"))).andExpect(status().isForbidden());
     probarCaja(gerente, operadora, turnoGerente);
+    probarConfiguracionYReportes(gerente, operadora, informe);
     var accesos = Map.of("roles", List.of(), "permisos", List.of("HABITACIONES:VER"));
     peticion(put(rutaUsuario), gerente, Map.of("usuario", "GERENCIA", "accesos", accesos))
         .andExpect(status().isConflict());
     peticion(put(rutaUsuario), gerente, Map.of("usuario", "recepcion.nueva", "accesos", accesos))
         .andExpect(status().isOk()).andExpect(jsonPath("$.usuario").value("recepcion.nueva"));
-    peticion(delete(rutaRol), gerente, null).andExpect(status().isNoContent());
-    mvc.perform(get(API + "/seguridad/roles").session(gerente)).andExpect(jsonPath("$.length()").value(1));
+    mvc.perform(get(API + "/seguridad/roles").session(gerente))
+        .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(4))
+        .andExpect(jsonPath("$[0].nombre").value("GERENTE"))
+        .andExpect(jsonPath("$[1].nombre").value("LIMPIEZA"))
+        .andExpect(jsonPath("$[2].nombre").value("MANTENIMIENTO"))
+        .andExpect(jsonPath("$[3].nombre").value("RECEPCIONISTA"));
     mvc.perform(get(API + "/reservas").session(operadora)).andExpect(status().isForbidden());
     var temporalNueva = cuerpo(peticion(post(rutaUsuario + "/credencial-temporal"), gerente, null)
         .andExpect(status().isOk())).path("contrasenaTemporal").asText();
@@ -200,6 +236,61 @@ class AccesoHttpTest {
         .andExpect(jsonPath("$.fechaCese").isEmpty());
     peticion(put(rutaUsuario + "/estado"), gerente, Map.of("estado", "ACTIVO")).andExpect(status().isOk());
     peticion(post(API + "/sesion/cerrar"), gerente, null).andExpect(status().isNoContent());
+  }
+
+  private void probarConfiguracionYReportes(MockHttpSession gerente, MockHttpSession operadora, long informe) throws Exception {
+    String sistema = API + "/configuraciones/sistema";
+    String reportes = API + "/reportes";
+    mvc.perform(get(sistema + "/hospedaje").session(operadora)).andExpect(status().isForbidden());
+    mvc.perform(get(reportes + "/financiero").session(operadora)).andExpect(status().isForbidden());
+
+    var hospedaje = Map.of("nombre", "Hospedaje de prueba", "ruc", "20999999999", "direccion", "Huaraz");
+    peticion(put(sistema + "/hospedaje"), gerente, hospedaje)
+        .andExpect(status().isOk()).andExpect(jsonPath("$.ruc").value("20999999999"));
+    var bytes = new ByteArrayOutputStream();
+    ImageIO.write(new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB), "png", bytes);
+    var foto = new MockMultipartFile("archivo", "logo.png", "image/png", bytes.toByteArray());
+    String rutaLogo = cuerpo(peticion(multipart(org.springframework.http.HttpMethod.PUT, sistema + "/hospedaje/logo")
+        .file(foto), gerente, null).andExpect(status().isOk())).path("logoRuta").asText();
+    mvc.perform(get(rutaLogo).session(gerente)).andExpect(status().isOk())
+        .andExpect(content().bytes(bytes.toByteArray()));
+
+    long tipo = cuerpo(mvc.perform(get(sistema + "/comerciales").session(gerente)).andExpect(status().isOk()))
+        .get(0).path("idTipoHabitacion").asLong();
+    peticion(put(sistema + "/comerciales/" + tipo), gerente,
+        Map.of("capacidadMax", 2, "precioBase", 75))
+        .andExpect(status().isOk()).andExpect(jsonPath("$.capacidadMax").value(2))
+        .andExpect(jsonPath("$.precioBase").value(75));
+
+    mvc.perform(get(reportes + "/financiero").session(gerente)).andExpect(status().isOk())
+        .andExpect(jsonPath("$.cobrosVentas").value(115.50)).andExpect(jsonPath("$.ingresosManuales").value(10))
+        .andExpect(jsonPath("$.egresos").value(20)).andExpect(jsonPath("$.neto").value(105.50));
+    mvc.perform(get(reportes + "/financiero").param("desde", "2025-01-02").param("hasta", "2025-01-01")
+        .session(gerente)).andExpect(status().isConflict());
+    mvc.perform(get(reportes + "/cierres-caja").param("usuario", "gerencia").session(gerente))
+        .andExpect(status().isOk()).andExpect(jsonPath("$.filas[0].esperado").value(130.50))
+        .andExpect(jsonPath("$.filas[0].diferencia").value(-1));
+    for (String reporte : List.of("incidencias", "inventario/productos", "inventario/mobiliario")) {
+      mvc.perform(get(reportes + "/" + reporte).session(gerente)).andExpect(status().isOk())
+          .andExpect(jsonPath("$.filas").isArray());
+    }
+    mvc.perform(get(reportes + "/incidencias/" + informe).session(gerente)).andExpect(status().isOk())
+        .andExpect(jsonPath("$.informe.idInformeRevision").value(informe));
+
+    peticion(put(sistema + "/seguridad"), gerente, Map.of("minutosInactividad", 7, "intentosFallidos", 6))
+        .andExpect(status().isBadRequest());
+    peticion(put(sistema + "/seguridad"), gerente, Map.of("minutosInactividad", 7, "intentosFallidos", 2))
+        .andExpect(status().isOk());
+    var nuevaSesion = sesion(peticion(post(API + "/sesion/iniciar"), null,
+        Map.of("usuario", "gerencia", "contrasena", "Gerente permanente de prueba")).andExpect(status().isOk()));
+    assertThat(nuevaSesion.getMaxInactiveInterval()).isEqualTo(420);
+    for (int i = 0; i < 2; i++) {
+      peticion(post(API + "/sesion/iniciar"), null,
+          Map.of("usuario", "gerencia", "contrasena", "Contraseña incorrecta"))
+          .andExpect(status().isUnauthorized());
+    }
+    peticion(post(API + "/sesion/iniciar"), null,
+        Map.of("usuario", "gerencia", "contrasena", "Gerente permanente de prueba")).andExpect(status().isUnauthorized());
   }
 
   private void probarCaja(MockHttpSession gerente, MockHttpSession operadora, long idTurno) throws Exception {

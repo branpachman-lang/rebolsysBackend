@@ -45,8 +45,7 @@ public final class SeguridadDTO {
 
   public record CambiarEstado(@NotNull EstadoUsuario estado) {}
 
-  public record GuardarRol(@NotBlank @Pattern(regexp = "[a-zA-Z0-9_-]{2,30}") String nombre,
-      @NotNull @Size(max = 250) Set<@NotBlank @Size(max = 151) String> permisos) {}
+  public record PermisosRol(@NotNull @Size(max = 250) Set<@NotBlank @Size(max = 151) String> permisos) {}
 
   public record RolVista(Long idRol, String nombre, List<String> permisos, boolean protegido, long usuariosAsignados) {}
 }

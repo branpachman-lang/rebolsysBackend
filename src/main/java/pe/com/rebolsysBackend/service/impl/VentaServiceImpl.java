@@ -32,38 +32,38 @@ public class VentaServiceImpl implements VentaService {
 
   @Override
   @Transactional
-  public VentaResponseDTO registrar(VentaRequestDTO r) {
-    reglas.validar(r);
-    if (r.idDetalleReserva() != null) bloquearReserva(r.idDetalleReserva());
-    var usuario = reglas.bloquearUsuario(r.idUsuario());
-    var firma = reglas.firma(r);
-    var anterior = ventas.findByClaveRegistro(r.claveRegistro());
+  public VentaResponseDTO registrar(VentaRequestDTO venta) {
+    reglas.validar(venta);
+    if (venta.idDetalleReserva() != null) bloquearReserva(venta.idDetalleReserva());
+    var usuario = reglas.bloquearUsuario(venta.idUsuario());
+    var firma = reglas.firma(venta);
+    var anterior = ventas.findByClaveRegistro(venta.claveRegistro());
     if (anterior.isPresent()) {
       exigir(firma.equals(anterior.get().getFirmaSolicitud()),
           "La clave de registro ya corresponde a otra solicitud");
       return respuesta(anterior.get());
     }
     exigir(
-        r.idClienteComprador() == null || limpiar(r.compradorNombreLibre()) == null, "Selecciona un comprador registrado o un nombre libre");
+        venta.idClienteComprador() == null || limpiar(venta.compradorNombreLibre()) == null, "Selecciona un comprador registrado o un nombre libre");
     exigir(
-        r.modalidadCobro() != ModalidadCobro.RESERVA || r.idDetalleReserva() != null,
+        venta.modalidadCobro() != ModalidadCobro.RESERVA || venta.idDetalleReserva() != null,
         "La modalidad RESERVA requiere una estancia");
     var v = new Venta();
     v.setUsuario(usuario);
-    v.setClaveRegistro(r.claveRegistro());
+    v.setClaveRegistro(venta.claveRegistro());
     v.setFirmaSolicitud(firma);
-    v.setModalidadCobro(r.modalidadCobro());
+    v.setModalidadCobro(venta.modalidadCobro());
     v.setEstadoVenta(EstadoVenta.BORRADOR);
-    v.setCompradorNombreLibre(limpiar(r.compradorNombreLibre()));
-    if (r.idClienteComprador() != null)
+    v.setCompradorNombreLibre(limpiar(venta.compradorNombreLibre()));
+    if (venta.idClienteComprador() != null)
       v.setClienteComprador(
           clientes
-              .findByIdPerfilAndEsCliente(r.idClienteComprador(), 1)
+              .findByIdPerfilAndEsCliente(venta.idClienteComprador(), 1)
               .orElseThrow(() -> new RecursoNoEncontradoException("El comprador no existe")));
-    if (r.idDetalleReserva() != null) {
+    if (venta.idDetalleReserva() != null) {
       var d =
           reservas
-              .bloquear(r.idDetalleReserva())
+              .bloquear(venta.idDetalleReserva())
               .orElseThrow(() -> new RecursoNoEncontradoException("La estancia no existe"));
       exigir(
           d.getEstadoDetalle() == EstadoReserva.EN_CURSO,
@@ -71,7 +71,7 @@ public class VentaServiceImpl implements VentaService {
       v.setDetalleReserva(d);
       cuentaReserva.validarVenta(v);
     }
-    v.getDetalles().addAll(construirLineas(v, r.detalles()));
+    v.getDetalles().addAll(construirLineas(v, venta.detalles()));
     ventas.saveAndFlush(v);
     return respuesta(v);
   }

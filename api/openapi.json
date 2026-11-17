@@ -3477,6 +3477,7 @@
           "Limpieza y mantenimiento"
         ],
         "summary": "Editar acción, observaciones y costo de un ticket de un informe por aprobar",
+        "description": "Requiere el rol MANTENIMIENTO y el permiso LIMPIEZA:EDITAR_TICKET.",
         "operationId": "editarTicket",
         "parameters": [
           {
@@ -3524,6 +3525,7 @@
           "Limpieza y mantenimiento"
         ],
         "summary": "Eliminar un ticket y reabrir la incidencia de su informe por aprobar",
+        "description": "Requiere el rol MANTENIMIENTO y el permiso LIMPIEZA:ELIMINAR_TICKET.",
         "operationId": "eliminarTicket",
         "parameters": [
           {
@@ -3556,6 +3558,7 @@
           "Limpieza y mantenimiento"
         ],
         "summary": "Registrar la resolución de una incidencia con un ticket de mantenimiento",
+        "description": "Requiere el rol MANTENIMIENTO y el permiso LIMPIEZA:CREAR_TICKET.",
         "operationId": "crearTicket",
         "parameters": [
           {
@@ -3616,6 +3619,7 @@
           "Limpieza y mantenimiento"
         ],
         "summary": "Aprobar un informe sin incidencias pendientes y liberar la habitación",
+        "description": "Requiere el rol MANTENIMIENTO y el permiso LIMPIEZA:APROBAR_INFORME.",
         "operationId": "aprobar",
         "parameters": [
           {
@@ -3824,6 +3828,7 @@
           "Limpieza y mantenimiento"
         ],
         "summary": "Eliminar un informe por aprobar y sus tickets",
+        "description": "Si el informe tiene tickets, también requiere el rol MANTENIMIENTO y el permiso LIMPIEZA:ELIMINAR_TICKET.",
         "operationId": "eliminarInforme",
         "parameters": [
           {
@@ -4408,7 +4413,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/GuardarRol"
+                "$ref": "#/components/schemas/PermisosRol"
               }
             }
           },
@@ -4631,39 +4636,6 @@
                   "items": {
                     "$ref": "#/components/schemas/RolVista"
                   }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "sesion": []
-          }
-        ]
-      },
-      "post": {
-        "tags": [
-          "gestion-accesos-controller"
-        ],
-        "operationId": "crearRol",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GuardarRol"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Created",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/RolVista"
                 }
               }
             }
@@ -4921,6 +4893,691 @@
                   "items": {
                     "$ref": "#/components/schemas/Funcion"
                   }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/configuraciones/sistema/seguridad": {
+      "get": {
+        "tags": [
+          "Configuración del sistema"
+        ],
+        "operationId": "consultarPolitica",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Politica"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Configuración del sistema"
+        ],
+        "operationId": "guardarPolitica",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Politica"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Politica"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/configuraciones/sistema/hospedaje": {
+      "get": {
+        "tags": [
+          "Configuración del sistema"
+        ],
+        "operationId": "consultarHospedaje",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Marca"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Configuración del sistema"
+        ],
+        "operationId": "guardarHospedaje",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DatosHospedaje"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Marca"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/configuraciones/sistema/hospedaje/logo": {
+      "put": {
+        "tags": [
+          "Configuración del sistema"
+        ],
+        "operationId": "guardarLogo",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "archivo"
+                ],
+                "type": "object",
+                "properties": {
+                  "archivo": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Marca"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/configuraciones/sistema/comerciales/{id}": {
+      "put": {
+        "tags": [
+          "Configuración del sistema"
+        ],
+        "operationId": "guardarTipo",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ParametrosComerciales"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TipoHabitacionResponseDTO"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/reportes/inventario/productos": {
+      "get": {
+        "tags": [
+          "Reportes"
+        ],
+        "operationId": "productos",
+        "parameters": [
+          {
+            "name": "buscar",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "maxLength": 100,
+              "minLength": 0,
+              "type": "string"
+            }
+          },
+          {
+            "name": "stockBajo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "pagina",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "tamanio",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "La sesión activa requiere el rol GERENTE",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginaExistencia"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/reportes/inventario/mobiliario": {
+      "get": {
+        "tags": [
+          "Reportes"
+        ],
+        "operationId": "inventarioMobiliario",
+        "parameters": [
+          {
+            "name": "buscar",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "maxLength": 100,
+              "minLength": 0,
+              "type": "string"
+            }
+          },
+          {
+            "name": "habitacion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "maxLength": 10,
+              "minLength": 0,
+              "type": "string"
+            }
+          },
+          {
+            "name": "pagina",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "tamanio",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "La sesión activa requiere el rol GERENTE",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginaMueble"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/reportes/incidencias": {
+      "get": {
+        "tags": [
+          "Reportes"
+        ],
+        "operationId": "incidencias",
+        "parameters": [
+          {
+            "name": "desde",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "habitacion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "maxLength": 10,
+              "minLength": 0,
+              "type": "string"
+            }
+          },
+          {
+            "name": "estado",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "BORRADOR",
+                "POR_APROBAR",
+                "APROBADO",
+                "INVALIDADO"
+              ]
+            }
+          },
+          {
+            "name": "pagina",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "tamanio",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "La sesión activa requiere el rol GERENTE",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginaIncidencia"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/reportes/financiero": {
+      "get": {
+        "tags": [
+          "Reportes"
+        ],
+        "operationId": "financiero",
+        "parameters": [
+          {
+            "name": "desde",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "La sesión activa requiere el rol GERENTE",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Financiero"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/reportes/cierres-caja": {
+      "get": {
+        "tags": [
+          "Reportes"
+        ],
+        "operationId": "cierres",
+        "parameters": [
+          {
+            "name": "desde",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "usuario",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "maxLength": 50,
+              "minLength": 0,
+              "type": "string"
+            }
+          },
+          {
+            "name": "pagina",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "tamanio",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "La sesión activa requiere el rol GERENTE",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginaCierre"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/configuraciones/sistema/comerciales": {
+      "get": {
+        "tags": [
+          "Configuración del sistema"
+        ],
+        "operationId": "tiposComerciales",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/configuraciones/marca": {
+      "get": {
+        "tags": [
+          "Configuración del sistema"
+        ],
+        "operationId": "marca",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Marca"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/configuraciones/marca/logo/{nombre}": {
+      "get": {
+        "tags": [
+          "Configuración del sistema"
+        ],
+        "operationId": "logo",
+        "parameters": [
+          {
+            "name": "nombre",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/reportes/incidencias/{idInforme}": {
+      "get": {
+        "tags": [
+          "Reportes"
+        ],
+        "operationId": "informe_1",
+        "parameters": [
+          {
+            "name": "idInforme",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "La sesión activa requiere el rol GERENTE",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/InformeDetalle"
                 }
               }
             }
@@ -7873,31 +8530,6 @@
           }
         }
       },
-      "GuardarRol": {
-        "required": [
-          "nombre",
-          "permisos"
-        ],
-        "type": "object",
-        "properties": {
-          "nombre": {
-            "minLength": 1,
-            "pattern": "[a-zA-Z0-9_-]{2,30}",
-            "type": "string"
-          },
-          "permisos": {
-            "maxItems": 250,
-            "minItems": 0,
-            "uniqueItems": true,
-            "type": "array",
-            "items": {
-              "maxLength": 151,
-              "minLength": 0,
-              "type": "string"
-            }
-          }
-        }
-      },
       "RolVista": {
         "type": "object",
         "properties": {
@@ -8134,6 +8766,336 @@
             "type": "string"
           }
         }
+      },
+      "Politica": {
+        "required": [
+          "intentosFallidos",
+          "minutosInactividad"
+        ],
+        "type": "object",
+        "properties": {
+          "minutosInactividad": {
+            "maximum": 1440,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "intentosFallidos": {
+            "maximum": 5,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "Marca": {
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "type": "string"
+          },
+          "ruc": {
+            "type": "string"
+          },
+          "direccion": {
+            "type": "string"
+          },
+          "logoRuta": {
+            "type": "string"
+          }
+        }
+      },
+      "DatosHospedaje": {
+        "required": [
+          "nombre",
+          "ruc"
+        ],
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "maxLength": 150,
+            "minLength": 0,
+            "type": "string"
+          },
+          "ruc": {
+            "minLength": 1,
+            "pattern": "[0-9]{11}",
+            "type": "string"
+          },
+          "direccion": {
+            "maxLength": 200,
+            "minLength": 0,
+            "type": "string"
+          }
+        }
+      },
+      "ParametrosComerciales": {
+        "required": [
+          "capacidadMax",
+          "precioBase"
+        ],
+        "type": "object",
+        "properties": {
+          "capacidadMax": {
+            "maximum": 99,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "precioBase": {
+            "minimum": 0,
+            "exclusiveMinimum": false,
+            "type": "number"
+          }
+        }
+      },
+      "PaginaExistencia": {
+        "type": "object",
+        "properties": {
+          "filas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Existencia"
+            }
+          },
+          "pagina": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "haySiguiente": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Existencia": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "producto": {
+            "type": "string"
+          },
+          "categoria": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string"
+          },
+          "stock": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "minimo": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "PaginaMueble": {
+        "type": "object",
+        "properties": {
+          "filas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Mueble"
+            }
+          },
+          "pagina": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "haySiguiente": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Mueble": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "mueble": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "habitacion": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string"
+          },
+          "condicion": {
+            "type": "string"
+          }
+        }
+      },
+      "PaginaIncidencia": {
+        "type": "object",
+        "properties": {
+          "filas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Incidencia"
+            }
+          },
+          "pagina": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "haySiguiente": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Incidencia": {
+        "type": "object",
+        "properties": {
+          "idInforme": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "habitacion": {
+            "type": "string"
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "estadoInforme": {
+            "type": "string"
+          },
+          "mueble": {
+            "type": "string"
+          },
+          "condicion": {
+            "type": "string"
+          },
+          "observacion": {
+            "type": "string"
+          },
+          "idTicket": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "estadoTicket": {
+            "type": "string"
+          }
+        }
+      },
+      "Financiero": {
+        "type": "object",
+        "properties": {
+          "filas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Importe"
+            }
+          },
+          "cobrosReservas": {
+            "type": "number"
+          },
+          "cobrosVentas": {
+            "type": "number"
+          },
+          "ingresosManuales": {
+            "type": "number"
+          },
+          "egresos": {
+            "type": "number"
+          },
+          "neto": {
+            "type": "number"
+          }
+        }
+      },
+      "Importe": {
+        "type": "object",
+        "properties": {
+          "concepto": {
+            "type": "string"
+          },
+          "medioPago": {
+            "type": "string"
+          },
+          "monto": {
+            "type": "number"
+          }
+        }
+      },
+      "PaginaCierre": {
+        "type": "object",
+        "properties": {
+          "filas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cierre"
+            }
+          },
+          "pagina": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "haySiguiente": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Cierre": {
+        "type": "object",
+        "properties": {
+          "idTurno": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "usuario": {
+            "type": "string"
+          },
+          "apertura": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "cierre": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "medioPago": {
+            "type": "string"
+          },
+          "esperado": {
+            "type": "number"
+          },
+          "declarado": {
+            "type": "number"
+          },
+          "diferencia": {
+            "type": "number"
+          }
+        }
+      },
+      "PermisosRol": {
+        "required": [
+          "permisos"
+        ],
+        "type": "object",
+        "properties": {
+          "permisos": {
+            "maxItems": 250,
+            "minItems": 0,
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "maxLength": 151,
+              "minLength": 0,
+              "type": "string"
+            }
+          }
+        }
       }
     },
     "securitySchemes": {
@@ -8143,5 +9105,15 @@
         "in": "cookie"
       }
     }
-  }
+  },
+  "tags": [
+    {
+      "name": "Reportes",
+      "description": "Consultas de Gerencia. Los rangos de fechas incluyen ambos días en hora de Lima."
+    },
+    {
+      "name": "Configuración del sistema",
+      "description": "Edición para GERENTE y consulta de marca para sesiones autenticadas."
+    }
+  ]
 }

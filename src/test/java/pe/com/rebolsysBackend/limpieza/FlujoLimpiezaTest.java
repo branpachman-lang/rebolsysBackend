@@ -27,9 +27,11 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.client.RestClient;
 import pe.com.rebolsysBackend.dto.ItemAsignacionDTO;
+import pe.com.rebolsysBackend.dto.SesionActualDTO;
 import pe.com.rebolsysBackend.entity.*;
 import pe.com.rebolsysBackend.enums.*;
 import pe.com.rebolsysBackend.service.impl.ReglasPropuesta;
+import pe.com.rebolsysBackend.service.impl.SesionOperacionService;
 import pe.com.rebolsysBackend.service.service.ItemService;
 import pe.com.rebolsysBackend.service.service.ProveedorFacturacionClient;
 import tools.jackson.databind.JsonNode;
@@ -159,8 +161,21 @@ class FlujoLimpiezaTest {
         .andExpect(status().isOk()).andExpect(jsonPath("$.totalElementos").value(1));
     long detalle = enviado.path("items").get(0).path("idDetalleInforme").asLong();
     String nuevoTicket = informe + "/items/" + detalle + "/ticket";
-    var reparacion = Map.of("accion", Map.of("tipoAccion", "REPARACION", "costoReparacion", 15), "evidencia", foto);
-    long primerTicket = respuesta(mvc.perform(post(nuevoTicket).contentType(MediaType.APPLICATION_JSON)
+    var permisosAtencion = List.of("LIMPIEZA:APROBAR_INFORME", "LIMPIEZA:CREAR_TICKET", "LIMPIEZA:EDITAR_TICKET",
+        "LIMPIEZA:ELIMINAR_TICKET", "LIMPIEZA:CARGAR_EVIDENCIA", "LIMPIEZA:ELIMINAR_INFORME");
+    var personalLimpieza = new SesionActualDTO(usuarioId, "prueba_limpieza", "ACTIVA", null, null,
+        false, false, List.of("LIMPIEZA"), permisosAtencion);
+    var personalMantenimiento = new SesionActualDTO(usuarioId, "prueba_mantenimiento", "ACTIVA", null, null,
+        false, false, List.of("MANTENIMIENTO"), permisosAtencion);
+    var fotoAtencion = respuesta(mvc.perform(multipart(API + "/evidencias")
+        .file(new MockMultipartFile("archivo", "reparacion.png", "image/png", bytes.toByteArray()))
+        .requestAttr(SesionOperacionService.ATRIBUTO, personalMantenimiento)).andExpect(status().isCreated()));
+    var reparacion = Map.of("accion", Map.of("tipoAccion", "REPARACION", "costoReparacion", 15), "evidencia", fotoAtencion);
+    mvc.perform(post(nuevoTicket).requestAttr(SesionOperacionService.ATRIBUTO, personalLimpieza)
+        .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsBytes(reparacion)))
+        .andExpect(status().isForbidden());
+    long primerTicket = respuesta(mvc.perform(post(nuevoTicket)
+        .requestAttr(SesionOperacionService.ATRIBUTO, personalMantenimiento).contentType(MediaType.APPLICATION_JSON)
         .content(json.writeValueAsBytes(reparacion))).andExpect(status().isCreated()))
         .path("ticket").path("idTicket").asLong();
     assertThat(items.obtener(item).estadoActualItem()).isEqualTo(EstadoConservacion.BUENO);
@@ -172,21 +187,36 @@ class FlujoLimpiezaTest {
         .andExpect(jsonPath("$.informe.puedeAprobar").value(true))
         .andExpect(jsonPath("$.items[0].estadoEncontrado").value("DANADO"))
         .andExpect(jsonPath("$.items[0].estadoActualItem").value("BUENO"));
-    mvc.perform(delete(API + "/tickets/" + primerTicket)).andExpect(status().isNoContent());
+    mvc.perform(delete(informe).requestAttr(SesionOperacionService.ATRIBUTO, personalLimpieza))
+        .andExpect(status().isForbidden());
+    mvc.perform(delete(API + "/tickets/" + primerTicket).requestAttr(SesionOperacionService.ATRIBUTO, personalLimpieza))
+        .andExpect(status().isForbidden());
+    mvc.perform(delete(API + "/tickets/" + primerTicket)
+        .requestAttr(SesionOperacionService.ATRIBUTO, personalMantenimiento)).andExpect(status().isNoContent());
     assertThat(items.obtener(item).estadoActualItem()).isEqualTo(EstadoConservacion.DANADO);
     mvc.perform(post(informe + "/aprobar")).andExpect(status().isConflict());
 
-    long idTicket = respuesta(mvc.perform(post(nuevoTicket).contentType(MediaType.APPLICATION_JSON)
+    long idTicket = respuesta(mvc.perform(post(nuevoTicket)
+        .requestAttr(SesionOperacionService.ATRIBUTO, personalMantenimiento).contentType(MediaType.APPLICATION_JSON)
         .content(json.writeValueAsBytes(reparacion))).andExpect(status().isCreated()))
         .path("ticket").path("idTicket").asLong();
     String ticket = API + "/tickets/" + idTicket;
     var reposicion = "{\"tipoAccion\":\"REPOSICION\",\"observacionTecnica\":\"Mesa repuesta\"}";
-    mvc.perform(put(ticket).contentType(MediaType.APPLICATION_JSON).content(reposicion))
+    mvc.perform(put(ticket).requestAttr(SesionOperacionService.ATRIBUTO, personalLimpieza)
+        .contentType(MediaType.APPLICATION_JSON).content(reposicion)).andExpect(status().isForbidden());
+    mvc.perform(put(ticket).requestAttr(SesionOperacionService.ATRIBUTO, personalMantenimiento)
+        .contentType(MediaType.APPLICATION_JSON).content(reposicion))
         .andExpect(status().isOk()).andExpect(jsonPath("$.costoReparacion").doesNotExist());
     mvc.perform(get(API + "/tickets").param("tipoAccion", "REPOSICION").param("nombre", "TKT-" + idTicket)
         .param("numeroHabitacion", "301")).andExpect(status().isOk())
         .andExpect(jsonPath("$.totalElementos").value(1));
-    mvc.perform(post(informe + "/aprobar")).andExpect(status().isOk())
+    mvc.perform(post(informe + "/aprobar").requestAttr(SesionOperacionService.ATRIBUTO, personalLimpieza))
+        .andExpect(status().isForbidden());
+    mvc.perform(get(informe)).andExpect(status().isOk())
+        .andExpect(jsonPath("$.informe.estado").value("POR_APROBAR"));
+
+    mvc.perform(post(informe + "/aprobar").requestAttr(SesionOperacionService.ATRIBUTO, personalMantenimiento))
+        .andExpect(status().isOk())
         .andExpect(jsonPath("$.informe.estado").value("APROBADO"));
     mvc.perform(get(cuarto)).andExpect(status().isOk())
         .andExpect(jsonPath("$.habitacion.estado").value("DISPONIBLE"))

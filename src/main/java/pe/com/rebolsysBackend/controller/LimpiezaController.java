@@ -95,14 +95,16 @@ public class LimpiezaController {
   @Acceso("LIMPIEZA:ELIMINAR_INFORME")
   @DeleteMapping("/informes/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  @Operation(summary = "Eliminar un informe por aprobar y sus tickets")
+  @Operation(summary = "Eliminar un informe por aprobar y sus tickets",
+      description = "Si el informe tiene tickets, también requiere el rol MANTENIMIENTO y el permiso LIMPIEZA:ELIMINAR_TICKET.")
   public void eliminarInforme(@PathVariable @Positive Long id) {
     servicio.eliminarInforme(id);
   }
 
   @Acceso("LIMPIEZA:APROBAR_INFORME")
   @PostMapping("/informes/{id}/aprobar")
-  @Operation(summary = "Aprobar un informe sin incidencias pendientes y liberar la habitación")
+  @Operation(summary = "Aprobar un informe sin incidencias pendientes y liberar la habitación",
+      description = "Requiere el rol MANTENIMIENTO y el permiso LIMPIEZA:APROBAR_INFORME.")
   public InformeDetalle aprobar(@PathVariable @Positive Long id) {
     return servicio.aprobar(id);
   }
@@ -110,7 +112,8 @@ public class LimpiezaController {
   @Acceso("LIMPIEZA:CREAR_TICKET")
   @PostMapping("/informes/{id}/items/{idDetalleInforme}/ticket")
   @ResponseStatus(HttpStatus.CREATED)
-  @Operation(summary = "Registrar la resolución de una incidencia con un ticket de mantenimiento")
+  @Operation(summary = "Registrar la resolución de una incidencia con un ticket de mantenimiento",
+      description = "Requiere el rol MANTENIMIENTO y el permiso LIMPIEZA:CREAR_TICKET.")
   public TicketDetalle crearTicket(@PathVariable @Positive Long id, @PathVariable @Positive Long idDetalleInforme,
       @Valid @RequestBody CrearTicket datos) {
     return servicio.crearTicket(id, idDetalleInforme, datos);
@@ -134,7 +137,8 @@ public class LimpiezaController {
 
   @Acceso("LIMPIEZA:EDITAR_TICKET")
   @PutMapping("/tickets/{id}")
-  @Operation(summary = "Editar acción, observaciones y costo de un ticket de un informe por aprobar")
+  @Operation(summary = "Editar acción, observaciones y costo de un ticket de un informe por aprobar",
+      description = "Requiere el rol MANTENIMIENTO y el permiso LIMPIEZA:EDITAR_TICKET.")
   public TicketDetalle editarTicket(@PathVariable @Positive Long id, @Valid @RequestBody DatosTicket datos) {
     return servicio.editarTicket(id, datos);
   }
@@ -142,7 +146,8 @@ public class LimpiezaController {
   @Acceso("LIMPIEZA:ELIMINAR_TICKET")
   @DeleteMapping("/tickets/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  @Operation(summary = "Eliminar un ticket y reabrir la incidencia de su informe por aprobar")
+  @Operation(summary = "Eliminar un ticket y reabrir la incidencia de su informe por aprobar",
+      description = "Requiere el rol MANTENIMIENTO y el permiso LIMPIEZA:ELIMINAR_TICKET.")
   public void eliminarTicket(@PathVariable @Positive Long id) {
     servicio.eliminarTicket(id);
   }

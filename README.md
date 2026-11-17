@@ -55,7 +55,9 @@ vacía, ejecuta estos archivos en orden desde una sesión de ese esquema.
 
 1. [DDL_REBOLSYS_V2.sql](src/main/resources/db/schema/DDL_REBOLSYS_V2.sql) crea las tablas base.
 2. [V16](src/main/resources/db/iteration/V16__mobiliario_sin_detalle_habitacion.sql) adapta las claves históricas y agrega las columnas y la tabla de emisión que requiere la aplicación.
-3. [DATOS_INICIALES_REBOLSYS_V2.sql](src/main/resources/db/schema/DATOS_INICIALES_REBOLSYS_V2.sql) carga catálogos y la cuenta `gerencia_local`. Confirma la carga con `COMMIT`.
+3. [DATOS_INICIALES_REBOLSYS_V2.sql](src/main/resources/db/schema/DATOS_INICIALES_REBOLSYS_V2.sql) carga catálogos y la cuenta `gerencia_local`.
+4. [DATOS_ROLES_OFICIALES_V2.sql](src/main/resources/db/schema/DATOS_ROLES_OFICIALES_V2.sql) carga los cuatro roles oficiales. Confirma las cargas con `COMMIT` y configura los permisos operativos en **Seguridad**.
+5. [DATOS_APROBACION_MANTENIMIENTO_V2.sql](src/main/resources/db/schema/DATOS_APROBACION_MANTENIMIENTO_V2.sql) habilita la atención de tickets, la carga de evidencias y la aprobación de informes para Mantenimiento. Confirma con `COMMIT`.
 
 Hibernate valida el esquema al arrancar y Flyway está deshabilitado. El DDL anterior
 y sus scripts de demostración se conservan como historial.

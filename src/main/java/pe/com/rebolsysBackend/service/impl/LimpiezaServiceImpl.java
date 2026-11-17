@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.com.rebolsysBackend.dto.LimpiezaDTO.*;
@@ -228,6 +229,7 @@ public class LimpiezaServiceImpl implements LimpiezaService {
     var informe = bloquearInforme(id);
     validarPendiente(informe);
     var asociados = tickets.findByDetalleInformeInformeRevisionIdInformeRevisionInOrderByIdTicket(List.of(id));
+    if (!asociados.isEmpty()) exigirMantenimiento("ELIMINAR_TICKET");
     asociados.forEach(ticket -> revertirTicket(ticket, usuario));
     tickets.deleteAll(asociados);
     tickets.flush();
@@ -237,6 +239,7 @@ public class LimpiezaServiceImpl implements LimpiezaService {
   @Override
   @Transactional
   public InformeDetalle aprobar(Long id) {
+    exigirMantenimiento("APROBAR_INFORME");
     var usuario = usuarioActual();
     var informe = bloquearInforme(id);
     if (informe.getEstadoInforme() == APROBADO) return detalleInforme(informe);
@@ -277,6 +280,7 @@ public class LimpiezaServiceImpl implements LimpiezaService {
   @Override
   @Transactional
   public TicketDetalle crearTicket(Long idInforme, Long idDetalle, CrearTicket datos) {
+    exigirMantenimiento("CREAR_TICKET");
     reglas.validar(datos);
     var usuario = usuarioActual();
     var informe = bloquearInforme(idInforme);
@@ -305,7 +309,7 @@ public class LimpiezaServiceImpl implements LimpiezaService {
   @Override
   @Transactional
   public TicketDetalle editarTicket(Long id, DatosTicket datos) {
-    sesion.actual();
+    exigirMantenimiento("EDITAR_TICKET");
     reglas.validar(datos);
     var ticket = bloquearTicket(id);
     guardarAccion(ticket, datos);
@@ -315,6 +319,7 @@ public class LimpiezaServiceImpl implements LimpiezaService {
   @Override
   @Transactional
   public void eliminarTicket(Long id) {
+    exigirMantenimiento("ELIMINAR_TICKET");
     var usuario = usuarioActual();
     var ticket = bloquearTicket(id);
     revertirTicket(ticket, usuario);
@@ -325,6 +330,14 @@ public class LimpiezaServiceImpl implements LimpiezaService {
     var linea = ticket.getDetalleInforme();
     cambiarConservacion(itemActual(linea), linea.getCondicionAnterior(), usuario,
         "Eliminación de ticket TKT-" + ticket.getIdTicket(), "eliminar-ticket:" + ticket.getIdTicket());
+  }
+
+  private void exigirMantenimiento(String accion) {
+    var actual = sesion.actual();
+    if (!actual.tiene("LIMPIEZA:" + accion)
+        || (!"PRUEBA".equals(actual.modo()) && !actual.roles().contains(AccesosService.MANTENIMIENTO))) {
+      throw new AccessDeniedException("Esta acción requiere el rol de mantenimiento y el permiso correspondiente");
+    }
   }
 
   private void cambiarConservacion(Item item, EstadoConservacion estado, Usuario usuario,

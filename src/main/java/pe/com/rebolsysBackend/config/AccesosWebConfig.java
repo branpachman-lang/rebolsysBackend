@@ -8,9 +8,9 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.config.annotation.*;
+import pe.com.rebolsysBackend.controller.GestionAccesosController;
 import pe.com.rebolsysBackend.service.impl.AccesosService;
 import pe.com.rebolsysBackend.service.impl.SesionOperacionService;
-import pe.com.rebolsysBackend.controller.GestionAccesosController;
 
 @Configuration
 @RequiredArgsConstructor
@@ -28,7 +28,12 @@ public class AccesosWebConfig implements WebMvcConfigurer {
         var actual = sesion.actual();
         if (reglas.contains(Acceso.SESION)) return true;
         if (actual.requiereCambio()) throw new AccessDeniedException("Cambia la contraseña temporal para continuar");
-        boolean pruebaOperativa = "PRUEBA".equals(actual.modo()) && metodo.getBeanType() != GestionAccesosController.class;
+        if (reglas.contains(Acceso.GERENTE)) {
+          if ("ACTIVA".equals(actual.modo()) && actual.gerente()) return true;
+          throw new AccessDeniedException("Esta función requiere el rol GERENTE");
+        }
+        boolean pruebaOperativa = "PRUEBA".equals(actual.modo())
+            && metodo.getBeanType() != GestionAccesosController.class;
         if (!reglas.isEmpty() && (reglas.contains(Acceso.CATALOGOS) || actual.gerente()
             || pruebaOperativa
             || reglas.stream().anyMatch(actual.permisos()::contains))) return true;

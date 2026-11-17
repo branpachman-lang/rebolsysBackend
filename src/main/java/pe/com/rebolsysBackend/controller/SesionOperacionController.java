@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import pe.com.rebolsysBackend.dto.SesionActualDTO;
 import pe.com.rebolsysBackend.service.impl.SesionOperacionService;
 import pe.com.rebolsysBackend.service.impl.CredencialesService;
+import pe.com.rebolsysBackend.service.impl.PoliticaSeguridadService;
 import pe.com.rebolsysBackend.config.Acceso;
 
 @RestController
@@ -26,6 +27,7 @@ public class SesionOperacionController {
   private final SesionOperacionService sesion;
   private final CredencialesService credenciales;
   private final HttpSessionSecurityContextRepository sesiones;
+  private final PoliticaSeguridadService politica;
   @Value("${app.sesion-prueba.habilitada:false}") private boolean prueba;
 
   public record Iniciar(@NotBlank @Size(max = 50) String usuario, @NotBlank @Size(max = 128) String contrasena) {
@@ -82,6 +84,7 @@ public class SesionOperacionController {
     contexto.setAuthentication(UsernamePasswordAuthenticationToken.authenticated(principal, null, java.util.List.of()));
     SecurityContextHolder.setContext(contexto);
     sesiones.saveContext(contexto, req, res);
+    req.getSession().setMaxInactiveInterval(politica.minutosInactividad() * 60);
     res.setHeader("Cache-Control", "no-store");
   }
 }
